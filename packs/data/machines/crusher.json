@@ -1,0 +1,131 @@
+{
+  "description": {
+    "id": "crusher",
+    "io": {
+      "energy": "consume"
+    },
+    "ui": {
+      "inventorySize": 7,
+      "elements": {
+        "energyBar": {
+          "type": "storageBar",
+          "startIndex": 0
+        },
+        "inputSlot": {
+          "type": "itemSlot",
+          "index": 4,
+          "slotId": 0,
+          "allowedItems": [
+            "minecraft:stone",
+            "minecraft:cobblestone",
+            "minecraft:gravel"
+          ]
+        },
+        "arrowIndicator": {
+          "type": "progressIndicator",
+          "indicator": "arrow",
+          "index": 5
+        },
+        "outputSlot": {
+          "type": "itemSlot",
+          "index": 6,
+          "slotId": 1,
+          "allowedItems": [
+            "minecraft:cobblestone",
+            "minecraft:gravel",
+            "minecraft:sand"
+          ]
+        }
+      }
+    }
+  },
+  "components": {
+    "materialInstances": {
+      "default": {
+        "*": "fluffyalien_energisticscore:machine_casing_side",
+        "north": "fluffyalien_energisticscore:crusher_front_off",
+        "up": "fluffyalien_energisticscore:machine_casing_top",
+        "down": "fluffyalien_energisticscore:machine_casing_bottom"
+      }
+    }
+  },
+  "systems": {
+    "timedCrafting": {
+      "progressIndicator": "arrowIndicator",
+      "storageBars": [
+        {
+          "type": "energy",
+          "element": "energyBar"
+        }
+      ],
+      "recipes": [
+        {
+          "maxProgress": 16,
+          "consumption": [
+            {
+              "type": "energy",
+              "storageBar": "energyBar",
+              "amountPerProgress": 1
+            }
+          ],
+          "ingredients": [
+            {
+              "slot": "inputSlot",
+              "item": "minecraft:stone"
+            }
+          ],
+          "result": [
+            {
+              "slot": "outputSlot",
+              "item": "minecraft:cobblestone"
+            }
+          ]
+        },
+        {
+          "maxProgress": 16,
+          "consumption": [
+            {
+              "type": "energy",
+              "storageBar": "energyBar",
+              "amountPerProgress": 1
+            }
+          ],
+          "ingredients": [
+            {
+              "slot": "inputSlot",
+              "item": "minecraft:cobblestone"
+            }
+          ],
+          "result": [
+            {
+              "slot": "outputSlot",
+              "item": "minecraft:gravel"
+            }
+          ]
+        },
+        {
+          "maxProgress": 16,
+          "consumption": [
+            {
+              "type": "energy",
+              "storageBar": "energyBar",
+              "amountPerProgress": 1
+            }
+          ],
+          "ingredients": [
+            {
+              "slot": "inputSlot",
+              "item": "minecraft:gravel"
+            }
+          ],
+          "result": [
+            {
+              "slot": "outputSlot",
+              "item": "minecraft:sand"
+            }
+          ]
+        }
+      ]
+    }
+  }
+}

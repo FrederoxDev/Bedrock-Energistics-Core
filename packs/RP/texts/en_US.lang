@@ -1,0 +1,4 @@
+pack.name=Bedrock Energistics Core
+pack.description=Core APIs for Bedrock Energistics and other tech add-ons.
+
+item.fluffyalien_energisticscore:ui_empty_slot=Empty

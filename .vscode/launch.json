@@ -1,0 +1,14 @@
+{
+  "version": "0.3.0",
+  "configurations": [
+    {
+      "type": "minecraft-js",
+      "request": "attach",
+      "name": "Debug with Minecraft",
+      "mode": "listen",
+      "targetModuleUuid": "6d03063b-abc2-4c68-8d66-3e09b4d9cc57",
+      "localRoot": "%localappdata%/Packages/Microsoft.MinecraftWindowsBeta_8wekyb3d8bbwe/LocalState/games/com.mojang/development_behavior_packs/bedrock_energistics_core_bp/scripts",
+      "port": 19144
+    }
+  ]
+}

@@ -1,0 +1,33 @@
+{
+  "description": {
+    "id": "solar_panel",
+    "io": {
+      "energy": "generate"
+    },
+    "ui": {
+      "inventorySize": 4,
+      "elements": {
+        "energyBar": {
+          "type": "storageBar",
+          "startIndex": 0
+        }
+      }
+    }
+  },
+  "components": {
+    "materialInstances": {
+      "default": {
+        "*": "fluffyalien_energisticscore:machine_casing_side",
+        "up": "fluffyalien_energisticscore:solar_panel_top",
+        "down": "fluffyalien_energisticscore:machine_casing_bottom"
+      }
+    }
+  },
+  "systems": {
+    "solarGenerator": {
+      "baseGeneration": 2,
+      "rainGeneration": 1,
+      "outputBar": "energyBar"
+    }
+  }
+}

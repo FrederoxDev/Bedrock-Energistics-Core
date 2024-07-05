@@ -22,17 +22,22 @@ import {
   STORAGE_AMOUNT_PER_BAR_SEGMENT,
 } from "../constants";
 import {
-  MachineItemStack,
+  getBlockUniqueId,
   getItemInMachineSlot,
   getMachineStorage,
-  removeItemInMachineSlot,
+  machineItemStackToItemStack,
   setItemInMachineSlot,
 } from "./data";
 import { truncateNumber } from "../utils/string";
 
 export type MachineUiStorageBarType = "disabled" | MachineStorageType;
 
-const DISPLAY_ITEM_LORE_STR = "§0§0§0§r";
+export const PROGRESS_INDICATOR_MAX_VALUES: Record<
+  MachineUiProgressIndicatorElementType,
+  number
+> = {
+  arrow: 16,
+};
 
 /**
  * key = machine entity
@@ -40,11 +45,14 @@ const DISPLAY_ITEM_LORE_STR = "§0§0§0§r";
  */
 const playersInUi = new Map<Entity, Player>();
 
+/**
+ * key = block uid (see getBlockUniqueId)
+ * value = array of slot IDs that have changed
+ */
+export const machineChangedItemSlots = new Map<string, number[]>();
+
 function isUiItem(item: ItemStack): boolean {
-  return (
-    item.hasTag("fluffyalien_energisticscore:ui_item") ||
-    item.getLore()[0] === DISPLAY_ITEM_LORE_STR
-  );
+  return item.hasTag("fluffyalien_energisticscore:ui_item");
 }
 
 /**
@@ -103,7 +111,7 @@ function fillUiBar(
 
     itemStack.nameTag = `§r§${labelColorCode}${amount.toString()}/${MAX_MACHINE_STORAGE.toString()} ${name}`;
     if (change) {
-      itemStack.nameTag += ` (${change < 0 ? "-" : "+"}${truncateNumber(change, 1)}/t)`;
+      itemStack.nameTag += ` (${change < 0 ? "" : "+"}${truncateNumber(change, 1)}/t)`;
     }
 
     inventory.setItem(i, itemStack);
@@ -151,20 +159,12 @@ function handleBarItems(
   }
 }
 
-function machineItemStackToItemStack(
-  element: MachineUiItemSlotElement,
-  machineItem?: MachineItemStack,
-): ItemStack {
-  return machineItem
-    ? new ItemStack(element.allowedItems[machineItem.type], machineItem.count)
-    : new ItemStack("fluffyalien_energisticscore:ui_empty_slot");
-}
-
 function handleItemSlot(
   loc: DimensionLocation,
   inventory: Container,
   element: MachineUiItemSlotElement,
   player: Player,
+  init: boolean,
 ): void {
   const expectedMachineItem = getItemInMachineSlot(loc, element.slotId);
   const expectedItemStack = machineItemStackToItemStack(
@@ -172,63 +172,59 @@ function handleItemSlot(
     expectedMachineItem,
   );
 
+  const changedSlots = machineChangedItemSlots.get(getBlockUniqueId(loc));
+  const slotChanged = changedSlots?.includes(element.slotId);
+
   const containerSlot = inventory.getSlot(element.index);
 
-  if (!containerSlot.hasItem()) {
-    if (clearUiItemsFromPlayer(player)) {
-      removeItemInMachineSlot(loc, element.slotId);
-      player.dimension.spawnItem(expectedItemStack, player.location);
-      containerSlot.setItem(machineItemStackToItemStack(element));
-    } else {
-      containerSlot.setItem(expectedItemStack);
-      if (expectedMachineItem) containerSlot.setLore([DISPLAY_ITEM_LORE_STR]);
-    }
-
+  if (slotChanged || init) {
+    containerSlot.setItem(expectedItemStack);
     return;
   }
 
-  const item = containerSlot.getItem()!;
-  if (isUiItem(item)) {
-    if (expectedItemStack.typeId === containerSlot.typeId) {
-      if (
-        expectedMachineItem &&
-        expectedItemStack.amount !== containerSlot.amount
-      ) {
-        clearUiItemsFromPlayer(player);
-        expectedItemStack.amount -= containerSlot.amount;
-        player.dimension.spawnItem(expectedItemStack, player.location);
+  if (!containerSlot.hasItem()) {
+    setItemInMachineSlot(loc, element.slotId, undefined, false);
+    containerSlot.setItem(machineItemStackToItemStack(element));
+    return;
+  }
 
-        setItemInMachineSlot(loc, element.slotId, {
+  if (containerSlot.typeId === expectedItemStack.typeId) {
+    if (
+      expectedMachineItem &&
+      containerSlot.amount !== expectedItemStack.amount
+    ) {
+      setItemInMachineSlot(
+        loc,
+        element.slotId,
+        {
           type: expectedMachineItem.type,
           count: containerSlot.amount,
-        });
-      }
-
-      return;
+        },
+        false,
+      );
     }
 
-    containerSlot.setItem(expectedItemStack);
-    if (expectedMachineItem) containerSlot.setLore([DISPLAY_ITEM_LORE_STR]);
     return;
-  }
-
-  if (clearUiItemsFromPlayer(player) && expectedMachineItem) {
-    player.dimension.spawnItem(expectedItemStack, player.location);
   }
 
   const newTypeIndex = element.allowedItems.indexOf(containerSlot.typeId);
   if (newTypeIndex === -1) {
-    removeItemInMachineSlot(loc, element.slotId);
+    clearUiItemsFromPlayer(player);
+    setItemInMachineSlot(loc, element.slotId, undefined, false);
     player.dimension.spawnItem(containerSlot.getItem()!, player.location);
     containerSlot.setItem(machineItemStackToItemStack(element));
     return;
   }
 
-  containerSlot.setLore([DISPLAY_ITEM_LORE_STR]);
-  setItemInMachineSlot(loc, element.slotId, {
-    type: newTypeIndex,
-    count: containerSlot.amount,
-  });
+  setItemInMachineSlot(
+    loc,
+    element.slotId,
+    {
+      type: newTypeIndex,
+      count: containerSlot.amount,
+    },
+    false,
+  );
 }
 
 function handleProgressIndicator(
@@ -255,7 +251,7 @@ function handleProgressIndicator(
   );
 }
 
-function updateEntityUi(entity: Entity, player: Player): void {
+function updateEntityUi(entity: Entity, player: Player, init: boolean): void {
   const dimensionLocation = {
     x: Math.floor(entity.location.x),
     y: Math.floor(entity.location.y),
@@ -327,7 +323,7 @@ function updateEntityUi(entity: Entity, player: Player): void {
         break;
       }
       case "itemSlot":
-        handleItemSlot(dimensionLocation, inventory, options, player);
+        handleItemSlot(dimensionLocation, inventory, options, player, init);
         break;
       case "progressIndicator":
         handleProgressIndicator(
@@ -340,6 +336,8 @@ function updateEntityUi(entity: Entity, player: Player): void {
         break;
     }
   }
+
+  machineChangedItemSlots.clear();
 }
 
 world.afterEvents.playerInteractWithEntity.subscribe((e) => {
@@ -352,7 +350,7 @@ world.afterEvents.playerInteractWithEntity.subscribe((e) => {
   }
 
   playersInUi.set(e.target, e.player);
-  updateEntityUi(e.target, e.player);
+  updateEntityUi(e.target, e.player, true);
 });
 
 world.afterEvents.entitySpawn.subscribe((e) => {
@@ -372,6 +370,6 @@ system.runInterval(() => {
       continue;
     }
 
-    updateEntityUi(entity, player);
+    updateEntityUi(entity, player, false);
   }
 }, 5);

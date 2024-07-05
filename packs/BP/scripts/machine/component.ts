@@ -90,7 +90,7 @@ export const machineComponent: BlockCustomComponent = {
 
       switch (type) {
         case "energy": {
-          if (block.hasTag("fluffyalien_energisticscore:io_energy")) {
+          if (!block.hasTag("fluffyalien_energisticscore:energy_consumer")) {
             const storedEnergy = getMachineStorage(block, "energy");
 
             const sendAmount = storedEnergy + change;

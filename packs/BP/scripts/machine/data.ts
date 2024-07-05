@@ -1,9 +1,11 @@
 import {
   DimensionLocation,
+  ItemStack,
   ScoreboardObjective,
   world,
 } from "@minecraft/server";
-import { MachineStorageType } from "../registry";
+import { MachineStorageType, MachineUiItemSlotElement } from "../registry";
+import { machineChangedItemSlots } from "./ui";
 
 function getStorageScoreboard(type: MachineStorageType): ScoreboardObjective {
   const id = `fluffyalien_energisticscore:storage${type}`;
@@ -20,7 +22,7 @@ function getItemCountScoreboard(slot: number): ScoreboardObjective {
   return world.scoreboard.getObjective(id) ?? world.scoreboard.addObjective(id);
 }
 
-function getBlockParticipantId(loc: DimensionLocation): string {
+export function getBlockUniqueId(loc: DimensionLocation): string {
   return (
     loc.dimension.id + loc.x.toString() + loc.y.toString() + loc.z.toString()
   );
@@ -38,7 +40,7 @@ function getScore(
 }
 
 export function removeBlockFromScoreboards(loc: DimensionLocation): void {
-  const participantId = getBlockParticipantId(loc);
+  const participantId = getBlockUniqueId(loc);
 
   for (const objective of world.scoreboard.getObjectives()) {
     objective.removeParticipant(participantId);
@@ -49,7 +51,7 @@ export function getMachineStorage(
   loc: DimensionLocation,
   type: MachineStorageType,
 ): number {
-  return getScore(getStorageScoreboard(type), getBlockParticipantId(loc)) ?? 0;
+  return getScore(getStorageScoreboard(type), getBlockUniqueId(loc)) ?? 0;
 }
 
 export function setMachineStorage(
@@ -57,7 +59,7 @@ export function setMachineStorage(
   type: MachineStorageType,
   value: number,
 ): void {
-  getStorageScoreboard(type).setScore(getBlockParticipantId(loc), value);
+  getStorageScoreboard(type).setScore(getBlockUniqueId(loc), value);
 }
 
 export interface MachineItemStack {
@@ -69,10 +71,10 @@ export function getItemInMachineSlot(
   loc: DimensionLocation,
   slot: number,
 ): MachineItemStack | undefined {
-  const participantId = getBlockParticipantId(loc);
+  const participantId = getBlockUniqueId(loc);
 
   const itemType = getScore(getItemTypeScoreboard(slot), participantId);
-  if (!itemType) {
+  if (itemType === undefined) {
     return;
   }
 
@@ -87,23 +89,40 @@ export function getItemInMachineSlot(
   };
 }
 
-export function removeItemInMachineSlot(
-  loc: DimensionLocation,
-  slot: number,
-): void {
-  const participantId = getBlockParticipantId(loc);
-
-  getItemTypeScoreboard(slot).removeParticipant(participantId);
-  getItemCountScoreboard(slot).removeParticipant(participantId);
-}
-
 export function setItemInMachineSlot(
   loc: DimensionLocation,
   slot: number,
-  newItemStack: MachineItemStack,
+  newItemStack?: MachineItemStack,
+  setChanged = true,
 ): void {
-  const participantId = getBlockParticipantId(loc);
+  const uid = getBlockUniqueId(loc);
+  const itemTypeObjective = getItemTypeScoreboard(slot);
+  const itemCountObjective = getItemCountScoreboard(slot);
 
-  getItemTypeScoreboard(slot).setScore(participantId, newItemStack.type);
-  getItemCountScoreboard(slot).setScore(participantId, newItemStack.count);
+  if (setChanged) {
+    const existingChangedItemSlotsArr = machineChangedItemSlots.get(uid);
+    if (existingChangedItemSlotsArr) {
+      existingChangedItemSlotsArr.push(slot);
+    } else {
+      machineChangedItemSlots.set(uid, [slot]);
+    }
+  }
+
+  if (!newItemStack || newItemStack.count <= 0) {
+    itemTypeObjective.removeParticipant(uid);
+    itemCountObjective.removeParticipant(uid);
+    return;
+  }
+
+  itemTypeObjective.setScore(uid, newItemStack.type);
+  itemCountObjective.setScore(uid, newItemStack.count);
+}
+
+export function machineItemStackToItemStack(
+  element: MachineUiItemSlotElement,
+  machineItem?: MachineItemStack,
+): ItemStack {
+  return machineItem
+    ? new ItemStack(element.allowedItems[machineItem.type], machineItem.count)
+    : new ItemStack("fluffyalien_energisticscore:ui_empty_slot");
 }

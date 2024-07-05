@@ -1,7 +1,7 @@
 import { Block, Dimension, Vector3, system } from "@minecraft/server";
 import { Vector3Utils } from "@minecraft/math";
 import { DestroyableObject } from "../utils/destroyable";
-import { makeErrorString } from "../utils/log";
+import { logInfo, makeErrorString } from "../utils/log";
 import { MAX_MACHINE_STORAGE } from "../constants";
 import { NetworkConnections, discoverConnections } from "./common";
 import { getMachineStorage, setMachineStorage } from "../machine/data";
@@ -31,6 +31,10 @@ export class EnergyNetwork extends DestroyableObject {
       this.sendEnergyJobRunning = true;
       system.runJob(this.sendEnergy());
     }, 10); // this runs every 10t so if it runs behind it can catch up (machines tick every 20t)
+
+    logInfo(
+      `EnergyNetwork created, new count: ${EnergyNetwork.networks.length.toString()}`,
+    );
   }
 
   destroy(): void {
@@ -42,6 +46,10 @@ export class EnergyNetwork extends DestroyableObject {
     if (i === -1) return;
 
     EnergyNetwork.networks.splice(i, 1);
+
+    logInfo(
+      `EnergyNetwork destroyed, new count: ${EnergyNetwork.networks.length.toString()}`,
+    );
   }
 
   /**
@@ -55,27 +63,27 @@ export class EnergyNetwork extends DestroyableObject {
 
     interface Target {
       block: Block;
-      currentEnergy: number;
+      energy: number;
     }
 
     const targets: Target[] = [];
 
     for (const block of this.connections.consumers) {
-      const currentEnergy = getMachineStorage(block, "energy");
+      const energy = getMachineStorage(block, "energy");
 
-      if (currentEnergy >= MAX_MACHINE_STORAGE) {
+      if (energy >= MAX_MACHINE_STORAGE) {
         continue;
       }
 
       targets.push({
         block,
-        currentEnergy,
+        energy,
       });
 
       yield;
     }
 
-    targets.sort((a, b) => (a.currentEnergy > b.currentEnergy ? 1 : -1));
+    targets.sort((a, b) => (a.energy > b.energy ? 1 : -1));
 
     yield;
 
@@ -84,19 +92,17 @@ export class EnergyNetwork extends DestroyableObject {
 
       let unsentAmount = queuedSend.amount;
 
-      while (targets.length && unsentAmount > 0) {
-        const target = targets.pop()!;
+      for (const target of targets) {
+        // we cannot use target.energy because it may be outdated since this is a job
+        // so get the actual current energy
+        const currentEnergy = getMachineStorage(target.block, "energy");
 
         const sendAmount = Math.min(
-          MAX_MACHINE_STORAGE - target.currentEnergy,
+          MAX_MACHINE_STORAGE - currentEnergy,
           unsentAmount,
         );
 
-        setMachineStorage(
-          target.block,
-          "energy",
-          target.currentEnergy + sendAmount,
-        );
+        setMachineStorage(target.block, "energy", currentEnergy + sendAmount);
 
         unsentAmount -= sendAmount;
 

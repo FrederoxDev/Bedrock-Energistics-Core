@@ -2,7 +2,6 @@ import { system } from "@minecraft/server";
 import { logInfo } from "./utils/log";
 
 export type MachineStorageType = "energy";
-export type IoStorageTypeOptions = "generate" | "consume";
 export type MachineUiProgressIndicatorElementType = "arrow";
 
 // ui
@@ -49,7 +48,7 @@ export interface TimedCraftingSystemRecipe {
   result: {
     slot: string;
     item: string;
-    count: number;
+    count?: number;
   }[];
 }
 

@@ -1,10 +1,10 @@
 {
   "texture_data": {
     "fluffyalien_energisticscore:ui_disabled_storage_bar_segment": {
-      "textures": "textures/fluffyalien/energisticscore/ui/machines/disabled_storage_bar_segment"
+      "textures": "textures/fluffyalien/energisticscore/ui/disabled_storage_bar_segment"
     },
     "fluffyalien_energisticscore:ui_empty_slot": {
-      "textures": "textures/fluffyalien/energisticscore/ui/machines/empty_slot"
+      "textures": "textures/fluffyalien/energisticscore/ui/empty_slot"
     }
   }
 }

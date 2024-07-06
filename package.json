@@ -8,7 +8,7 @@
     "tsx": "tsx",
     "gen-cfpost": "tsx scripts/gen_cfpost",
     "build-core-interface": "tsc -p core_interface --noEmit false --emitDeclarationOnly && esbuild core_interface/src/index.ts --outfile=core_interface/dist/index.js --bundle --format=esm --external:@minecraft/common --external:@minecraft/debug-utilities --external:@minecraft/server --external:@minecraft/server-*",
-    "gen-core-interface-docs": "typedoc --tsconfig core_interface/tsconfig.json --plugin typedoc-plugin-markdown --out docs core_interface/src"
+    "gen-docs": "typedoc --tsconfig core_interface/tsconfig.json --out docs --name \"Core Interface\" core_interface/src"
   },
   "devDependencies": {
     "@eslint/js": "^9.5.0",
@@ -21,7 +21,6 @@
     "terser": "^5.31.1",
     "tsx": "^4.15.7",
     "typedoc": "^0.26.3",
-    "typedoc-plugin-markdown": "^4.1.2",
     "typescript": "^5.5.2",
     "typescript-eslint": "^7.14.1"
   },

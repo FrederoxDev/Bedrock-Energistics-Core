@@ -29,7 +29,7 @@ function matchesRecipe(
   recipe: TimedCraftingSystemRecipe,
 ): boolean {
   for (const ingredient of recipe.ingredients) {
-    const element = definition.uiElements[
+    const element = definition.description.uiElements[
       ingredient.slot
     ] as MachineUiItemSlotElement;
 
@@ -80,7 +80,7 @@ export const timedCraftingSystem: MachineSystem<TimedCraftingSystemOptions> = {
             (data.recipe.maxProgress /
               PROGRESS_INDICATOR_MAX_VALUES[
                 (
-                  definition.uiElements[
+                  definition.description.uiElements[
                     options.progressIndicator
                   ] as MachineUiProgressIndicatorElement
                 ).indicator
@@ -120,7 +120,7 @@ export const timedCraftingSystem: MachineSystem<TimedCraftingSystemOptions> = {
     }
 
     for (const result of data.recipe.result) {
-      const element = definition.uiElements[
+      const element = definition.description.uiElements[
         result.slot
       ] as MachineUiItemSlotElement;
 
@@ -142,7 +142,9 @@ export const timedCraftingSystem: MachineSystem<TimedCraftingSystemOptions> = {
 
       for (const ingredient of data.recipe.ingredients) {
         const slotId = (
-          definition.uiElements[ingredient.slot] as MachineUiItemSlotElement
+          definition.description.uiElements[
+            ingredient.slot
+          ] as MachineUiItemSlotElement
         ).slotId;
 
         const item = getItemInMachineSlot(block, slotId);
@@ -153,7 +155,7 @@ export const timedCraftingSystem: MachineSystem<TimedCraftingSystemOptions> = {
       }
 
       for (const result of data.recipe.result) {
-        const element = definition.uiElements[
+        const element = definition.description.uiElements[
           result.slot
         ] as MachineUiItemSlotElement;
 

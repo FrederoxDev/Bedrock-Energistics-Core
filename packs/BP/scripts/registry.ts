@@ -63,8 +63,11 @@ export interface TimedCraftingSystemOptions {
 
 // registered machine
 export interface RegisteredMachine {
-  id: string;
-  uiElements: Record<string, MachineUiElement>;
+  description: {
+    id: string;
+    uiElements: Record<string, MachineUiElement>;
+    workingState?: string;
+  };
   systems: {
     solarGenerator?: SolarGeneratorSystemOptions;
     timedCrafting?: TimedCraftingSystemOptions;
@@ -81,13 +84,13 @@ system.afterEvents.scriptEventReceive.subscribe(
 
     const data = JSON.parse(e.message) as RegisteredMachine;
 
-    if (data.id in machineRegistry) {
-      logInfo(`reregistered machine '${data.id}'`);
+    if (data.description.id in machineRegistry) {
+      logInfo(`reregistered machine '${data.description.id}'`);
     } else {
-      logInfo(`registered machine '${data.id}'`);
+      logInfo(`registered machine '${data.description.id}'`);
     }
 
-    machineRegistry[data.id] = data;
+    machineRegistry[data.description.id] = data;
   },
   {
     namespaces: ["fluffyalien_energisticscore"],

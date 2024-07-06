@@ -3,7 +3,9 @@ import { MACHINE_SYSTEMS } from "./systems";
 import { STR_DIRECTIONS, getBlockInDirection } from "../utils/direction";
 import { EnergyNetwork } from "../conduit_network/energy_network";
 import {
+  getItemInMachineSlot,
   getMachineStorage,
+  machineItemStackToItemStack,
   removeBlockFromScoreboards,
   setMachineStorage,
 } from "./data";
@@ -76,6 +78,8 @@ export const machineComponent: BlockCustomComponent = {
       }
     }
 
+    let working = false;
+
     for (const [type, change] of Object.entries(changes) as [
       MachineStorageType,
       number,
@@ -86,6 +90,10 @@ export const machineComponent: BlockCustomComponent = {
             `machine '${block.typeId}' is trying to add ${change.toString()} to '${type}' but it doesn't have the 'fluffyalien_energisticscore:io_${type}' tag`,
           ),
         );
+      }
+
+      if (change !== 0) {
+        working = true;
       }
 
       switch (type) {
@@ -115,10 +123,32 @@ export const machineComponent: BlockCustomComponent = {
         }
       }
     }
+
+    if (definition.description.workingState) {
+      if (
+        working ===
+        block.permutation.getState(definition.description.workingState)
+      ) {
+        return;
+      }
+
+      block.setPermutation(
+        block.permutation.withState(
+          definition.description.workingState,
+          working,
+        ),
+      );
+    }
   },
 };
 
 world.beforeEvents.playerBreakBlock.subscribe((e) => {
+  if (!(e.block.typeId in machineRegistry)) {
+    return;
+  }
+
+  const definition = machineRegistry[e.block.typeId];
+
   if (e.block.hasTag("fluffyalien_energisticscore:io_energy")) {
     EnergyNetwork.get(e.block)?.destroy();
   }
@@ -132,6 +162,18 @@ world.beforeEvents.playerBreakBlock.subscribe((e) => {
   // }
 
   system.run(() => {
+    for (const element of Object.values(definition.description.uiElements)) {
+      if (element.type !== "itemSlot") continue;
+
+      const item = getItemInMachineSlot(e.block, element.slotId);
+      if (item) {
+        e.dimension.spawnItem(
+          machineItemStackToItemStack(element, item),
+          e.block.center(),
+        );
+      }
+    }
+
     removeBlockFromScoreboards(e.block);
   });
 });

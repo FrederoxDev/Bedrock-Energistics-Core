@@ -183,6 +183,7 @@ function handleItemSlot(
   }
 
   if (!containerSlot.hasItem()) {
+    clearUiItemsFromPlayer(player);
     setItemInMachineSlot(loc, element.slotId, undefined, false);
     containerSlot.setItem(machineItemStackToItemStack(element));
     return;
@@ -207,9 +208,10 @@ function handleItemSlot(
     return;
   }
 
+  clearUiItemsFromPlayer(player);
+
   const newTypeIndex = element.allowedItems.indexOf(containerSlot.typeId);
   if (newTypeIndex === -1) {
-    clearUiItemsFromPlayer(player);
     setItemInMachineSlot(loc, element.slotId, undefined, false);
     player.dimension.spawnItem(containerSlot.getItem()!, player.location);
     containerSlot.setItem(machineItemStackToItemStack(element));
@@ -300,7 +302,9 @@ function updateEntityUi(entity: Entity, player: Player, init: boolean): void {
 
   const inventory = entity.getComponent("inventory")!.container!;
 
-  for (const [id, options] of Object.entries(definition.uiElements)) {
+  for (const [id, options] of Object.entries(
+    definition.description.uiElements,
+  )) {
     switch (options.type) {
       case "storageBar": {
         const changeOptions = storageBarChanges[id] as

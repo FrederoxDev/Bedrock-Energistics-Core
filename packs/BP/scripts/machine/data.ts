@@ -4,7 +4,10 @@ import {
   ScoreboardObjective,
   world,
 } from "@minecraft/server";
-import { MachineStorageType, MachineUiItemSlotElement } from "../registry";
+import {
+  MachineStorageType,
+  MachineUiItemSlotElement,
+} from "@/core_interface/src/registry_types";
 import { machineChangedItemSlots } from "./ui";
 
 function getStorageScoreboard(type: MachineStorageType): ScoreboardObjective {

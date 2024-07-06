@@ -4,7 +4,7 @@ import {
   RegisteredMachine,
   TimedCraftingSystemOptions,
   TimedCraftingSystemRecipe,
-} from "../../registry";
+} from "@/core_interface/src/registry_types";
 import { MachineSystem } from ".";
 import {
   getBlockUniqueId,

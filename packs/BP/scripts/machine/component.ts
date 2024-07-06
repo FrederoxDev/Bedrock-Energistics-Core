@@ -11,10 +11,10 @@ import {
 } from "./data";
 import { makeErrorString } from "../utils/log";
 import {
-  machineRegistry,
   MachineStorageType,
   RegisteredMachine,
-} from "../registry";
+} from "@/core_interface/src/registry_types";
+import { machineRegistry } from "../registry";
 
 export const machineComponent: BlockCustomComponent = {
   onPlace(e) {

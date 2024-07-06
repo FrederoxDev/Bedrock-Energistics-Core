@@ -1,9 +1,9 @@
-import { machineRegistry } from "../registry";
 import {
+  machineRegistry,
   MachineStorageType,
   MachineUiItemSlotElement,
   MachineUiProgressIndicatorElementType,
-} from "@/core_interface/src/registry_types";
+} from "../registry";
 import {
   Container,
   DimensionLocation,

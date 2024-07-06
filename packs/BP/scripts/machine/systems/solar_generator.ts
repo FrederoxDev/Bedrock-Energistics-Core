@@ -2,7 +2,7 @@ import { MachineSystem } from ".";
 import { VECTOR3_UP, Vector3Utils } from "@minecraft/math";
 import { DimensionLocation, WeatherType, world } from "@minecraft/server";
 import { MACHINE_BLOCK_TICK_TIME } from "../../constants";
-import { SolarGeneratorSystemOptions } from "@/core_interface/src/registry_types";
+import { SolarGeneratorSystemOptions } from "../../registry";
 
 function getGeneration(
   location: DimensionLocation,

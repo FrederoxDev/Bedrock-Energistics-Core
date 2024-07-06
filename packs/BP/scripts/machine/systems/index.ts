@@ -1,9 +1,6 @@
 import { Block, DimensionLocation } from "@minecraft/server";
 import { solarGeneratorSystem } from "./solar_generator";
-import {
-  MachineStorageType,
-  RegisteredMachine,
-} from "@/core_interface/src/registry_types";
+import { MachineStorageType, RegisteredMachine } from "../../registry";
 import { timedCraftingSystem } from "./timed_crafing";
 
 export interface MachineSystemUiElementUpdateOptions {

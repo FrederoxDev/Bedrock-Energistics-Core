@@ -10,7 +10,7 @@ export default tseslint.config(
   },
   {
     files: ["**/*.ts"],
-    ignores: ["core_interface/dist/**/*"],
+    ignores: ["public_api/dist/**/*"],
     extends: tseslint.configs.strictTypeChecked,
     languageOptions: {
       parserOptions: {

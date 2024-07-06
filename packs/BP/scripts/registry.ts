@@ -1,8 +1,8 @@
 import { system } from "@minecraft/server";
 import { logInfo } from "./utils/log";
-import { RegisteredMachine } from "@/core_interface/src/registry_types";
+import { RegisteredMachine } from "@/public_api/src/registry_types";
 
-export * from "@/core_interface/src/registry_types";
+export * from "@/public_api/src/registry_types";
 
 export const machineRegistry: Record<string, RegisteredMachine> = {};
 

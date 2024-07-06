@@ -11,7 +11,7 @@ import {
   getScore,
   getMachineStorage,
   setMachineStorage,
-} from "@/core_interface/src/machine_data";
+} from "@/public_api/src/machine_data";
 
 export { getBlockUniqueId, getMachineStorage, setMachineStorage };
 

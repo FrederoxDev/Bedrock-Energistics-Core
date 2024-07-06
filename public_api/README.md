@@ -1,4 +1,4 @@
-# Bedrock Energistics Core Interface
+# Bedrock Energistics Core API
 
 This package provides an interface for other add-ons to interact with Bedrock Energistics Core.
 

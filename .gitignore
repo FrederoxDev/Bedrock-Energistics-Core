@@ -1,5 +1,5 @@
 /.regolith
 /cfpost.html
 /build
-/core_interface/dist
+/public_api/dist
 node_modules

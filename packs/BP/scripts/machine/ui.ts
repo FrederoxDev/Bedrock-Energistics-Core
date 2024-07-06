@@ -270,13 +270,13 @@ function updateEntityUi(entity: Entity, player: Player, init: boolean): void {
 
   let progressIndicators: Record<string, number> = {};
 
-  for (const [id, options] of Object.entries(definition.systems)) {
-    const machineSystem = MACHINE_SYSTEMS[id];
+  for (const systemOptions of definition.systems) {
+    const machineSystem = MACHINE_SYSTEMS[systemOptions.system];
     if (!machineSystem.updateUi) continue;
 
     const result = machineSystem.updateUi({
       location: dimensionLocation,
-      options,
+      options: systemOptions,
       definition,
     });
 

@@ -30,6 +30,7 @@ export type MachineUiElement =
 
 // systems
 export interface SolarGeneratorSystemOptions {
+  system: "solarGenerator";
   baseGeneration: number;
   rainGeneration: number;
   outputBar: string;
@@ -53,6 +54,7 @@ export interface TimedCraftingSystemRecipe {
 }
 
 export interface TimedCraftingSystemOptions {
+  system: "timedCrafting";
   progressIndicator: string;
   storageBars: {
     type: MachineStorageType;
@@ -61,6 +63,10 @@ export interface TimedCraftingSystemOptions {
   recipes: TimedCraftingSystemRecipe[];
 }
 
+export type SystemOptions =
+  | SolarGeneratorSystemOptions
+  | TimedCraftingSystemOptions;
+
 // registered machine
 export interface RegisteredMachine {
   description: {
@@ -68,10 +74,7 @@ export interface RegisteredMachine {
     uiElements: Record<string, MachineUiElement>;
     workingState?: string;
   };
-  systems: {
-    solarGenerator?: SolarGeneratorSystemOptions;
-    timedCrafting?: TimedCraftingSystemOptions;
-  };
+  systems: SystemOptions[];
 }
 
 export const machineRegistry: Record<string, RegisteredMachine> = {};

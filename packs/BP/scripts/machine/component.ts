@@ -64,8 +64,12 @@ export const machineComponent: BlockCustomComponent = {
 
     const changes: Partial<Record<MachineStorageType, number>> = {};
 
-    for (const [id, options] of Object.entries(definition.systems)) {
-      const result = MACHINE_SYSTEMS[id].onTick({ block, options, definition });
+    for (const systemOptions of definition.systems) {
+      const result = MACHINE_SYSTEMS[systemOptions.system].onTick({
+        block,
+        options: systemOptions,
+        definition,
+      });
       if (!result) continue;
 
       for (const changeOptions of result) {

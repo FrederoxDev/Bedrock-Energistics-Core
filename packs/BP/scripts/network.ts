@@ -3,7 +3,7 @@ import { Vector3Utils } from "@minecraft/math";
 import { DestroyableObject } from "./utils/destroyable";
 import { logInfo, makeErrorString } from "./utils/log";
 import { MAX_MACHINE_STORAGE } from "./constants";
-import { getMachineStorage, setMachineStorage } from "./machine/data";
+import { getMachineStorage, setMachineStorage } from "./data";
 import { StorageType } from "./registry";
 import {
   getBlockInDirection,

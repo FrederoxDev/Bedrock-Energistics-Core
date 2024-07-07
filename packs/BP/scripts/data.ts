@@ -4,7 +4,7 @@ import {
   ScoreboardObjective,
   world,
 } from "@minecraft/server";
-import { UiItemSlotElement } from "../registry";
+import { UiItemSlotElement } from "./registry";
 import { machineChangedItemSlots } from "./ui";
 import {
   getBlockUniqueId,

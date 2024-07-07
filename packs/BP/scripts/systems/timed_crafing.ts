@@ -4,7 +4,7 @@ import {
   RegisteredMachine,
   TimedCraftingSystemOptions,
   TimedCraftingSystemRecipe,
-} from "../../registry";
+} from "../registry";
 import { MachineSystem } from ".";
 import {
   getBlockUniqueId,
@@ -13,7 +13,7 @@ import {
   setItemInMachineSlot,
 } from "../data";
 import { DimensionLocation, ItemStack } from "@minecraft/server";
-import { MACHINE_BLOCK_TICK_TIME } from "../../constants";
+import { MACHINE_BLOCK_TICK_TIME } from "../constants";
 import { PROGRESS_INDICATOR_MAX_VALUES } from "../ui";
 
 interface Data {

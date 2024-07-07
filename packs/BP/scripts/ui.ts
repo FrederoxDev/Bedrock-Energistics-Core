@@ -3,7 +3,7 @@ import {
   StorageType,
   UiItemSlotElement,
   UiProgressIndicatorElementType,
-} from "../registry";
+} from "./registry";
 import {
   Container,
   DimensionLocation,
@@ -20,7 +20,7 @@ import {
 import {
   MAX_MACHINE_STORAGE,
   STORAGE_AMOUNT_PER_BAR_SEGMENT,
-} from "../constants";
+} from "./constants";
 import {
   getBlockUniqueId,
   getItemInMachineSlot,
@@ -28,7 +28,7 @@ import {
   machineItemStackToItemStack,
   setItemInMachineSlot,
 } from "./data";
-import { truncateNumber } from "../utils/string";
+import { truncateNumber } from "./utils/string";
 
 export type UiStorageBarType = "disabled" | StorageType;
 

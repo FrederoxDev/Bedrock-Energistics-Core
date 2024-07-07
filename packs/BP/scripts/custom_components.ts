@@ -1,5 +1,5 @@
 import { world } from "@minecraft/server";
-import { machineComponent } from "./machine/component";
+import { machineComponent } from "./machine_component";
 
 world.beforeEvents.worldInitialize.subscribe((e) => {
   e.blockComponentRegistry.registerCustomComponent(

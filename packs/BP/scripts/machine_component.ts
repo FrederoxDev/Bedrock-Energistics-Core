@@ -7,14 +7,14 @@ import {
   removeBlockFromScoreboards,
   setMachineStorage,
 } from "./data";
-import { makeErrorString } from "../utils/log";
+import { makeErrorString } from "./utils/log";
 import {
   machineRegistry,
   StorageType,
   RegisteredMachine,
   StateManagerCondition,
-} from "../registry";
-import { MachineNetwork } from "../network";
+} from "./registry";
+import { MachineNetwork } from "./network";
 
 function resolveStateManagerCondition(
   condition: StateManagerCondition,

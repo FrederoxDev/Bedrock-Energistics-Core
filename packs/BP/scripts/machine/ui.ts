@@ -156,6 +156,17 @@ function handleBarItems(
         change,
       );
       break;
+    case "oil":
+      fillUiBar(
+        "fluffyalien_energisticscore:ui_oil_segment",
+        "8",
+        "oil",
+        inventory,
+        amount,
+        startIndex,
+        change,
+      );
+      break;
   }
 }
 
@@ -261,7 +272,7 @@ function updateEntityUi(entity: Entity, player: Player, init: boolean): void {
     dimension: entity.dimension,
   };
 
-  const definition = machineRegistry[entity.typeId.slice(0, -"_entity".length)];
+  const definition = machineRegistry[entity.typeId];
 
   const storageBarChanges: Record<
     string,

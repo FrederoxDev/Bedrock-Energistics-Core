@@ -1,7 +1,5 @@
 import { Block, BlockCustomComponent, system, world } from "@minecraft/server";
 import { MACHINE_SYSTEMS } from "./systems";
-import { STR_DIRECTIONS, getBlockInDirection } from "../utils/direction";
-import { EnergyNetwork } from "../conduit_network/energy_network";
 import {
   getItemInMachineSlot,
   getMachineStorage,
@@ -16,27 +14,24 @@ import {
   RegisteredMachine,
   StateManagerCondition,
 } from "../registry";
+import { MachineNetwork } from "../network";
 
 function resolveStateManagerCondition(
   condition: StateManagerCondition,
   block: Block,
   storageChanges: Partial<Record<StorageType, number>>,
 ): boolean {
-  if ("all" in condition) {
-    return condition.all.every((cond) =>
-      resolveStateManagerCondition(cond, block, storageChanges),
-    );
-  }
-
-  if ("any" in condition) {
-    return condition.any.some((cond) =>
-      resolveStateManagerCondition(cond, block, storageChanges),
-    );
-  }
-
   let testVal: number;
 
   switch (condition.test) {
+    case "all":
+      return condition.conditions.every((cond) =>
+        resolveStateManagerCondition(cond, block, storageChanges),
+      );
+    case "any":
+      return condition.conditions.some((cond) =>
+        resolveStateManagerCondition(cond, block, storageChanges),
+      );
     case "energyChange":
       testVal = storageChanges.energy ?? 0;
       break;
@@ -60,34 +55,11 @@ function resolveStateManagerCondition(
 export const machineComponent: BlockCustomComponent = {
   onPlace(e) {
     if (e.block.typeId === e.previousBlock.type.id) return;
-
-    // update adjacent networks
-    const hasEnergyIo = e.block.hasTag("fluffyalien_energisticscore:io_energy");
-    // const hasGasIo = e.block.hasTag("fluffyalien_energisticscore:io_gas");
-    // const hasFluidIo = e.block.hasTag("fluffyalien_energisticscore:io_fluid");
-
-    for (const direction of STR_DIRECTIONS) {
-      const blockInDirection = getBlockInDirection(e.block, direction);
-      if (!blockInDirection) {
-        continue;
-      }
-
-      if (hasEnergyIo) {
-        EnergyNetwork.get(blockInDirection)?.destroy();
-      }
-
-      // if (hasGasIo) {
-      //   GasNetwork.get(blockInDirection)?.destroy();
-      // }
-
-      // if (hasFluidIo) {
-      //   FluidNetwork.get(blockInDirection)?.destroy();
-      // }
-    }
+    MachineNetwork.updateAdjacent(e.block);
   },
   onPlayerInteract(e) {
     e.block.dimension.spawnEntity(
-      e.block.typeId + "_entity",
+      e.block.typeId,
       e.block.bottomCenter(),
     ).nameTag = e.block.typeId;
   },
@@ -123,44 +95,34 @@ export const machineComponent: BlockCustomComponent = {
       }
     }
 
+    const network = MachineNetwork.getOrEstablish(block);
+    if (!network) return;
+
     for (const [type, change] of Object.entries(changes) as [
       StorageType,
       number,
     ][]) {
-      if (!block.hasTag(`fluffyalien_energisticscore:io_${type}`)) {
+      if (!block.hasTag(`fluffyalien_energisticscore:io.${type}`)) {
         throw new Error(
           makeErrorString(
-            `machine '${block.typeId}' is trying to add ${change.toString()} to '${type}' but it doesn't have the 'fluffyalien_energisticscore:io_${type}' tag`,
+            `machine '${block.typeId}' is trying to add ${change.toString()} to '${type}' but it doesn't have the 'fluffyalien_energisticscore:io.${type}' tag`,
           ),
         );
       }
 
-      switch (type) {
-        case "energy": {
-          if (!block.hasTag("fluffyalien_energisticscore:energy_consumer")) {
-            const storedEnergy = getMachineStorage(block, "energy");
-
-            const sendAmount = storedEnergy + change;
-            if (sendAmount <= 0) {
-              return;
-            }
-
-            EnergyNetwork.getOrEstablish(block)?.queueSendEnergy(
-              block,
-              sendAmount,
-            );
-
-            break;
-          }
-
-          setMachineStorage(
-            block,
-            "energy",
-            getMachineStorage(block, "energy") + change,
-          );
-          break;
-        }
+      if (block.hasTag(`fluffyalien_energisticscore:consumer.${type}`)) {
+        setMachineStorage(block, type, getMachineStorage(block, type) + change);
+        continue;
       }
+
+      const stored = getMachineStorage(block, type);
+
+      const sendAmount = stored + change;
+      if (sendAmount <= 0) {
+        return;
+      }
+
+      network.queueSend(block, type, sendAmount);
     }
 
     if (definition.description.stateManager) {
@@ -189,19 +151,9 @@ world.beforeEvents.playerBreakBlock.subscribe((e) => {
     return;
   }
 
+  MachineNetwork.get(e.block)?.destroy();
+
   const definition = machineRegistry[e.block.typeId];
-
-  if (e.block.hasTag("fluffyalien_energisticscore:io_energy")) {
-    EnergyNetwork.get(e.block)?.destroy();
-  }
-
-  // if (e.block.hasTag("fluffyalien_energisticscore:io_gas")) {
-  //   GasNetwork.get(e.block)?.destroy();
-  // }
-
-  // if (e.block.hasTag("fluffyalien_energisticscore:io_fluid")) {
-  //   FluidNetwork.get(e.block)?.destroy();
-  // }
 
   system.run(() => {
     for (const element of Object.values(definition.description.uiElements)) {

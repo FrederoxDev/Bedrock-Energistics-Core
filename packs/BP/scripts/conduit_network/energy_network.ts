@@ -53,7 +53,8 @@ export class EnergyNetwork extends DestroyableObject {
   }
 
   /**
-   * processes the `sendEnergyQueue`. sends energy to the consumers in the network starting with the ones with the least stored energy.
+   * processes the `sendEnergyQueue`. sends energy to the consumers in the network starting
+   * with the ones with the least stored energy.
    * automatically sets each generator's storage to the amount it sent that was not received.
    * returns automatically if the object is not valid.
    * note: some energy may not be sent anywhere.

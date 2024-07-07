@@ -73,10 +73,39 @@ export type SystemOptions =
   | TimedCraftingSystemOptions;
 
 // description
+export interface StateManagerConditionAllOf {
+  all: StateManagerCondition[];
+}
+
+export interface StateManagerConditionAnyOf {
+  any: StateManagerCondition[];
+}
+
+export interface StateManagerConditionTest {
+  test: "storedEnergy" | "energyChange";
+  operator: "<" | ">" | "==" | "!=";
+  value: number;
+}
+
+export type StateManagerCondition =
+  | StateManagerConditionAllOf
+  | StateManagerConditionAnyOf
+  | StateManagerConditionTest;
+
+export interface StateManagerState {
+  state: string;
+  value: string | number | boolean;
+  condition: StateManagerCondition;
+}
+
+export interface StateManager {
+  states: StateManagerState[];
+}
+
 export interface RegisteredMachineDescription {
   id: string;
   uiElements: Record<string, UiElement>;
-  workingState?: string;
+  stateManager: StateManager;
 }
 
 // registered machine

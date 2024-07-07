@@ -1,4 +1,4 @@
-import { BlockCustomComponent, system, world } from "@minecraft/server";
+import { Block, BlockCustomComponent, system, world } from "@minecraft/server";
 import { MACHINE_SYSTEMS } from "./systems";
 import { STR_DIRECTIONS, getBlockInDirection } from "../utils/direction";
 import { EnergyNetwork } from "../conduit_network/energy_network";
@@ -10,7 +10,52 @@ import {
   setMachineStorage,
 } from "./data";
 import { makeErrorString } from "../utils/log";
-import { machineRegistry, StorageType, RegisteredMachine } from "../registry";
+import {
+  machineRegistry,
+  StorageType,
+  RegisteredMachine,
+  StateManagerCondition,
+} from "../registry";
+
+function resolveStateManagerCondition(
+  condition: StateManagerCondition,
+  block: Block,
+  storageChanges: Partial<Record<StorageType, number>>,
+): boolean {
+  if ("all" in condition) {
+    return condition.all.every((cond) =>
+      resolveStateManagerCondition(cond, block, storageChanges),
+    );
+  }
+
+  if ("any" in condition) {
+    return condition.any.some((cond) =>
+      resolveStateManagerCondition(cond, block, storageChanges),
+    );
+  }
+
+  let testVal: number;
+
+  switch (condition.test) {
+    case "energyChange":
+      testVal = storageChanges.energy ?? 0;
+      break;
+    case "storedEnergy":
+      testVal = getMachineStorage(block, "energy");
+      break;
+  }
+
+  switch (condition.operator) {
+    case "!=":
+      return testVal !== condition.value;
+    case "<":
+      return testVal < condition.value;
+    case "==":
+      return testVal === condition.value;
+    case ">":
+      return testVal > condition.value;
+  }
+}
 
 export const machineComponent: BlockCustomComponent = {
   onPlace(e) {
@@ -78,8 +123,6 @@ export const machineComponent: BlockCustomComponent = {
       }
     }
 
-    let working = false;
-
     for (const [type, change] of Object.entries(changes) as [
       StorageType,
       number,
@@ -90,10 +133,6 @@ export const machineComponent: BlockCustomComponent = {
             `machine '${block.typeId}' is trying to add ${change.toString()} to '${type}' but it doesn't have the 'fluffyalien_energisticscore:io_${type}' tag`,
           ),
         );
-      }
-
-      if (change !== 0) {
-        working = true;
       }
 
       switch (type) {
@@ -124,20 +163,23 @@ export const machineComponent: BlockCustomComponent = {
       }
     }
 
-    if (definition.description.workingState) {
-      if (
-        working ===
-        block.permutation.getState(definition.description.workingState)
-      ) {
-        return;
-      }
+    if (definition.description.stateManager) {
+      for (const stateSetter of definition.description.stateManager.states) {
+        if (
+          !resolveStateManagerCondition(
+            stateSetter.condition,
+            block,
+            changes,
+          ) ||
+          block.permutation.getState(stateSetter.state) === stateSetter.value
+        ) {
+          continue;
+        }
 
-      block.setPermutation(
-        block.permutation.withState(
-          definition.description.workingState,
-          working,
-        ),
-      );
+        block.setPermutation(
+          block.permutation.withState(stateSetter.state, stateSetter.value),
+        );
+      }
     }
   },
 };

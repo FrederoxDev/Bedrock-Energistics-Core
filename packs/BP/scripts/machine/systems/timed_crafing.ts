@@ -58,7 +58,7 @@ export const timedCraftingSystem: MachineSystem<TimedCraftingSystemOptions> = {
     const blockUid = getBlockUniqueId(location);
     const data = dataMap.get(blockUid);
 
-    if (!data?.progress) {
+    if (!data || data.progress === -1) {
       return {
         storageBars: options.storageBars.map((storageBar) => ({
           ...storageBar,
@@ -92,19 +92,23 @@ export const timedCraftingSystem: MachineSystem<TimedCraftingSystemOptions> = {
   onTick({ block, options, definition }) {
     const blockUid = getBlockUniqueId(block);
 
-    const data = dataMap.get(blockUid);
+    let data = dataMap.get(blockUid);
 
-    if (!data) {
+    if (data) {
+      if (!matchesRecipe(block, definition, data.recipe)) {
+        dataMap.delete(blockUid);
+        return;
+      }
+
+      if (data.progress === -1) {
+        data.progress = 0;
+      }
+    } else {
       const recipe = getRecipe(block, options, definition);
       if (!recipe) return;
 
-      dataMap.set(blockUid, { progress: 0, recipe });
-      return;
-    }
-
-    if (!matchesRecipe(block, definition, data.recipe)) {
-      dataMap.delete(blockUid);
-      return;
+      data = { progress: 0, recipe };
+      dataMap.set(blockUid, data);
     }
 
     for (const consumption of data.recipe.consumption) {
@@ -114,7 +118,7 @@ export const timedCraftingSystem: MachineSystem<TimedCraftingSystemOptions> = {
         consumption.amountPerProgress *
           (data.recipe.maxProgress - data.progress)
       ) {
-        data.progress = 0;
+        data.progress = -1;
         return;
       }
     }
@@ -132,7 +136,7 @@ export const timedCraftingSystem: MachineSystem<TimedCraftingSystemOptions> = {
         itemStrId !== result.item ||
         item.count + (result.count ?? 1) > new ItemStack(itemStrId).maxAmount
       ) {
-        data.progress = 0;
+        data.progress = -1;
         return;
       }
     }

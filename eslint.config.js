@@ -7,6 +7,9 @@ export default tseslint.config(
   {
     ignores: ["build/**/*"],
     extends: [eslint.configs.recommended],
+    rules: {
+      eqeqeq: "error",
+    },
   },
   {
     files: ["**/*.ts"],

@@ -1,8 +1,8 @@
 import {
   machineRegistry,
-  MachineStorageType,
-  MachineUiItemSlotElement,
-  MachineUiProgressIndicatorElementType,
+  StorageType,
+  UiItemSlotElement,
+  UiProgressIndicatorElementType,
 } from "../registry";
 import {
   Container,
@@ -30,10 +30,10 @@ import {
 } from "./data";
 import { truncateNumber } from "../utils/string";
 
-export type MachineUiStorageBarType = "disabled" | MachineStorageType;
+export type UiStorageBarType = "disabled" | StorageType;
 
 export const PROGRESS_INDICATOR_MAX_VALUES: Record<
-  MachineUiProgressIndicatorElementType,
+  UiProgressIndicatorElementType,
   number
 > = {
   arrow: 16,
@@ -122,7 +122,7 @@ function handleBarItems(
   inventory: Container,
   startIndex: number,
   player: Player,
-  type: MachineUiStorageBarType = "disabled",
+  type: UiStorageBarType = "disabled",
   amount = 0,
   change = 0,
 ): void {
@@ -162,7 +162,7 @@ function handleBarItems(
 function handleItemSlot(
   loc: DimensionLocation,
   inventory: Container,
-  element: MachineUiItemSlotElement,
+  element: UiItemSlotElement,
   player: Player,
   init: boolean,
 ): void {
@@ -232,7 +232,7 @@ function handleItemSlot(
 function handleProgressIndicator(
   inventory: Container,
   index: number,
-  indicator: MachineUiProgressIndicatorElementType,
+  indicator: UiProgressIndicatorElementType,
   player: Player,
   value = 0,
 ): void {

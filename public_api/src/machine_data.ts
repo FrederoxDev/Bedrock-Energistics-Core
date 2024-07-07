@@ -3,15 +3,18 @@ import {
   ScoreboardObjective,
   world,
 } from "@minecraft/server";
-import { MachineStorageType } from "./registry_types";
+import { StorageType } from "./registry_types";
 
 export function getBlockUniqueId(loc: DimensionLocation): string {
   return (
-    loc.dimension.id + loc.x.toString() + loc.y.toString() + loc.z.toString()
+    loc.dimension.id +
+    Math.floor(loc.x).toString() +
+    Math.floor(loc.y).toString() +
+    Math.floor(loc.z).toString()
   );
 }
 
-function getStorageScoreboard(type: MachineStorageType): ScoreboardObjective {
+function getStorageScoreboard(type: StorageType): ScoreboardObjective {
   const id = `fluffyalien_energisticscore:storage${type}`;
   return world.scoreboard.getObjective(id) ?? world.scoreboard.addObjective(id);
 }
@@ -27,16 +30,27 @@ export function getScore(
   return objective.getScore(participant);
 }
 
+/**
+ * Gets the storage of a specific type in a machine
+ * @param loc the location of the machine
+ * @param type the type of storage to get
+ */
 export function getMachineStorage(
   loc: DimensionLocation,
-  type: MachineStorageType,
+  type: StorageType,
 ): number {
   return getScore(getStorageScoreboard(type), getBlockUniqueId(loc)) ?? 0;
 }
 
+/**
+ * Sets the storage of a specific type in a machine
+ * @param loc the location of the machine
+ * @param type the type of storage to set
+ * @param value the new value
+ */
 export function setMachineStorage(
   loc: DimensionLocation,
-  type: MachineStorageType,
+  type: StorageType,
   value: number,
 ): void {
   getStorageScoreboard(type).setScore(getBlockUniqueId(loc), value);

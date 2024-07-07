@@ -1,6 +1,6 @@
 import {
-  MachineUiItemSlotElement,
-  MachineUiProgressIndicatorElement,
+  UiItemSlotElement,
+  UiProgressIndicatorElement,
   RegisteredMachine,
   TimedCraftingSystemOptions,
   TimedCraftingSystemRecipe,
@@ -31,7 +31,7 @@ function matchesRecipe(
   for (const ingredient of recipe.ingredients) {
     const element = definition.description.uiElements[
       ingredient.slot
-    ] as MachineUiItemSlotElement;
+    ] as UiItemSlotElement;
 
     const item = getItemInMachineSlot(loc, element.slotId);
 
@@ -82,7 +82,7 @@ export const timedCraftingSystem: MachineSystem<TimedCraftingSystemOptions> = {
                 (
                   definition.description.uiElements[
                     options.progressIndicator
-                  ] as MachineUiProgressIndicatorElement
+                  ] as UiProgressIndicatorElement
                 ).indicator
               ]),
         ),
@@ -122,7 +122,7 @@ export const timedCraftingSystem: MachineSystem<TimedCraftingSystemOptions> = {
     for (const result of data.recipe.result) {
       const element = definition.description.uiElements[
         result.slot
-      ] as MachineUiItemSlotElement;
+      ] as UiItemSlotElement;
 
       const item = getItemInMachineSlot(block, element.slotId);
       if (!item) continue;
@@ -144,7 +144,7 @@ export const timedCraftingSystem: MachineSystem<TimedCraftingSystemOptions> = {
         const slotId = (
           definition.description.uiElements[
             ingredient.slot
-          ] as MachineUiItemSlotElement
+          ] as UiItemSlotElement
         ).slotId;
 
         const item = getItemInMachineSlot(block, slotId);
@@ -157,7 +157,7 @@ export const timedCraftingSystem: MachineSystem<TimedCraftingSystemOptions> = {
       for (const result of data.recipe.result) {
         const element = definition.description.uiElements[
           result.slot
-        ] as MachineUiItemSlotElement;
+        ] as UiItemSlotElement;
 
         const item = getItemInMachineSlot(block, element.slotId);
         if (item) {

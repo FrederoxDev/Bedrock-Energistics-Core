@@ -4,7 +4,7 @@ import {
   ScoreboardObjective,
   world,
 } from "@minecraft/server";
-import { MachineUiItemSlotElement } from "../registry";
+import { UiItemSlotElement } from "../registry";
 import { machineChangedItemSlots } from "./ui";
 import {
   getBlockUniqueId,
@@ -90,7 +90,7 @@ export function setItemInMachineSlot(
 }
 
 export function machineItemStackToItemStack(
-  element: MachineUiItemSlotElement,
+  element: UiItemSlotElement,
   machineItem?: MachineItemStack,
 ): ItemStack {
   return machineItem

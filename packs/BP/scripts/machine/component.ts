@@ -10,11 +10,7 @@ import {
   setMachineStorage,
 } from "./data";
 import { makeErrorString } from "../utils/log";
-import {
-  machineRegistry,
-  MachineStorageType,
-  RegisteredMachine,
-} from "../registry";
+import { machineRegistry, StorageType, RegisteredMachine } from "../registry";
 
 export const machineComponent: BlockCustomComponent = {
   onPlace(e) {
@@ -62,7 +58,7 @@ export const machineComponent: BlockCustomComponent = {
       );
     }
 
-    const changes: Partial<Record<MachineStorageType, number>> = {};
+    const changes: Partial<Record<StorageType, number>> = {};
 
     for (const systemOptions of definition.systems) {
       const result = MACHINE_SYSTEMS[systemOptions.system].onTick({
@@ -85,7 +81,7 @@ export const machineComponent: BlockCustomComponent = {
     let working = false;
 
     for (const [type, change] of Object.entries(changes) as [
-      MachineStorageType,
+      StorageType,
       number,
     ][]) {
       if (!block.hasTag(`fluffyalien_energisticscore:io_${type}`)) {

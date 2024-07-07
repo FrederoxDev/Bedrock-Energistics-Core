@@ -1,6 +1,6 @@
 import { Block, DimensionLocation } from "@minecraft/server";
 import { solarGeneratorSystem } from "./solar_generator";
-import { MachineStorageType, RegisteredMachine } from "../../registry";
+import { StorageType, RegisteredMachine } from "../../registry";
 import { timedCraftingSystem } from "./timed_crafing";
 
 export interface MachineSystemUiElementUpdateOptions {
@@ -9,7 +9,7 @@ export interface MachineSystemUiElementUpdateOptions {
 
 export interface MachineSystemUiStorageBarUpdateOptions
   extends MachineSystemUiElementUpdateOptions {
-  type: MachineStorageType;
+  type: StorageType;
   change: number;
 }
 
@@ -19,7 +19,7 @@ export interface MachineSystemUiData {
 }
 
 export interface MachineSystemTickStorageUpdateOptions {
-  type: MachineStorageType;
+  type: StorageType;
   change: number;
 }
 

@@ -147,7 +147,7 @@ export const machineComponent: BlockCustomComponent = {
 };
 
 world.beforeEvents.playerBreakBlock.subscribe((e) => {
-  if (!(e.block.typeId in machineRegistry)) {
+  if (!e.block.hasTag("fluffyalien_energisticscore:machine")) {
     return;
   }
 

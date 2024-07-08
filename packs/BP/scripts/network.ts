@@ -159,8 +159,8 @@ export class MachineNetwork extends DestroyableObject {
       return false;
     }
 
-    const condition = (loc: Vector3): boolean =>
-      Vector3Utils.equals(block.location, loc);
+    const condition = (other: Block): boolean =>
+      Vector3Utils.equals(block.location, other.location);
 
     if (block.hasTag("fluffyalien_energisticscore:conduit")) {
       return this.connections.conduits.some(condition);
@@ -204,7 +204,7 @@ export class MachineNetwork extends DestroyableObject {
       stack.push(block);
       visitedLocations.push(block.location);
 
-      if (block.typeId === "fluffyalien_energisticscore:conduit") {
+      if (block.hasTag("fluffyalien_energisticscore:conduit")) {
         connections.conduits.push(block);
         return;
       }

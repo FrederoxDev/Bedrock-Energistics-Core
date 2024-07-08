@@ -1,5 +1,4 @@
-export type FluidType = "oil";
-export type StorageType = "energy" | FluidType;
+export type StorageType = "energy" | "oil";
 export type UiProgressIndicatorElementType = "arrow";
 
 // ui

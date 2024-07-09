@@ -1,3 +1,5 @@
+import { DimensionLocation } from "@minecraft/server";
+
 export type StorageType = "energy" | "oil";
 export type UiProgressIndicatorElementType = "arrow";
 
@@ -98,14 +100,43 @@ export interface StateManager {
   states: StateManagerState[];
 }
 
-export interface RegisteredMachineDescription {
+export interface Description {
   id: string;
   uiElements: Record<string, UiElement>;
   stateManager?: StateManager;
 }
 
+// handlers
+export interface OnTickHandlerStorageChange {
+  type: StorageType;
+  change: number;
+}
+
+export interface OnTickHandlerResponse {
+  changes: OnTickHandlerStorageChange[];
+}
+
+export interface UiElementUpdateOptions {
+  element: string;
+}
+
+export interface UiStorageBarUpdateOptions extends UiElementUpdateOptions {
+  type: StorageType;
+  change: number;
+}
+
+export interface UpdateUiHandlerResponse {
+  storageBars?: UiStorageBarUpdateOptions[];
+  progressIndicators?: Record<string, number>;
+}
+
+export interface Handlers {
+  onTick(blockLocation: DimensionLocation): OnTickHandlerResponse;
+  updateUi?(blockLocation: DimensionLocation): UpdateUiHandlerResponse;
+}
+
 // registered machine
-export interface RegisteredMachine {
-  description: RegisteredMachineDescription;
-  systems: SystemOptions[];
+export interface RegisterMachineOptions {
+  description: Description;
+  handlers: Handlers;
 }

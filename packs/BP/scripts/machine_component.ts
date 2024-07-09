@@ -1,5 +1,4 @@
 import { Block, BlockCustomComponent, system, world } from "@minecraft/server";
-import { MACHINE_SYSTEMS } from "./systems";
 import {
   getItemInMachineSlot,
   getMachineStorage,
@@ -12,43 +11,71 @@ import {
   machineRegistry,
   StorageType,
   RegisteredMachine,
-  StateManagerCondition,
+  OnTickHandlerResponse,
 } from "./registry";
 import { MachineNetwork } from "./network";
+import { invokeScriptEvent } from "@/public_api/src/addon_ipc";
+import {
+  makeSerializableDimensionLocation,
+  SerializableDimensionLocation,
+} from "@/public_api/src/internal";
 
-function resolveStateManagerCondition(
-  condition: StateManagerCondition,
-  block: Block,
-  storageChanges: Partial<Record<StorageType, number>>,
-): boolean {
-  let testVal: number;
-
-  switch (condition.test) {
-    case "all":
-      return condition.conditions.every((cond) =>
-        resolveStateManagerCondition(cond, block, storageChanges),
-      );
-    case "any":
-      return condition.conditions.some((cond) =>
-        resolveStateManagerCondition(cond, block, storageChanges),
-      );
-    case "energyChange":
-      testVal = storageChanges.energy ?? 0;
-      break;
-    case "storedEnergy":
-      testVal = getMachineStorage(block, "energy");
-      break;
+async function onTickAsync(block: Block): Promise<void> {
+  const definition = machineRegistry[block.typeId] as
+    | RegisteredMachine
+    | undefined;
+  if (!definition) {
+    throw new Error(
+      makeErrorString(
+        `'${block.typeId}' uses the 'fluffyalien_energisticscore:machine' component but it was not registered as a machine`,
+      ),
+    );
   }
 
-  switch (condition.operator) {
-    case "!=":
-      return testVal !== condition.value;
-    case "<":
-      return testVal < condition.value;
-    case "==":
-      return testVal === condition.value;
-    case ">":
-      return testVal > condition.value;
+  const changes: Partial<Record<StorageType, number>> = {};
+
+  const result = await invokeScriptEvent<
+    SerializableDimensionLocation,
+    OnTickHandlerResponse
+  >(definition.onTickEvent, makeSerializableDimensionLocation(block));
+
+  for (const changeOptions of result.changes) {
+    if (changeOptions.type in changes) {
+      changes[changeOptions.type]! += changeOptions.change;
+      continue;
+    }
+
+    changes[changeOptions.type] = changeOptions.change;
+  }
+
+  const network = MachineNetwork.getOrEstablish(block);
+  if (!network) return;
+
+  for (const [type, change] of Object.entries(changes) as [
+    StorageType,
+    number,
+  ][]) {
+    if (!block.hasTag(`fluffyalien_energisticscore:io.${type}`)) {
+      throw new Error(
+        makeErrorString(
+          `machine '${block.typeId}' is trying to add ${change.toString()} to '${type}' but it doesn't have the 'fluffyalien_energisticscore:io.${type}' tag`,
+        ),
+      );
+    }
+
+    if (block.hasTag(`fluffyalien_energisticscore:consumer.${type}`)) {
+      setMachineStorage(block, type, getMachineStorage(block, type) + change);
+      continue;
+    }
+
+    const stored = getMachineStorage(block, type);
+
+    const sendAmount = stored + change;
+    if (sendAmount <= 0) {
+      return;
+    }
+
+    network.queueSend(block, type, sendAmount);
   }
 }
 
@@ -64,85 +91,7 @@ export const machineComponent: BlockCustomComponent = {
     ).nameTag = e.block.typeId;
   },
   onTick({ block }) {
-    const definition = machineRegistry[block.typeId] as
-      | RegisteredMachine
-      | undefined;
-    if (!definition) {
-      throw new Error(
-        makeErrorString(
-          `'${block.typeId}' uses the 'fluffyalien_energisticscore:machine' component but it was not registered as a machine`,
-        ),
-      );
-    }
-
-    const changes: Partial<Record<StorageType, number>> = {};
-
-    for (const systemOptions of definition.systems) {
-      const result = MACHINE_SYSTEMS[systemOptions.system].onTick({
-        block,
-        options: systemOptions,
-        definition,
-      });
-      if (!result) continue;
-
-      for (const changeOptions of result) {
-        if (changeOptions.type in changes) {
-          changes[changeOptions.type]! += changeOptions.change;
-          continue;
-        }
-
-        changes[changeOptions.type] = changeOptions.change;
-      }
-    }
-
-    const network = MachineNetwork.getOrEstablish(block);
-    if (!network) return;
-
-    for (const [type, change] of Object.entries(changes) as [
-      StorageType,
-      number,
-    ][]) {
-      if (!block.hasTag(`fluffyalien_energisticscore:io.${type}`)) {
-        throw new Error(
-          makeErrorString(
-            `machine '${block.typeId}' is trying to add ${change.toString()} to '${type}' but it doesn't have the 'fluffyalien_energisticscore:io.${type}' tag`,
-          ),
-        );
-      }
-
-      if (block.hasTag(`fluffyalien_energisticscore:consumer.${type}`)) {
-        setMachineStorage(block, type, getMachineStorage(block, type) + change);
-        continue;
-      }
-
-      const stored = getMachineStorage(block, type);
-
-      const sendAmount = stored + change;
-      if (sendAmount <= 0) {
-        return;
-      }
-
-      network.queueSend(block, type, sendAmount);
-    }
-
-    if (definition.description.stateManager) {
-      for (const stateSetter of definition.description.stateManager.states) {
-        if (
-          !resolveStateManagerCondition(
-            stateSetter.condition,
-            block,
-            changes,
-          ) ||
-          block.permutation.getState(stateSetter.state) === stateSetter.value
-        ) {
-          continue;
-        }
-
-        block.setPermutation(
-          block.permutation.withState(stateSetter.state, stateSetter.value),
-        );
-      }
-    }
+    void onTickAsync(block);
   },
 };
 

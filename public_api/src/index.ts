@@ -1,13 +1,21 @@
-import { DimensionLocation, world } from "@minecraft/server";
-import { RegisteredMachine, StorageType } from "./registry_types";
+import { DimensionLocation } from "@minecraft/server";
 import {
+  OnTickHandlerResponse,
+  RegisterMachineOptions,
+  StorageType,
+  UpdateUiHandlerResponse,
+} from "./registry_types";
+import {
+  deserializeDimensionLocation,
   getBlockUniqueId,
   getItemCountScoreboard,
   getItemTypeScoreboard,
   getScore,
   getStorageScoreboard,
-  serializeDimensionLocation,
+  makeSerializableDimensionLocation,
+  SerializableDimensionLocation,
 } from "./internal";
+import { dispatchScriptEvent, registerScriptEventHandler } from "./addon_ipc";
 
 export * from "./registry_types";
 
@@ -26,16 +34,35 @@ export interface MachineItemStack {
   count: number;
 }
 
-const overworld = world.getDimension("overworld");
-
 /**
  * @beta
  * Registers a machine. This function should be called in the `worldInitialize` after event.
  */
-export function registerMachine(options: RegisteredMachine): void {
-  overworld.runCommand(
-    `scriptevent fluffyalien_energisticscore:register_machine ${JSON.stringify(options)}`,
+export function registerMachine(options: RegisterMachineOptions): void {
+  const onTickEvent = `${options.description.id}__onTickHandler`;
+  registerScriptEventHandler<
+    SerializableDimensionLocation,
+    OnTickHandlerResponse
+  >(onTickEvent, (payload) =>
+    options.handlers.onTick(deserializeDimensionLocation(payload)),
   );
+
+  let updateUiEvent: string | undefined;
+  if (options.handlers.updateUi) {
+    updateUiEvent = `${options.description.id}__updateUiHandler`;
+    registerScriptEventHandler<
+      SerializableDimensionLocation,
+      UpdateUiHandlerResponse
+    >(updateUiEvent, (payload) =>
+      options.handlers.updateUi!(deserializeDimensionLocation(payload)),
+    );
+  }
+
+  dispatchScriptEvent("fluffyalien_energisticscore:register_machine", {
+    description: options.description,
+    onTickEvent,
+    updateUiEvent,
+  });
 }
 
 /**
@@ -43,8 +70,9 @@ export function registerMachine(options: RegisteredMachine): void {
  * Updates the network that a block belongs to, if it has one.
  */
 export function updateBlockNetwork(blockLocation: DimensionLocation): void {
-  overworld.runCommand(
-    `scriptevent fluffyalien_energisticscore:update_block_network ${serializeDimensionLocation(blockLocation)}`,
+  dispatchScriptEvent(
+    "fluffyalien_energisticscore:update_block_network",
+    makeSerializableDimensionLocation(blockLocation),
   );
 }
 
@@ -55,8 +83,9 @@ export function updateBlockNetwork(blockLocation: DimensionLocation): void {
 export function updateBlockAdjacentNetworks(
   blockLocation: DimensionLocation,
 ): void {
-  overworld.runCommand(
-    `scriptevent fluffyalien_energisticscore:update_block_adjacent_networks ${serializeDimensionLocation(blockLocation)}`,
+  dispatchScriptEvent(
+    "fluffyalien_energisticscore:update_block_adjacent_networks",
+    makeSerializableDimensionLocation(blockLocation),
   );
 }
 
@@ -127,13 +156,9 @@ export function setItemInMachineSlot(
   slotId: number,
   newItemStack?: MachineItemStack,
 ): void {
-  overworld.runCommand(
-    `scriptevent fluffyalien_energistics:set_item_in_machine_slot ${JSON.stringify(
-      {
-        loc,
-        slot: slotId,
-        item: newItemStack,
-      },
-    )}`,
-  );
+  dispatchScriptEvent("fluffyalien_energistics:set_item_in_machine_slot", {
+    loc,
+    slot: slotId,
+    item: newItemStack,
+  });
 }

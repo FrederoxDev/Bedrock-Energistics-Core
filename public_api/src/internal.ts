@@ -1,17 +1,35 @@
 import {
   DimensionLocation,
   ScoreboardObjective,
+  Vector3,
   world,
 } from "@minecraft/server";
 import { StorageType } from "./registry_types";
 
-export function serializeDimensionLocation(loc: DimensionLocation): string {
-  return JSON.stringify({
+export interface SerializableDimensionLocation extends Vector3 {
+  dimension: string;
+}
+
+export function makeSerializableDimensionLocation(
+  loc: DimensionLocation,
+): SerializableDimensionLocation {
+  return {
     dimension: loc.dimension.id,
     x: loc.x,
     y: loc.y,
     z: loc.z,
-  });
+  };
+}
+
+export function deserializeDimensionLocation(
+  loc: SerializableDimensionLocation,
+): DimensionLocation {
+  return {
+    dimension: world.getDimension(loc.dimension),
+    x: loc.x,
+    y: loc.y,
+    z: loc.z,
+  };
 }
 
 export function getBlockUniqueId(loc: DimensionLocation): string {

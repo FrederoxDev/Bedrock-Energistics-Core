@@ -3,6 +3,7 @@ import {
   StorageType,
   UiItemSlotElement,
   UiProgressIndicatorElementType,
+  UpdateUiHandlerResponse,
 } from "./registry";
 import {
   Container,
@@ -13,10 +14,7 @@ import {
   system,
   world,
 } from "@minecraft/server";
-import {
-  MACHINE_SYSTEMS,
-  MachineSystemUiStorageBarUpdateOptions,
-} from "./systems";
+import { MachineSystemUiStorageBarUpdateOptions } from "./systems";
 import {
   MAX_MACHINE_STORAGE,
   STORAGE_AMOUNT_PER_BAR_SEGMENT,
@@ -29,6 +27,12 @@ import {
   setItemInMachineSlot,
 } from "./data";
 import { truncateNumber } from "./utils/string";
+import { invokeScriptEvent } from "@/public_api/src/addon_ipc";
+import {
+  makeSerializableDimensionLocation,
+  SerializableDimensionLocation,
+} from "@/public_api/src/internal";
+import { makeErrorString } from "./utils/log";
 
 export type UiStorageBarType = "disabled" | StorageType;
 
@@ -264,7 +268,11 @@ function handleProgressIndicator(
   );
 }
 
-function updateEntityUi(entity: Entity, player: Player, init: boolean): void {
+async function updateEntityUi(
+  entity: Entity,
+  player: Player,
+  init: boolean,
+): Promise<void> {
   const dimensionLocation = {
     x: Math.floor(entity.location.x),
     y: Math.floor(entity.location.y),
@@ -274,6 +282,15 @@ function updateEntityUi(entity: Entity, player: Player, init: boolean): void {
 
   const definition = machineRegistry[entity.typeId];
 
+  if (!definition.updateUiEvent) {
+    //TODO: add description.ui
+    throw new Error(
+      makeErrorString(
+        `machine '${entity.typeId}' is missing the 'updateUi' handler but has 'description.ui' defined`,
+      ),
+    );
+  }
+
   const storageBarChanges: Record<
     string,
     MachineSystemUiStorageBarUpdateOptions
@@ -281,34 +298,30 @@ function updateEntityUi(entity: Entity, player: Player, init: boolean): void {
 
   let progressIndicators: Record<string, number> = {};
 
-  for (const systemOptions of definition.systems) {
-    const machineSystem = MACHINE_SYSTEMS[systemOptions.system];
-    if (!machineSystem.updateUi) continue;
+  const result = await invokeScriptEvent<
+    SerializableDimensionLocation,
+    UpdateUiHandlerResponse
+  >(
+    definition.updateUiEvent,
+    makeSerializableDimensionLocation(dimensionLocation),
+  );
 
-    const result = machineSystem.updateUi({
-      location: dimensionLocation,
-      options: systemOptions,
-      definition,
-    });
-
-    if (result.storageBars) {
-      for (const changeOptions of result.storageBars) {
-        if (changeOptions.element in storageBarChanges) {
-          storageBarChanges[changeOptions.element].change +=
-            changeOptions.change;
-          continue;
-        }
-
-        storageBarChanges[changeOptions.element] = changeOptions;
+  if (result.storageBars) {
+    for (const changeOptions of result.storageBars) {
+      if (changeOptions.element in storageBarChanges) {
+        storageBarChanges[changeOptions.element].change += changeOptions.change;
+        continue;
       }
-    }
 
-    if (result.progressIndicators) {
-      progressIndicators = {
-        ...progressIndicators,
-        ...result.progressIndicators,
-      };
+      storageBarChanges[changeOptions.element] = changeOptions;
     }
+  }
+
+  if (result.progressIndicators) {
+    progressIndicators = {
+      ...progressIndicators,
+      ...result.progressIndicators,
+    };
   }
 
   const inventory = entity.getComponent("inventory")!.container!;
@@ -365,7 +378,7 @@ world.afterEvents.playerInteractWithEntity.subscribe((e) => {
   }
 
   playersInUi.set(e.target, e.player);
-  updateEntityUi(e.target, e.player, true);
+  void updateEntityUi(e.target, e.player, true);
 });
 
 world.afterEvents.entitySpawn.subscribe((e) => {
@@ -385,6 +398,6 @@ system.runInterval(() => {
       continue;
     }
 
-    updateEntityUi(entity, player, false);
+    void updateEntityUi(entity, player, false);
   }
 }, 5);

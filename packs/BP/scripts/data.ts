@@ -1,29 +1,24 @@
-import {
-  DimensionLocation,
-  ItemStack,
-  ScoreboardObjective,
-  world,
-} from "@minecraft/server";
+import { DimensionLocation, ItemStack, world } from "@minecraft/server";
 import { UiItemSlotElement } from "./registry";
 import { machineChangedItemSlots } from "./ui";
 import {
-  getBlockUniqueId,
-  getScore,
   getMachineStorage,
   setMachineStorage,
-} from "@/public_api/src/machine_data";
+  MachineItemStack,
+  getItemInMachineSlot,
+} from "@/public_api/src";
+import {
+  getBlockUniqueId,
+  getItemTypeScoreboard,
+  getItemCountScoreboard,
+} from "@/public_api/src/internal";
 
-export { getBlockUniqueId, getMachineStorage, setMachineStorage };
-
-function getItemTypeScoreboard(slot: number): ScoreboardObjective {
-  const id = `fluffyalien_energisticscore:itemtype${slot.toString()}`;
-  return world.scoreboard.getObjective(id) ?? world.scoreboard.addObjective(id);
-}
-
-function getItemCountScoreboard(slot: number): ScoreboardObjective {
-  const id = `fluffyalien_energisticscore:itemcount${slot.toString()}`;
-  return world.scoreboard.getObjective(id) ?? world.scoreboard.addObjective(id);
-}
+export {
+  getBlockUniqueId,
+  getMachineStorage,
+  setMachineStorage,
+  getItemInMachineSlot,
+};
 
 export function removeBlockFromScoreboards(loc: DimensionLocation): void {
   const participantId = getBlockUniqueId(loc);
@@ -31,33 +26,6 @@ export function removeBlockFromScoreboards(loc: DimensionLocation): void {
   for (const objective of world.scoreboard.getObjectives()) {
     objective.removeParticipant(participantId);
   }
-}
-
-export interface MachineItemStack {
-  type: number;
-  count: number;
-}
-
-export function getItemInMachineSlot(
-  loc: DimensionLocation,
-  slot: number,
-): MachineItemStack | undefined {
-  const participantId = getBlockUniqueId(loc);
-
-  const itemType = getScore(getItemTypeScoreboard(slot), participantId);
-  if (itemType === undefined) {
-    return;
-  }
-
-  const itemCount = getScore(getItemCountScoreboard(slot), participantId);
-  if (!itemCount) {
-    return;
-  }
-
-  return {
-    type: itemType,
-    count: itemCount,
-  };
 }
 
 export function setItemInMachineSlot(

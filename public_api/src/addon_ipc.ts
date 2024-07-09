@@ -43,13 +43,18 @@ export function dispatchScriptEvent(event: string, payload: unknown): void {
   overworld.runCommand(`scriptevent ${event} ${JSON.stringify(payload)}`);
 }
 
+// total number of invokes this session, used to create a unique response listener ID
+let invokeCount = 0;
+
 export async function invokeScriptEvent<TPayload, TResponse>(
   event: string,
+  namespace: string,
   payload: TPayload,
 ): Promise<TResponse> {
-  return new Promise((resolve, reject) => {
-    const responseListenerId = `${event}__responselistener`;
+  const responseListenerId = `${namespace}:ipc.internal.handler_response_listener${invokeCount.toString()}`;
+  invokeCount++;
 
+  return new Promise((resolve, reject) => {
     const timeoutId = system.runTimeout(() => {
       removeScriptEventListener(responseListenerId);
       reject(

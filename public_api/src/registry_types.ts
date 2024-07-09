@@ -107,15 +107,6 @@ export interface Description {
 }
 
 // handlers
-export interface OnTickHandlerStorageChange {
-  type: StorageType;
-  change: number;
-}
-
-export interface OnTickHandlerResponse {
-  changes: OnTickHandlerStorageChange[];
-}
-
 export interface UiElementUpdateOptions {
   element: string;
 }
@@ -131,7 +122,6 @@ export interface UpdateUiHandlerResponse {
 }
 
 export interface Handlers {
-  onTick(blockLocation: DimensionLocation): OnTickHandlerResponse;
   updateUi?(blockLocation: DimensionLocation): UpdateUiHandlerResponse;
 }
 

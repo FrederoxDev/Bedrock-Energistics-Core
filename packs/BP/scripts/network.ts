@@ -41,7 +41,7 @@ export class MachineNetwork extends DestroyableObject {
       if (this.sendJobRunning || !this.sendQueue.length) return;
       this.sendJobRunning = true;
       system.runJob(this.send());
-    }, 10); // this runs every 10t so if it runs behind it can catch up (machines tick every 20t)
+    }, 5);
 
     logInfo(
       `MachineNetwork created, new count: ${MachineNetwork.networks.length.toString()}`,

@@ -303,6 +303,7 @@ async function updateEntityUi(
     UpdateUiHandlerResponse
   >(
     definition.updateUiEvent,
+    "fluffyalien_energisticscore",
     makeSerializableDimensionLocation(dimensionLocation),
   );
 

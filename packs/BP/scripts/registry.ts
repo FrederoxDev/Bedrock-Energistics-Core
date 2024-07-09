@@ -3,7 +3,6 @@ import { Description as RegisteredMachineDescription } from "@/public_api/src/re
 
 export interface RegisteredMachine {
   description: RegisteredMachineDescription;
-  onTickEvent: string;
   updateUiEvent?: string;
 }
 

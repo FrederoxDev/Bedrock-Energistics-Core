@@ -1,6 +1,5 @@
 import { DimensionLocation } from "@minecraft/server";
 import {
-  OnTickHandlerResponse,
   RegisterMachineOptions,
   StorageType,
   UpdateUiHandlerResponse,
@@ -39,14 +38,6 @@ export interface MachineItemStack {
  * Registers a machine. This function should be called in the `worldInitialize` after event.
  */
 export function registerMachine(options: RegisterMachineOptions): void {
-  const onTickEvent = `${options.description.id}__onTickHandler`;
-  registerScriptEventHandler<
-    SerializableDimensionLocation,
-    OnTickHandlerResponse
-  >(onTickEvent, (payload) =>
-    options.handlers.onTick(deserializeDimensionLocation(payload)),
-  );
-
   let updateUiEvent: string | undefined;
   if (options.handlers.updateUi) {
     updateUiEvent = `${options.description.id}__updateUiHandler`;
@@ -58,9 +49,8 @@ export function registerMachine(options: RegisterMachineOptions): void {
     );
   }
 
-  dispatchScriptEvent("fluffyalien_energisticscore:register_machine", {
+  dispatchScriptEvent("fluffyalien_energisticscore:ipc.register_machine", {
     description: options.description,
-    onTickEvent,
     updateUiEvent,
   });
 }
@@ -71,7 +61,7 @@ export function registerMachine(options: RegisterMachineOptions): void {
  */
 export function updateBlockNetwork(blockLocation: DimensionLocation): void {
   dispatchScriptEvent(
-    "fluffyalien_energisticscore:update_block_network",
+    "fluffyalien_energisticscore:ipc.update_block_network",
     makeSerializableDimensionLocation(blockLocation),
   );
 }
@@ -84,7 +74,7 @@ export function updateBlockAdjacentNetworks(
   blockLocation: DimensionLocation,
 ): void {
   dispatchScriptEvent(
-    "fluffyalien_energisticscore:update_block_adjacent_networks",
+    "fluffyalien_energisticscore:ipc.update_block_adjacent_networks",
     makeSerializableDimensionLocation(blockLocation),
   );
 }
@@ -156,9 +146,55 @@ export function setItemInMachineSlot(
   slotId: number,
   newItemStack?: MachineItemStack,
 ): void {
-  dispatchScriptEvent("fluffyalien_energistics:set_item_in_machine_slot", {
-    loc,
-    slot: slotId,
-    item: newItemStack,
+  dispatchScriptEvent(
+    "fluffyalien_energisticscore:ipc.set_item_in_machine_slot",
+    {
+      loc,
+      slot: slotId,
+      item: newItemStack,
+    },
+  );
+}
+
+/**
+ * Note: in most cases, prefer {@link generate} over this function.
+ * Queue sending energy, gas, or fluid over a machine network.
+ * Automatically sets the machine's reserve storage to the amount that was not received.
+ * @param blockLocation The location of the machine that is sending the energy, gas, or fluid.
+ * @param type The storage type to send.
+ * @param amount The amount to send.
+ * @see {@link generate}
+ */
+export function queueSend(
+  blockLocation: DimensionLocation,
+  type: StorageType,
+  amount: number,
+): void {
+  dispatchScriptEvent("fluffyalien_energisticscore:ipc.queue_send", {
+    loc: makeSerializableDimensionLocation(blockLocation),
+    type,
+    amount,
   });
+}
+
+/**
+ * Sends energy, gas, or fluid over a machine network. Includes reserve storage as well.
+ * @param blockLocation The location of the machine that is generating.
+ * @param type The storage type to generate.
+ * @param amount The amount to generate
+ * @see {@link queueSend}
+ */
+export function generate(
+  blockLocation: DimensionLocation,
+  type: StorageType,
+  amount: number,
+): void {
+  const stored = getMachineStorage(blockLocation, type);
+
+  const sendAmount = stored + amount;
+  if (sendAmount <= 0) {
+    return;
+  }
+
+  queueSend(blockLocation, type, sendAmount);
 }

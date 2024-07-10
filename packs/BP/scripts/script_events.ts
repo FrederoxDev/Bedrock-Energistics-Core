@@ -1,12 +1,15 @@
 import {
-  RegisteredMachine,
+  machineRegistry,
   registerMachineScriptEvent,
   StorageType,
 } from "./registry";
 import { MachineNetwork } from "./network";
-import { MachineItemStack } from "@/public_api/src";
+import { MachineItemStack, RegisteredMachine } from "@/public_api/src";
 import { setItemInMachineSlot } from "./data";
-import { registerScriptEventListener } from "@/public_api/src/addon_ipc";
+import {
+  registerScriptEventHandler,
+  registerScriptEventListener,
+} from "@/public_api/src/addon_ipc";
 import {
   deserializeDimensionLocation,
   SerializableDimensionLocation,
@@ -88,4 +91,9 @@ registerScriptEventListener<SetItemInMachineSlotPayload>(
       payload.item,
     );
   },
+);
+
+registerScriptEventHandler<string, RegisteredMachine | null>(
+  "fluffyalien_energisticscore:ipc.get_registered_machine",
+  (machineId) => machineRegistry[machineId] ?? null,
 );

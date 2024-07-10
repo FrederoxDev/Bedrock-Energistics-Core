@@ -56,7 +56,7 @@ export interface Handlers {
 }
 
 // registered machine
-export interface RegisterMachineOptions {
+export interface MachineDefinition {
   description: Description;
   handlers?: Handlers;
 }

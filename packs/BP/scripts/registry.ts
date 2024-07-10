@@ -1,10 +1,5 @@
 import { logInfo } from "./utils/log";
-import { Description as RegisteredMachineDescription } from "@/public_api/src/registry_types";
-
-export interface RegisteredMachine {
-  description: RegisteredMachineDescription;
-  updateUiEvent?: string;
-}
+import { RegisteredMachine } from "@/public_api/src";
 
 export * from "@/public_api/src/registry_types";
 

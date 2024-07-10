@@ -1,6 +1,7 @@
 import { DimensionLocation } from "@minecraft/server";
 import {
-  RegisterMachineOptions,
+  Description,
+  MachineDefinition,
   StorageType,
   UpdateUiHandlerResponse,
 } from "./registry_types";
@@ -14,11 +15,16 @@ import {
   makeSerializableDimensionLocation,
   SerializableDimensionLocation,
 } from "./internal";
-import { dispatchScriptEvent, registerScriptEventHandler } from "./addon_ipc";
+import {
+  dispatchScriptEvent,
+  invokeScriptEvent,
+  registerScriptEventHandler,
+} from "./addon_ipc";
 
 export * from "./registry_types";
 
 /**
+ * @beta
  * Representation of an item stack stored in a machine inventory.
  */
 export interface MachineItemStack {
@@ -35,9 +41,19 @@ export interface MachineItemStack {
 
 /**
  * @beta
+ * Serializable {@link MachineDefinition}.
+ * @see {@link MachineDefinition}, {@link registerMachine}
+ */
+export interface RegisteredMachine {
+  description: Description;
+  updateUiEvent?: string;
+}
+
+/**
+ * @beta
  * Registers a machine. This function should be called in the `worldInitialize` after event.
  */
-export function registerMachine(options: RegisterMachineOptions): void {
+export function registerMachine(options: MachineDefinition): void {
   let updateUiEvent: string | undefined;
   if (options.handlers?.updateUi) {
     updateUiEvent = `${options.description.id}__updateUiHandler`;
@@ -49,10 +65,15 @@ export function registerMachine(options: RegisterMachineOptions): void {
     );
   }
 
-  dispatchScriptEvent("fluffyalien_energisticscore:ipc.register_machine", {
+  const payload: RegisteredMachine = {
     description: options.description,
     updateUiEvent,
-  });
+  };
+
+  dispatchScriptEvent(
+    "fluffyalien_energisticscore:ipc.register_machine",
+    payload,
+  );
 }
 
 /**
@@ -108,6 +129,7 @@ export function setMachineStorage(
 }
 
 /**
+ * @beta
  * Gets an item from a machine inventory.
  * @param loc The location of the machine.
  * @param slotId The number ID of the slot as defined when the machine was registered (see {@link UiItemSlotElement}).
@@ -136,6 +158,7 @@ export function getItemInMachineSlot(
 }
 
 /**
+ * @beta
  * Sets an item in a machine inventory
  * @param loc The location of the machine
  * @param slotId The number ID of the slot as defined when the machine was registered (see {@link UiItemSlotElement}).
@@ -157,8 +180,10 @@ export function setItemInMachineSlot(
 }
 
 /**
- * Note: in most cases, prefer {@link generate} over this function.
+ * @beta
  * Queue sending energy, gas, or fluid over a machine network.
+ * @remarks
+ * Note: in most cases, prefer {@link generate} over this function.
  * Automatically sets the machine's reserve storage to the amount that was not received.
  * @param blockLocation The location of the machine that is sending the energy, gas, or fluid.
  * @param type The storage type to send.
@@ -178,7 +203,9 @@ export function queueSend(
 }
 
 /**
+ * @beta
  * Sends energy, gas, or fluid over a machine network. Includes reserve storage as well.
+ * @remarks
  * This function should be called every block tick for generators even if the generation is `0` because it sends reserve storage.
  * Automatically sets the machine's reserve storage to the amount that was not received.
  * This function is a wrapper around {@link queueSend}.
@@ -200,4 +227,23 @@ export function generate(
   }
 
   queueSend(blockLocation, type, sendAmount);
+}
+
+/**
+ * @beta
+ * Gets a {@link RegisteredMachine} with the specified `id` or `null` if it doesn't exist.
+ * @param id The ID of the machine.
+ * @param namespace The namespace of THIS add-on. This is used by mcbe-addon-ipc to generate a script event to listen for the response from Bedrock Energistics Core.
+ * @returns The RegisteredMachine with the specified `id` or `null` if it doesn't exist.
+ * @throws if Bedrock Energistics Core takes too long to respond.
+ */
+export function getRegisteredMachine(
+  id: string,
+  namespace: string,
+): Promise<RegisteredMachine | null> {
+  return invokeScriptEvent(
+    "fluffyalien_energisticscore:ipc.get_registered_machine",
+    namespace,
+    id,
+  );
 }

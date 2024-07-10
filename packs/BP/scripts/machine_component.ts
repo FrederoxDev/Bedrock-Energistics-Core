@@ -13,6 +13,9 @@ export const machineComponent: BlockCustomComponent = {
     MachineNetwork.updateAdjacent(e.block);
   },
   onPlayerInteract(e) {
+    const definition = machineRegistry[e.block.typeId];
+    if (!definition.description.ui) return;
+
     e.block.dimension.spawnEntity(
       e.block.typeId,
       e.block.bottomCenter(),
@@ -28,9 +31,10 @@ world.beforeEvents.playerBreakBlock.subscribe((e) => {
   MachineNetwork.get(e.block)?.destroy();
 
   const definition = machineRegistry[e.block.typeId];
+  if (!definition.description.ui) return;
 
   system.run(() => {
-    for (const element of Object.values(definition.description.uiElements)) {
+    for (const element of Object.values(definition.description.ui!.elements)) {
       if (element.type !== "itemSlot") continue;
 
       const item = getItemInMachineSlot(e.block, element.slotId);

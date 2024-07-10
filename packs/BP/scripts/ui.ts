@@ -3,6 +3,7 @@ import {
   StorageType,
   UiItemSlotElement,
   UiProgressIndicatorElementType,
+  UiStorageBarUpdateOptions,
   UpdateUiHandlerResponse,
 } from "./registry";
 import {
@@ -14,7 +15,6 @@ import {
   system,
   world,
 } from "@minecraft/server";
-import { MachineSystemUiStorageBarUpdateOptions } from "./systems";
 import {
   MAX_MACHINE_STORAGE,
   STORAGE_AMOUNT_PER_BAR_SEGMENT,
@@ -282,8 +282,15 @@ async function updateEntityUi(
 
   const definition = machineRegistry[entity.typeId];
 
+  if (!definition.description.ui) {
+    throw new Error(
+      makeErrorString(
+        `machine '${entity.typeId}' does not have 'description.ui' defined but has a machine entity`,
+      ),
+    );
+  }
+
   if (!definition.updateUiEvent) {
-    //TODO: add description.ui
     throw new Error(
       makeErrorString(
         `machine '${entity.typeId}' is missing the 'updateUi' handler but has 'description.ui' defined`,
@@ -291,10 +298,7 @@ async function updateEntityUi(
     );
   }
 
-  const storageBarChanges: Record<
-    string,
-    MachineSystemUiStorageBarUpdateOptions
-  > = {};
+  const storageBarChanges: Record<string, UiStorageBarUpdateOptions> = {};
 
   let progressIndicators: Record<string, number> = {};
 
@@ -328,12 +332,12 @@ async function updateEntityUi(
   const inventory = entity.getComponent("inventory")!.container!;
 
   for (const [id, options] of Object.entries(
-    definition.description.uiElements,
+    definition.description.ui.elements,
   )) {
     switch (options.type) {
       case "storageBar": {
         const changeOptions = storageBarChanges[id] as
-          | MachineSystemUiStorageBarUpdateOptions
+          | UiStorageBarUpdateOptions
           | undefined;
 
         if (changeOptions) {

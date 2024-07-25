@@ -188,6 +188,7 @@ export function setItemInMachineSlot(
  * @param blockLocation The location of the machine that is sending the energy, gas, or fluid.
  * @param type The storage type to send.
  * @param amount The amount to send.
+ * @throws if `amount` is <= 0
  * @see {@link generate}
  */
 export function queueSend(
@@ -209,6 +210,7 @@ export function queueSend(
  * This function should be called every block tick for generators even if the generation is `0` because it sends reserve storage.
  * Automatically sets the machine's reserve storage to the amount that was not received.
  * This function is a wrapper around {@link queueSend}.
+ * Unlike `queueSend`, this function does not throw if `amount` <= 0.
  * @param blockLocation The location of the machine that is generating.
  * @param type The storage type to generate.
  * @param amount The amount to generate

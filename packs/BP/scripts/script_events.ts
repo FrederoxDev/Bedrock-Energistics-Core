@@ -1,6 +1,6 @@
 import {
   machineRegistry,
-  registerMachineScriptEvent,
+  registerMachineScriptEventListener,
   StorageType,
 } from "./registry";
 import { MachineNetwork } from "./network";
@@ -29,9 +29,7 @@ interface QueueSendPayload {
 
 registerScriptEventListener<RegisteredMachine>(
   "fluffyalien_energisticscore:ipc.register_machine",
-  (payload) => {
-    registerMachineScriptEvent(payload);
-  },
+  registerMachineScriptEventListener,
 );
 
 registerScriptEventListener<SerializableDimensionLocation>(

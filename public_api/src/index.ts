@@ -12,6 +12,7 @@ import {
   getItemTypeScoreboard,
   getScore,
   getStorageScoreboard,
+  logInfo,
   makeSerializableDimensionLocation,
   SerializableDimensionLocation,
 } from "./internal";
@@ -49,11 +50,41 @@ export interface RegisteredMachine {
   updateUiEvent?: string;
 }
 
+export interface InitOptions {
+  namespace: string;
+}
+
+let initOptions: InitOptions | undefined;
+
+/**
+ * @beta
+ * Sets global info to be used by functions in this package.
+ */
+export function init(options: InitOptions): void {
+  if (initOptions) {
+    throw new Error("'init' has already been called");
+  }
+
+  initOptions = options;
+}
+
+function ensureInitialized(): void {
+  if (!initOptions) {
+    throw new Error("'init' has not been called");
+  }
+}
+
 /**
  * @beta
  * Registers a machine. This function should be called in the `worldInitialize` after event.
  */
 export function registerMachine(options: MachineDefinition): void {
+  ensureInitialized();
+
+  logInfo(
+    `sending register machine event for '${options.description.id}' (from '${initOptions!.namespace}')`,
+  );
+
   let updateUiEvent: string | undefined;
   if (options.handlers?.updateUi) {
     updateUiEvent = `${options.description.id}__updateUiHandler`;
@@ -235,17 +266,17 @@ export function generate(
  * @beta
  * Gets a {@link RegisteredMachine} with the specified `id` or `null` if it doesn't exist.
  * @param id The ID of the machine.
- * @param namespace The namespace of THIS add-on. This is used by mcbe-addon-ipc to generate a script event to listen for the response from Bedrock Energistics Core.
  * @returns The RegisteredMachine with the specified `id` or `null` if it doesn't exist.
  * @throws if Bedrock Energistics Core takes too long to respond.
  */
 export function getRegisteredMachine(
   id: string,
-  namespace: string,
 ): Promise<RegisteredMachine | null> {
+  ensureInitialized();
+
   return invokeScriptEvent(
     "fluffyalien_energisticscore:ipc.get_registered_machine",
-    namespace,
+    initOptions!.namespace,
     id,
   );
 }

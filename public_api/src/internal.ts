@@ -6,6 +6,8 @@ import {
 } from "@minecraft/server";
 import { StorageType } from "./registry_types";
 
+const VERSION = "0.1.0";
+
 export interface SerializableDimensionLocation extends Vector3 {
   dimension: string;
 }
@@ -65,4 +67,12 @@ export function getScore(
   }
 
   return objective.getScore(participant);
+}
+
+function makeLogString(logLevel: string, message: string): string {
+  return `[Bedrock Energistics Core API v${VERSION}] ${logLevel} ${message}`;
+}
+
+export function logInfo(message: string): void {
+  console.info(makeLogString("INFO", message));
 }

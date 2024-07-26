@@ -4,11 +4,6 @@ export { VERSION };
 export const VERSION_STR = VERSION.join(".");
 
 /**
- * the number of game ticks per each machine block tick
- */
-export const MACHINE_BLOCK_TICK_TIME = 20;
-
-/**
  * the amount that each bar segment in a machine is worth
  */
 export const STORAGE_AMOUNT_PER_BAR_SEGMENT = 100;

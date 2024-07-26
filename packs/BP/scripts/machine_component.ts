@@ -6,6 +6,8 @@ import {
 } from "./data";
 import { machineRegistry } from "./registry";
 import { MachineNetwork } from "./network";
+import { RegisteredMachine } from "@/public_api/src";
+import { makeErrorString } from "./utils/log";
 
 export const machineComponent: BlockCustomComponent = {
   onPlace(e) {
@@ -13,7 +15,16 @@ export const machineComponent: BlockCustomComponent = {
     MachineNetwork.updateAdjacent(e.block);
   },
   onPlayerInteract(e) {
-    const definition = machineRegistry[e.block.typeId];
+    const definition = machineRegistry[e.block.typeId] as
+      | RegisteredMachine
+      | undefined;
+    if (!definition) {
+      throw new Error(
+        makeErrorString(
+          `can't process interaction for block '${e.block.typeId}': this block uses the 'fluffyalien_energisticscore:machine' custom component but it could not be found in the machine registry.`,
+        ),
+      );
+    }
     if (!definition.description.ui) return;
 
     e.block.dimension.spawnEntity(
@@ -30,8 +41,10 @@ world.beforeEvents.playerBreakBlock.subscribe((e) => {
 
   MachineNetwork.get(e.block)?.destroy();
 
-  const definition = machineRegistry[e.block.typeId];
-  if (!definition.description.ui) return;
+  const definition = machineRegistry[e.block.typeId] as
+    | RegisteredMachine
+    | undefined;
+  if (!definition?.description.ui) return;
 
   system.run(() => {
     for (const element of Object.values(definition.description.ui!.elements)) {

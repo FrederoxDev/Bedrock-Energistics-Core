@@ -213,7 +213,7 @@ export function setItemInMachineSlot(
   dispatchScriptEvent(
     "fluffyalien_energisticscore:ipc.set_item_in_machine_slot",
     {
-      loc,
+      loc: makeSerializableDimensionLocation(loc),
       slot: slotId,
       item: newItemStack,
     },

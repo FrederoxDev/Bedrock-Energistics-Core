@@ -53,7 +53,7 @@ export function setItemInMachineSlot(
     return;
   }
 
-  itemTypeObjective.setScore(uid, newItemStack.type);
+  itemTypeObjective.setScore(uid, newItemStack.typeIndex);
   itemCountObjective.setScore(uid, newItemStack.count);
 }
 
@@ -62,6 +62,9 @@ export function machineItemStackToItemStack(
   machineItem?: MachineItemStack,
 ): ItemStack {
   return machineItem
-    ? new ItemStack(element.allowedItems[machineItem.type], machineItem.count)
+    ? new ItemStack(
+        element.allowedItems[machineItem.typeIndex],
+        machineItem.count,
+      )
     : new ItemStack("fluffyalien_energisticscore:ui_empty_slot");
 }

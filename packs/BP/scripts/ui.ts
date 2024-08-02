@@ -213,7 +213,7 @@ function handleItemSlot(
         loc,
         element.slotId,
         {
-          type: expectedMachineItem.type,
+          typeIndex: expectedMachineItem.typeIndex,
           count: containerSlot.amount,
         },
         false,
@@ -237,7 +237,7 @@ function handleItemSlot(
     loc,
     element.slotId,
     {
-      type: newTypeIndex,
+      typeIndex: newTypeIndex,
       count: containerSlot.amount,
     },
     false,

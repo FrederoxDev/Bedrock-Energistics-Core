@@ -5,7 +5,7 @@ import tseslint from "typescript-eslint";
 
 export default tseslint.config(
   {
-    ignores: ["build/**/*"],
+    ignores: ["build/**/*", "public_api/dist/**/*"],
     extends: [eslint.configs.recommended],
     rules: {
       eqeqeq: "error",

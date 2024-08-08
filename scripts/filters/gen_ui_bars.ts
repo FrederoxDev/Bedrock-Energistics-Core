@@ -7,68 +7,33 @@ import * as fs from "fs";
 import * as path from "path";
 import { TMP_DIR } from "./common";
 
-const powerSegmentOff = (await imgManip.decode(
-  fs.readFileSync("packs/data/ui_bars/power_segment_off.png"),
-)) as imgManip.Image;
-
-const powerSegmentOn = (await imgManip.decode(
-  fs.readFileSync("packs/data/ui_bars/power_segment_on.png"),
-)) as imgManip.Image;
-
-const hydrogenSegmentOff = (await imgManip.decode(
-  fs.readFileSync("packs/data/ui_bars/hydrogen_segment_off.png"),
-)) as imgManip.Image;
-
-const hydrogenSegmentOn = (await imgManip.decode(
-  fs.readFileSync("packs/data/ui_bars/hydrogen_segment_on.png"),
-)) as imgManip.Image;
-
-const nitrogenSegmentOff = (await imgManip.decode(
-  fs.readFileSync("packs/data/ui_bars/nitrogen_segment_off.png"),
-)) as imgManip.Image;
-
-const nitrogenSegmentOn = (await imgManip.decode(
-  fs.readFileSync("packs/data/ui_bars/nitrogen_segment_on.png"),
-)) as imgManip.Image;
-
-const carbonSegmentOff = (await imgManip.decode(
-  fs.readFileSync("packs/data/ui_bars/carbon_segment_off.png"),
-)) as imgManip.Image;
-
-const carbonSegmentOn = (await imgManip.decode(
-  fs.readFileSync("packs/data/ui_bars/carbon_segment_on.png"),
-)) as imgManip.Image;
-
-const oilSegmentOff = (await imgManip.decode(
-  fs.readFileSync("packs/data/ui_bars/oil_segment_off.png"),
-)) as imgManip.Image;
-
-const oilSegmentOn = (await imgManip.decode(
-  fs.readFileSync("packs/data/ui_bars/oil_segment_on.png"),
-)) as imgManip.Image;
-
-const ammoniaSegmentOff = (await imgManip.decode(
-  fs.readFileSync("packs/data/ui_bars/ammonia_segment_off.png"),
-)) as imgManip.Image;
-
-const ammoniaSegmentOn = (await imgManip.decode(
-  fs.readFileSync("packs/data/ui_bars/ammonia_segment_on.png"),
-)) as imgManip.Image;
+const STORAGE_BAR_COLORS: string[] = [
+  "black",
+  "orange",
+  "pink",
+  "purple",
+  "red",
+  "yellow",
+];
 
 const arrowProgressEmpty = (await imgManip.decode(
-  fs.readFileSync("packs/data/ui_bars/arrow_progress_empty.png"),
+  fs.readFileSync(
+    "packs/data/ui_composite/progress_indicators/arrow_empty.png",
+  ),
 )) as imgManip.Image;
 
 const arrowProgressFull = (await imgManip.decode(
-  fs.readFileSync("packs/data/ui_bars/arrow_progress_full.png"),
+  fs.readFileSync("packs/data/ui_composite/progress_indicators/arrow_full.png"),
 )) as imgManip.Image;
 
 const flameProgressEmpty = (await imgManip.decode(
-  fs.readFileSync("packs/data/ui_bars/flame_progress_empty.png"),
+  fs.readFileSync(
+    "packs/data/ui_composite/progress_indicators/flame_empty.png",
+  ),
 )) as imgManip.Image;
 
 const flameProgressFull = (await imgManip.decode(
-  fs.readFileSync("packs/data/ui_bars/flame_progress_full.png"),
+  fs.readFileSync("packs/data/ui_composite/progress_indicators/flame_full.png"),
 )) as imgManip.Image;
 
 const itemTexturePath = path.join(TMP_DIR, "RP/textures/item_texture.json");
@@ -132,20 +97,18 @@ async function makeStorageBar(
 }
 
 // storage bars
-await makeStorageBar("ui_power_segment", powerSegmentOn, powerSegmentOff);
-await makeStorageBar(
-  "ui_hydrogen_segment",
-  hydrogenSegmentOn,
-  hydrogenSegmentOff,
-);
-await makeStorageBar(
-  "ui_nitrogen_segment",
-  nitrogenSegmentOn,
-  nitrogenSegmentOff,
-);
-await makeStorageBar("ui_carbon_segment", carbonSegmentOn, carbonSegmentOff);
-await makeStorageBar("ui_oil_segment", oilSegmentOn, oilSegmentOff);
-await makeStorageBar("ui_ammonia_segment", ammoniaSegmentOn, ammoniaSegmentOff);
+for (const color of STORAGE_BAR_COLORS) {
+  const imgBasePath = `packs/data/ui_composite/storage_bar_segments/${color}`;
+
+  const onImg = (await imgManip.decode(
+    fs.readFileSync(`${imgBasePath}_on.png`),
+  )) as imgManip.Image;
+  const offImg = (await imgManip.decode(
+    fs.readFileSync(`${imgBasePath}_off.png`),
+  )) as imgManip.Image;
+
+  await makeStorageBar(`ui_storage_bar_segment_${color}`, onImg, offImg);
+}
 
 // progress bar IDs must match `ui_progress_${indicator}${progress}`
 // see available `indicator` values in scripts/machine_definition_schema.ts under UI elements

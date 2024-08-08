@@ -1,10 +1,14 @@
 import {
   machineRegistry,
   registerMachineScriptEventListener,
-  StorageType,
+  registerStorageTypeScriptEventListener,
 } from "./registry";
 import { MachineNetwork } from "./network";
-import { MachineItemStack, RegisteredMachine } from "@/public_api/src";
+import {
+  MachineItemStack,
+  RegisteredMachine,
+  StorageTypeDefinition,
+} from "@/public_api/src";
 import { setItemInMachineSlot } from "./data";
 import {
   registerScriptEventHandler,
@@ -23,13 +27,18 @@ interface SetItemInMachineSlotPayload {
 
 interface QueueSendPayload {
   loc: SerializableDimensionLocation;
-  type: StorageType;
+  type: string;
   amount: number;
 }
 
 registerScriptEventListener<RegisteredMachine>(
   "fluffyalien_energisticscore:ipc.register_machine",
   registerMachineScriptEventListener,
+);
+
+registerScriptEventListener<StorageTypeDefinition>(
+  "fluffyalien_energisticscore:ipc.register_storage_type",
+  registerStorageTypeScriptEventListener,
 );
 
 registerScriptEventListener<SerializableDimensionLocation>(

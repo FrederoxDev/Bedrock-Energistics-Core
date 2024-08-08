@@ -4,7 +4,6 @@ import {
   Vector3,
   world,
 } from "@minecraft/server";
-import { StorageType } from "./registry_types";
 
 const VERSION = "0.1.0";
 
@@ -43,7 +42,7 @@ export function getBlockUniqueId(loc: DimensionLocation): string {
   );
 }
 
-export function getStorageScoreboard(type: StorageType): ScoreboardObjective {
+export function getStorageScoreboard(type: string): ScoreboardObjective {
   const id = `fluffyalien_energisticscore:storage${type}`;
   return world.scoreboard.getObjective(id) ?? world.scoreboard.addObjective(id);
 }

@@ -1,6 +1,7 @@
 import {
   machineRegistry,
-  StorageType,
+  StorageTypeColor,
+  storageTypeRegistry,
   UiItemSlotElement,
   UiProgressIndicatorElementType,
   UiStorageBarUpdateOptions,
@@ -26,7 +27,7 @@ import {
   machineItemStackToItemStack,
   setItemInMachineSlot,
 } from "./data";
-import { truncateNumber } from "./utils/string";
+import { stringifyDimensionLocation, truncateNumber } from "./utils/string";
 import { invokeScriptEvent } from "@/public_api/src/addon_ipc";
 import {
   makeSerializableDimensionLocation,
@@ -34,14 +35,22 @@ import {
 } from "@/public_api/src/internal";
 import { makeErrorString } from "./utils/log";
 
-export type UiStorageBarType = "disabled" | StorageType;
-
 export const PROGRESS_INDICATOR_MAX_VALUES: Record<
   UiProgressIndicatorElementType,
   number
 > = {
   arrow: 16,
 };
+
+const STORAGE_TYPE_COLOR_TO_FORMATTING_CODE: Record<StorageTypeColor, string> =
+  {
+    black: "8",
+    orange: "6",
+    pink: "d",
+    purple: "u",
+    red: "4",
+    yellow: "e",
+  };
 
 /**
  * key = machine entity
@@ -123,10 +132,11 @@ function fillUiBar(
 }
 
 function handleBarItems(
+  location: DimensionLocation,
   inventory: Container,
   startIndex: number,
   player: Player,
-  type: UiStorageBarType = "disabled",
+  type: string = "_disabled",
   amount = 0,
   change = 0,
 ): void {
@@ -145,33 +155,28 @@ function handleBarItems(
     break;
   }
 
-  switch (type) {
-    case "disabled":
-      fillDisabledUiBar(inventory, startIndex);
-      break;
-    case "energy":
-      fillUiBar(
-        "fluffyalien_energisticscore:ui_power_segment",
-        "e",
-        "energy",
-        inventory,
-        amount,
-        startIndex,
-        change,
-      );
-      break;
-    case "oil":
-      fillUiBar(
-        "fluffyalien_energisticscore:ui_oil_segment",
-        "8",
-        "oil",
-        inventory,
-        amount,
-        startIndex,
-        change,
-      );
-      break;
+  if (type === "_disabled") {
+    fillDisabledUiBar(inventory, startIndex);
+    return;
   }
+
+  if (!(type in storageTypeRegistry)) {
+    throw new Error(
+      `can't update UI for block at ${stringifyDimensionLocation(location)}: storage type '${type}' does not exist`,
+    );
+  }
+
+  const storageTypeOptions = storageTypeRegistry[type];
+
+  fillUiBar(
+    `fluffyalien_energisticscore:ui_storage_bar_segment_${storageTypeOptions.color}`,
+    STORAGE_TYPE_COLOR_TO_FORMATTING_CODE[storageTypeOptions.color],
+    storageTypeOptions.name,
+    inventory,
+    amount,
+    startIndex,
+    change,
+  );
 }
 
 function handleItemSlot(
@@ -342,6 +347,7 @@ async function updateEntityUi(
 
         if (changeOptions) {
           handleBarItems(
+            dimensionLocation,
             inventory,
             options.startIndex,
             player,
@@ -352,7 +358,12 @@ async function updateEntityUi(
           break;
         }
 
-        handleBarItems(inventory, options.startIndex, player);
+        handleBarItems(
+          dimensionLocation,
+          inventory,
+          options.startIndex,
+          player,
+        );
         break;
       }
       case "itemSlot":

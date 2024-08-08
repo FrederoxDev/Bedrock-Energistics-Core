@@ -2,7 +2,7 @@ import { DimensionLocation, ItemTypes } from "@minecraft/server";
 import {
   Description,
   MachineDefinition,
-  StorageType,
+  StorageTypeDefinition,
   UpdateUiHandlerResponse,
 } from "./registry_types";
 import {
@@ -128,6 +128,30 @@ export function registerMachine(options: MachineDefinition): void {
 
 /**
  * @beta
+ * Registers a storage type. This function should be called in the `worldInitialize` after event.
+ */
+export function registerStorageType(definition: StorageTypeDefinition): void {
+  ensureInitialized();
+
+  logInfo(
+    `sending register storage type event for '${definition.id}' (from '${initOptions!.namespace}')`,
+  );
+
+  // reconstruct the definition in case the passed `definition` contains unnecessary keys
+  const payload: StorageTypeDefinition = {
+    id: definition.id,
+    color: definition.color,
+    name: definition.name,
+  };
+
+  dispatchScriptEvent(
+    "fluffyalien_energisticscore:ipc.register_storage_type",
+    payload,
+  );
+}
+
+/**
+ * @beta
  * Updates the network that a block belongs to, if it has one.
  */
 export function updateBlockNetwork(blockLocation: DimensionLocation): void {
@@ -158,7 +182,7 @@ export function updateBlockAdjacentNetworks(
  */
 export function getMachineStorage(
   loc: DimensionLocation,
-  type: StorageType,
+  type: string,
 ): number {
   return getScore(getStorageScoreboard(type), getBlockUniqueId(loc)) ?? 0;
 }
@@ -172,7 +196,7 @@ export function getMachineStorage(
  */
 export function setMachineStorage(
   loc: DimensionLocation,
-  type: StorageType,
+  type: string,
   value: number,
 ): void {
   getStorageScoreboard(type).setScore(getBlockUniqueId(loc), value);
@@ -243,7 +267,7 @@ export function setItemInMachineSlot(
  */
 export function queueSend(
   blockLocation: DimensionLocation,
-  type: StorageType,
+  type: string,
   amount: number,
 ): void {
   dispatchScriptEvent("fluffyalien_energisticscore:ipc.queue_send", {
@@ -268,7 +292,7 @@ export function queueSend(
  */
 export function generate(
   blockLocation: DimensionLocation,
-  type: StorageType,
+  type: string,
   amount: number,
 ): void {
   const stored = getMachineStorage(blockLocation, type);

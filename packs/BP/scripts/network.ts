@@ -4,7 +4,6 @@ import { DestroyableObject } from "./utils/destroyable";
 import { logInfo, makeErrorString } from "./utils/log";
 import { MAX_MACHINE_STORAGE } from "./constants";
 import { getMachineStorage, setMachineStorage } from "./data";
-import { StorageType } from "./registry";
 import {
   getBlockInDirection,
   STR_DIRECTIONS,
@@ -14,7 +13,7 @@ import {
 interface SendQueueItem {
   block: Block;
   amount: number;
-  type: StorageType;
+  type: string;
 }
 
 interface NetworkConnections {
@@ -77,7 +76,7 @@ export class MachineNetwork extends DestroyableObject {
       amount: number;
     }
 
-    const targets: Partial<Record<StorageType, Target[]>> = {};
+    const targets: Record<string, Target[]> = {};
 
     while (this.sendQueue.length) {
       const queuedSend = this.sendQueue.pop()!;
@@ -116,7 +115,7 @@ export class MachineNetwork extends DestroyableObject {
 
       let unsentAmount = queuedSend.amount;
 
-      for (const target of targets[queuedSend.type]!) {
+      for (const target of targets[queuedSend.type]) {
         // we cannot use target.amount because it may be outdated since this is a job
         // so get the actual current amount
         const currentAmount = getMachineStorage(target.block, queuedSend.type);
@@ -173,7 +172,7 @@ export class MachineNetwork extends DestroyableObject {
     return false;
   }
 
-  queueSend(block: Block, type: StorageType, amount: number): void {
+  queueSend(block: Block, type: string, amount: number): void {
     if (amount <= 0) {
       throw new Error(
         makeErrorString("can't send <= 0 (MachineNetwork#queueSend)"),

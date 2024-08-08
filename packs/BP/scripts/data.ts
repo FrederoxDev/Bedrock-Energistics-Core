@@ -9,8 +9,8 @@ import {
 } from "@/public_api/src";
 import {
   getBlockUniqueId,
-  getItemTypeScoreboard,
-  getItemCountScoreboard,
+  getItemTypeScoreboardObjective,
+  getItemCountScoreboardObjective,
 } from "@/public_api/src/internal";
 
 export {
@@ -35,8 +35,8 @@ export function setItemInMachineSlot(
   setChanged = true,
 ): void {
   const uid = getBlockUniqueId(loc);
-  const itemTypeObjective = getItemTypeScoreboard(slot);
-  const itemCountObjective = getItemCountScoreboard(slot);
+  const itemTypeObjective = getItemTypeScoreboardObjective(slot);
+  const itemCountObjective = getItemCountScoreboardObjective(slot);
 
   if (setChanged) {
     const existingChangedItemSlotsArr = machineChangedItemSlots.get(uid);

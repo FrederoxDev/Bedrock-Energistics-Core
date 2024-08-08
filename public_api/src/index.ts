@@ -8,10 +8,11 @@ import {
 import {
   deserializeDimensionLocation,
   getBlockUniqueId,
-  getItemCountScoreboard,
-  getItemTypeScoreboard,
+  getItemCountScoreboardObjective,
+  getItemTypeScoreboardObjective,
   getScore,
-  getStorageScoreboard,
+  getStorageScoreboardObjective,
+  makeErrorString,
   makeSerializableDimensionLocation,
   SerializableDimensionLocation,
 } from "./internal";
@@ -24,8 +25,8 @@ import {
 export * from "./registry_types";
 
 /**
- * @beta
  * Representation of an item stack stored in a machine inventory.
+ * @beta
  */
 export interface MachineItemStack {
   /**
@@ -40,8 +41,8 @@ export interface MachineItemStack {
 }
 
 /**
- * @beta
  * Serializable {@link MachineDefinition}.
+ * @beta
  * @see {@link MachineDefinition}, {@link registerMachine}
  */
 export interface RegisteredMachine {
@@ -54,23 +55,23 @@ export interface InitOptions {
 }
 
 /**
- * The amount that each storage bar segment in a machine is worth
+ * The amount that each storage bar segment in a machine is worth.
  */
 export const STORAGE_AMOUNT_PER_BAR_SEGMENT = 100;
 /**
- * The max storage of each storage type in a machine
+ * The max storage of each storage type in a machine.
  */
 export const MAX_MACHINE_STORAGE = STORAGE_AMOUNT_PER_BAR_SEGMENT * 64;
 
 let initOptions: InitOptions | undefined;
 
 /**
- * @beta
  * Sets global info to be used by functions in this package.
+ * @beta
  */
 export function init(options: InitOptions): void {
   if (initOptions) {
-    throw new Error("'init' has already been called");
+    throw new Error(makeErrorString("'init' has already been called"));
   }
 
   initOptions = options;
@@ -78,13 +79,13 @@ export function init(options: InitOptions): void {
 
 function ensureInitialized(): void {
   if (!initOptions) {
-    throw new Error("'init' has not been called");
+    throw new Error(makeErrorString("'init' has not been called"));
   }
 }
 
 /**
- * @beta
  * Tests whether Bedrock Energistics Core is in the world or not.
+ * @beta
  */
 export function isBedrockEnergisticsCoreInWorld(): boolean {
   return !!ItemTypes.get(
@@ -93,8 +94,8 @@ export function isBedrockEnergisticsCoreInWorld(): boolean {
 }
 
 /**
- * @beta
  * Registers a machine. This function should be called in the `worldInitialize` after event.
+ * @beta
  */
 export function registerMachine(options: MachineDefinition): void {
   ensureInitialized();
@@ -122,8 +123,8 @@ export function registerMachine(options: MachineDefinition): void {
 }
 
 /**
- * @beta
  * Registers a storage type. This function should be called in the `worldInitialize` after event.
+ * @beta
  */
 export function registerStorageType(definition: StorageTypeDefinition): void {
   ensureInitialized();
@@ -142,8 +143,8 @@ export function registerStorageType(definition: StorageTypeDefinition): void {
 }
 
 /**
- * @beta
  * Updates the network that a block belongs to, if it has one.
+ * @beta
  */
 export function updateBlockNetwork(blockLocation: DimensionLocation): void {
   dispatchScriptEvent(
@@ -153,8 +154,8 @@ export function updateBlockNetwork(blockLocation: DimensionLocation): void {
 }
 
 /**
- * @beta
  * Updates the networks adjacent to a block.
+ * @beta
  */
 export function updateBlockAdjacentNetworks(
   blockLocation: DimensionLocation,
@@ -166,36 +167,74 @@ export function updateBlockAdjacentNetworks(
 }
 
 /**
- * @beta
  * Gets the storage of a specific type in a machine.
+ * @beta
  * @param loc The location of the machine.
  * @param type The type of storage to get.
+ * @throws Throws {@link Error} if the storage type does not exist
  */
 export function getMachineStorage(
   loc: DimensionLocation,
   type: string,
 ): number {
-  return getScore(getStorageScoreboard(type), getBlockUniqueId(loc)) ?? 0;
+  const objective = getStorageScoreboardObjective(type);
+  if (!objective) {
+    throw new Error(
+      makeErrorString(
+        `trying to get machine storage of type '${type}' but that storage type does not exist`,
+      ),
+    );
+  }
+
+  return getScore(objective, getBlockUniqueId(loc)) ?? 0;
 }
 
 /**
- * @beta
  * Sets the storage of a specific type in a machine.
+ * @beta
  * @param loc The location of the machine.
  * @param type The type of storage to set.
- * @param value The new value.
+ * @param value The new value. Must be an integer.
+ * @throws Throws if the storage type does not exist.
+ * @throws Throws if the new value is negative or greater than {@link MAX_MACHINE_STORAGE}.
+ * @throws Throws if the new value is not an integer.
  */
 export function setMachineStorage(
   loc: DimensionLocation,
   type: string,
   value: number,
 ): void {
-  getStorageScoreboard(type).setScore(getBlockUniqueId(loc), value);
+  if (value < 0) {
+    throw new Error(
+      makeErrorString(
+        `trying to set machine storage of type '${type}' to ${value.toString()} which is less than the minimum value (0)`,
+      ),
+    );
+  }
+
+  if (value > MAX_MACHINE_STORAGE) {
+    throw new Error(
+      makeErrorString(
+        `trying to set machine storage of type '${type}' to ${value.toString()} which is greater than the maximum value (${MAX_MACHINE_STORAGE.toString()})`,
+      ),
+    );
+  }
+
+  const objective = getStorageScoreboardObjective(type);
+  if (!objective) {
+    throw new Error(
+      makeErrorString(
+        `trying to set machine storage of type '${type}' but that storage type does not exist`,
+      ),
+    );
+  }
+
+  objective.setScore(getBlockUniqueId(loc), value);
 }
 
 /**
- * @beta
  * Gets an item from a machine inventory.
+ * @beta
  * @param loc The location of the machine.
  * @param slotId The number ID of the slot as defined when the machine was registered (see {@link UiItemSlotElement}).
  * @returns The {@link MachineItemStack}.
@@ -206,12 +245,18 @@ export function getItemInMachineSlot(
 ): MachineItemStack | undefined {
   const participantId = getBlockUniqueId(loc);
 
-  const itemType = getScore(getItemTypeScoreboard(slotId), participantId);
+  const itemType = getScore(
+    getItemTypeScoreboardObjective(slotId),
+    participantId,
+  );
   if (itemType === undefined) {
     return;
   }
 
-  const itemCount = getScore(getItemCountScoreboard(slotId), participantId);
+  const itemCount = getScore(
+    getItemCountScoreboardObjective(slotId),
+    participantId,
+  );
   if (!itemCount) {
     return;
   }
@@ -223,11 +268,11 @@ export function getItemInMachineSlot(
 }
 
 /**
+ * Sets an item in a machine inventory.
  * @beta
- * Sets an item in a machine inventory
- * @param loc The location of the machine
+ * @param loc The location of the machine.
  * @param slotId The number ID of the slot as defined when the machine was registered (see {@link UiItemSlotElement}).
- * @param newItemStack The {@link MachineItemStack} to put in the slot. Pass `undefined` to remove the item in the slot
+ * @param newItemStack The {@link MachineItemStack} to put in the slot. Pass `undefined` to remove the item in the slot.
  */
 export function setItemInMachineSlot(
   loc: DimensionLocation,
@@ -245,15 +290,15 @@ export function setItemInMachineSlot(
 }
 
 /**
- * @beta
  * Queue sending energy, gas, or fluid over a machine network.
+ * @beta
  * @remarks
  * Note: in most cases, prefer {@link generate} over this function.
  * Automatically sets the machine's reserve storage to the amount that was not received.
  * @param blockLocation The location of the machine that is sending the energy, gas, or fluid.
  * @param type The storage type to send.
  * @param amount The amount to send.
- * @throws if `amount` is <= 0
+ * @throws if `amount` is <= 0.
  * @see {@link generate}
  */
 export function queueSend(
@@ -269,8 +314,8 @@ export function queueSend(
 }
 
 /**
- * @beta
  * Sends energy, gas, or fluid over a machine network. Includes reserve storage as well.
+ * @beta
  * @remarks
  * This function should be called every block tick for generators even if the generation is `0` because it sends reserve storage.
  * Automatically sets the machine's reserve storage to the amount that was not received.
@@ -278,7 +323,7 @@ export function queueSend(
  * Unlike `queueSend`, this function does not throw if `amount` <= 0.
  * @param blockLocation The location of the machine that is generating.
  * @param type The storage type to generate.
- * @param amount The amount to generate
+ * @param amount The amount to generate.
  * @see {@link queueSend}
  */
 export function generate(
@@ -297,10 +342,10 @@ export function generate(
 }
 
 /**
+ * Gets a registered machine.
  * @beta
- * Gets a {@link RegisteredMachine} with the specified `id` or `null` if it doesn't exist.
  * @param id The ID of the machine.
- * @returns The RegisteredMachine with the specified `id` or `null` if it doesn't exist.
+ * @returns The {@link RegisteredMachine} with the specified `id` or `null` if it doesn't exist.
  * @throws if Bedrock Energistics Core takes too long to respond.
  */
 export function getRegisteredMachine(

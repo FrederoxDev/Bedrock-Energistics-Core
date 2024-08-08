@@ -5,6 +5,8 @@ import {
   world,
 } from "@minecraft/server";
 
+const VERSION = "0.1.0";
+
 export interface SerializableDimensionLocation extends Vector3 {
   dimension: string;
 }
@@ -40,17 +42,23 @@ export function getBlockUniqueId(loc: DimensionLocation): string {
   );
 }
 
-export function getStorageScoreboard(type: string): ScoreboardObjective {
+export function getStorageScoreboardObjective(
+  type: string,
+): ScoreboardObjective | undefined {
   const id = `fluffyalien_energisticscore:storage${type}`;
-  return world.scoreboard.getObjective(id) ?? world.scoreboard.addObjective(id);
+  return world.scoreboard.getObjective(id);
 }
 
-export function getItemTypeScoreboard(slot: number): ScoreboardObjective {
+export function getItemTypeScoreboardObjective(
+  slot: number,
+): ScoreboardObjective {
   const id = `fluffyalien_energisticscore:itemtype${slot.toString()}`;
   return world.scoreboard.getObjective(id) ?? world.scoreboard.addObjective(id);
 }
 
-export function getItemCountScoreboard(slot: number): ScoreboardObjective {
+export function getItemCountScoreboardObjective(
+  slot: number,
+): ScoreboardObjective {
   const id = `fluffyalien_energisticscore:itemcount${slot.toString()}`;
   return world.scoreboard.getObjective(id) ?? world.scoreboard.addObjective(id);
 }
@@ -64,4 +72,12 @@ export function getScore(
   }
 
   return objective.getScore(participant);
+}
+
+function makeLogString(logLevel: string, message: string): string {
+  return `[Bedrock Energistics Core API v${VERSION}] ${logLevel} ${message}`;
+}
+
+export function makeErrorString(message: string): string {
+  return makeLogString("ERROR", message);
 }

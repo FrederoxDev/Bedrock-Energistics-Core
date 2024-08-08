@@ -17,8 +17,6 @@ export function registerMachineScriptEventListener(
 ): void {
   if (data.description.id in machineRegistry) {
     logInfo(`overrode machine '${data.description.id}'`);
-  } else {
-    logInfo(`registered machine '${data.description.id}'`);
   }
 
   machineRegistry[data.description.id] = data;
@@ -29,8 +27,6 @@ export function registerStorageTypeScriptEventListener(
 ): void {
   if (data.id in storageTypeRegistry) {
     logInfo(`overrode storage type '${data.id}'`);
-  } else {
-    logInfo(`registered storage type '${data.id}'`);
   }
 
   storageTypeRegistry[data.id] = data;

@@ -1,7 +1,7 @@
 import { Block, Dimension, Vector3, system } from "@minecraft/server";
 import { Vector3Utils } from "@minecraft/math";
 import { DestroyableObject } from "./utils/destroyable";
-import { logInfo, makeErrorString } from "./utils/log";
+import { makeErrorString } from "./utils/log";
 import { MAX_MACHINE_STORAGE } from "./constants";
 import { getMachineStorage, setMachineStorage } from "./data";
 import {
@@ -41,10 +41,6 @@ export class MachineNetwork extends DestroyableObject {
       this.sendJobRunning = true;
       system.runJob(this.send());
     }, 5);
-
-    logInfo(
-      `MachineNetwork created, new count: ${MachineNetwork.networks.length.toString()}`,
-    );
   }
 
   destroy(): void {
@@ -56,10 +52,6 @@ export class MachineNetwork extends DestroyableObject {
     if (i === -1) return;
 
     MachineNetwork.networks.splice(i, 1);
-
-    logInfo(
-      `MachineNetwork destroyed, new count: ${MachineNetwork.networks.length.toString()}`,
-    );
   }
 
   /**

@@ -21,7 +21,7 @@ export const machineComponent: BlockCustomComponent = {
     if (!definition) {
       throw new Error(
         makeErrorString(
-          `can't process interaction for block '${e.block.typeId}': this block uses the 'fluffyalien_energisticscore:machine' custom component but it could not be found in the machine registry.`,
+          `can't process interaction for block '${e.block.typeId}': this block uses the 'fluffyalien_energisticscore:machine' custom component but it could not be found in the machine registry`,
         ),
       );
     }

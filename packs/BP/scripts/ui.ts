@@ -162,7 +162,9 @@ function handleBarItems(
 
   if (!(type in storageTypeRegistry)) {
     throw new Error(
-      `can't update UI for block at ${stringifyDimensionLocation(location)}: storage type '${type}' does not exist`,
+      makeErrorString(
+        `can't update UI for block at ${stringifyDimensionLocation(location)}: storage type '${type}' does not exist`,
+      ),
     );
   }
 

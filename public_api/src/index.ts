@@ -12,7 +12,6 @@ import {
   getItemTypeScoreboard,
   getScore,
   getStorageScoreboard,
-  logInfo,
   makeSerializableDimensionLocation,
   SerializableDimensionLocation,
 } from "./internal";
@@ -100,10 +99,6 @@ export function isBedrockEnergisticsCoreInWorld(): boolean {
 export function registerMachine(options: MachineDefinition): void {
   ensureInitialized();
 
-  logInfo(
-    `sending register machine event for '${options.description.id}' (from '${initOptions!.namespace}')`,
-  );
-
   let updateUiEvent: string | undefined;
   if (options.handlers?.updateUi) {
     updateUiEvent = `${options.description.id}__updateUiHandler`;
@@ -132,10 +127,6 @@ export function registerMachine(options: MachineDefinition): void {
  */
 export function registerStorageType(definition: StorageTypeDefinition): void {
   ensureInitialized();
-
-  logInfo(
-    `sending register storage type event for '${definition.id}' (from '${initOptions!.namespace}')`,
-  );
 
   // reconstruct the definition in case the passed `definition` contains unnecessary keys
   const payload: StorageTypeDefinition = {

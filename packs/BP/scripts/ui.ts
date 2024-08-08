@@ -280,13 +280,6 @@ async function updateEntityUi(
   player: Player,
   init: boolean,
 ): Promise<void> {
-  const dimensionLocation = {
-    x: Math.floor(entity.location.x),
-    y: Math.floor(entity.location.y),
-    z: Math.floor(entity.location.z),
-    dimension: entity.dimension,
-  };
-
   const definition = machineRegistry[entity.typeId];
 
   if (!definition.description.ui) {
@@ -305,9 +298,12 @@ async function updateEntityUi(
     );
   }
 
-  const storageBarChanges: Record<string, UiStorageBarUpdateOptions> = {};
-
-  let progressIndicators: Record<string, number> = {};
+  const dimensionLocation = {
+    x: Math.floor(entity.location.x),
+    y: Math.floor(entity.location.y),
+    z: Math.floor(entity.location.z),
+    dimension: entity.dimension,
+  };
 
   const result = await invokeScriptEvent<
     SerializableDimensionLocation,
@@ -317,6 +313,15 @@ async function updateEntityUi(
     "fluffyalien_energisticscore",
     makeSerializableDimensionLocation(dimensionLocation),
   );
+
+  // ensure the entity is still valid after invoking updateUi
+  if (!entity.isValid()) {
+    return;
+  }
+
+  const storageBarChanges: Record<string, UiStorageBarUpdateOptions> = {};
+
+  let progressIndicators: Record<string, number> = {};
 
   if (result.storageBars) {
     for (const changeOptions of result.storageBars) {

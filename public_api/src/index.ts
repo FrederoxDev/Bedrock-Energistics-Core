@@ -132,6 +132,7 @@ export function registerStorageType(definition: StorageTypeDefinition): void {
   // reconstruct the definition in case the passed `definition` contains unnecessary keys
   const payload: StorageTypeDefinition = {
     id: definition.id,
+    category: definition.category,
     color: definition.color,
     name: definition.name,
   };
@@ -143,12 +144,25 @@ export function registerStorageType(definition: StorageTypeDefinition): void {
 }
 
 /**
- * Updates the network that a block belongs to, if it has one.
+ * Updates the networks that a block belongs to, if it has any.
  * @beta
  */
-export function updateBlockNetwork(blockLocation: DimensionLocation): void {
+export function updateBlockNetworks(blockLocation: DimensionLocation): void {
   dispatchScriptEvent(
-    "fluffyalien_energisticscore:ipc.update_block_network",
+    "fluffyalien_energisticscore:ipc.update_block_networks",
+    makeSerializableDimensionLocation(blockLocation),
+  );
+}
+
+/**
+ * Updates the networks adjacent to a block that the block can connect to.
+ * @beta
+ */
+export function updateBlockConnectableNetworks(
+  blockLocation: DimensionLocation,
+): void {
+  dispatchScriptEvent(
+    "fluffyalien_energisticscore:ipc.update_block_connectable_networks",
     makeSerializableDimensionLocation(blockLocation),
   );
 }

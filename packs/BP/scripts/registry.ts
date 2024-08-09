@@ -10,6 +10,7 @@ export const storageTypeRegistry: Record<string, StorageTypeDefinition> = {};
 // register energy by default
 registerStorageTypeScriptEventListener({
   id: "energy",
+  category: "energy",
   color: "yellow",
   name: "energy",
 });

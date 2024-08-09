@@ -29,6 +29,7 @@ export class MachineNetwork extends DestroyableObject {
   private readonly intervalId: number;
 
   constructor(
+    readonly category: string,
     readonly dimension: Dimension,
     private readonly connections: NetworkConnections,
   ) {
@@ -174,19 +175,14 @@ export class MachineNetwork extends DestroyableObject {
     this.sendQueue.push({ block, type, amount });
   }
 
-  private static discoverConnections(origin: Block): NetworkConnections {
+  private static discoverConnections(
+    origin: Block,
+    category: string,
+  ): NetworkConnections {
     const connections: NetworkConnections = {
       conduits: [],
       machines: [],
     };
-
-    const originHasEnergyIo = origin.hasTag(
-      "fluffyalien_energisticscore:io.energy",
-    );
-    const originHasFluidIo = origin.hasTag(
-      "fluffyalien_energisticscore:io.fluid",
-    );
-    const originHasGasIo = origin.hasTag("fluffyalien_energisticscore:io.gas");
 
     const stack: Block[] = [];
     const visitedLocations: Vector3[] = [];
@@ -210,18 +206,8 @@ export class MachineNetwork extends DestroyableObject {
         return;
       }
 
-      const nextHasEnergyIo = nextBlock.hasTag(
-        "fluffyalien_energisticscore:io.energy",
-      );
-      const nextHasFluidIo = nextBlock.hasTag(
-        "fluffyalien_energisticscore:io.fluid",
-      );
-      const nextHasGasIo = nextBlock.hasTag("fluffyalien_energistics:io.gas");
-
       if (
-        ((originHasEnergyIo && nextHasEnergyIo) ||
-          (originHasFluidIo && nextHasFluidIo) ||
-          (originHasGasIo && nextHasGasIo)) &&
+        nextBlock.hasTag(`fluffyalien_energisticscore:io.${category}`) &&
         !visitedLocations.some((loc) =>
           Vector3Utils.equals(loc, nextBlock.location),
         )
@@ -246,33 +232,55 @@ export class MachineNetwork extends DestroyableObject {
     return connections;
   }
 
-  static establish(block: Block): MachineNetwork | undefined {
-    const connections = MachineNetwork.discoverConnections(block);
+  static establish(category: string, block: Block): MachineNetwork | undefined {
+    const connections = MachineNetwork.discoverConnections(block, category);
     if (!connections.machines.length) {
       return;
     }
 
-    return new MachineNetwork(block.dimension, connections);
+    return new MachineNetwork(category, block.dimension, connections);
   }
 
-  static get(block: Block): MachineNetwork | undefined {
-    return MachineNetwork.networks.find((network) =>
+  static get(category: string, block: Block): MachineNetwork | undefined {
+    return MachineNetwork.networks.find(
+      (network) =>
+        network.category === category && network.isPartOfNetwork(block),
+    );
+  }
+
+  static getAll(block: Block): MachineNetwork[] {
+    return MachineNetwork.networks.filter((network) =>
       network.isPartOfNetwork(block),
     );
   }
 
-  static getOrEstablish(block: Block): MachineNetwork | undefined {
-    return MachineNetwork.get(block) ?? MachineNetwork.establish(block);
+  static getOrEstablish(
+    category: string,
+    block: Block,
+  ): MachineNetwork | undefined {
+    return (
+      MachineNetwork.get(category, block) ??
+      MachineNetwork.establish(category, block)
+    );
   }
 
-  static updateAdjacent(block: Block): void {
+  static updateAdjacent(block: Block, categories?: string[]): void {
     for (const direction of STR_DIRECTIONS) {
       const blockInDirection = getBlockInDirection(block, direction);
       if (!blockInDirection) {
         continue;
       }
 
-      MachineNetwork.get(blockInDirection)?.destroy();
+      if (categories) {
+        for (const category of categories) {
+          MachineNetwork.get(category, blockInDirection)?.destroy();
+        }
+        continue;
+      }
+
+      for (const network of MachineNetwork.getAll(blockInDirection)) {
+        network.destroy();
+      }
     }
   }
 }

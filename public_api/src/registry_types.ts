@@ -74,6 +74,7 @@ export type StorageTypeColor =
 
 export interface StorageTypeDefinition {
   id: string;
+  category: string;
   color: StorageTypeColor;
   name: string;
 }

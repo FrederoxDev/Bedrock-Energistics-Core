@@ -2,6 +2,7 @@ import {
   machineRegistry,
   registerMachineScriptEventListener,
   registerStorageTypeScriptEventListener,
+  storageTypeRegistry,
 } from "./registry";
 import { MachineNetwork } from "./network";
 import {
@@ -18,6 +19,7 @@ import {
   deserializeDimensionLocation,
   SerializableDimensionLocation,
 } from "@/public_api/src/internal";
+import { getBlockIoCategories } from "./io";
 
 interface SetItemInMachineSlotPayload {
   loc: SerializableDimensionLocation;
@@ -42,24 +44,26 @@ registerScriptEventListener<StorageTypeDefinition>(
 );
 
 registerScriptEventListener<SerializableDimensionLocation>(
-  "fluffyalien_energisticscore:ipc.update_block_network",
+  "fluffyalien_energisticscore:ipc.update_block_networks",
   (payload) => {
     const loc = deserializeDimensionLocation(payload);
     const block = loc.dimension.getBlock(loc);
     if (!block) return;
 
-    MachineNetwork.get(block)?.destroy();
+    for (const category of getBlockIoCategories(block)) {
+      MachineNetwork.get(category, block)?.destroy();
+    }
   },
 );
 
 registerScriptEventListener<SerializableDimensionLocation>(
-  "fluffyalien_energisticscore:ipc.update_block_adjacent_networks",
+  "fluffyalien_energisticscore:ipc.update_block_connectable_networks",
   (payload) => {
     const loc = deserializeDimensionLocation(payload);
     const block = loc.dimension.getBlock(loc);
     if (!block) return;
 
-    MachineNetwork.updateAdjacent(block);
+    MachineNetwork.updateAdjacent(block, getBlockIoCategories(block));
   },
 );
 
@@ -81,7 +85,9 @@ registerScriptEventListener<QueueSendPayload>(
     const block = loc.dimension.getBlock(loc);
     if (!block) return;
 
-    MachineNetwork.getOrEstablish(block)?.queueSend(
+    const storageType = storageTypeRegistry[payload.type];
+
+    MachineNetwork.getOrEstablish(storageType.category, block)?.queueSend(
       block,
       payload.type,
       payload.amount,

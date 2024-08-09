@@ -1,4 +1,4 @@
-import { DimensionLocation, ItemTypes } from "@minecraft/server";
+import { Block, DimensionLocation, ItemTypes } from "@minecraft/server";
 import {
   Description,
   MachineDefinition,
@@ -206,18 +206,27 @@ export function getMachineStorage(
 /**
  * Sets the storage of a specific type in a machine.
  * @beta
- * @param loc The location of the machine.
+ * @param block The machine block.
  * @param type The type of storage to set.
  * @param value The new value. Must be an integer.
  * @throws Throws if the storage type does not exist.
  * @throws Throws if the new value is negative or greater than {@link MAX_MACHINE_STORAGE}.
  * @throws Throws if the new value is not an integer.
+ * @throws Throws if the block is not valid
  */
 export function setMachineStorage(
-  loc: DimensionLocation,
+  block: Block,
   type: string,
   value: number,
 ): void {
+  if (!block.isValid()) {
+    throw new Error(
+      makeErrorString(
+        `trying to set machine storage but the block is not valid`,
+      ),
+    );
+  }
+
   if (value < 0) {
     throw new Error(
       makeErrorString(
@@ -243,7 +252,7 @@ export function setMachineStorage(
     );
   }
 
-  objective.setScore(getBlockUniqueId(loc), value);
+  objective.setScore(getBlockUniqueId(block), value);
 }
 
 /**

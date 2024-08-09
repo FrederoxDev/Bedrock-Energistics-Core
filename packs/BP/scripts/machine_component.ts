@@ -39,7 +39,7 @@ world.beforeEvents.playerBreakBlock.subscribe((e) => {
     return;
   }
 
-  MachineNetwork.get(e.block)?.destroy();
+  MachineNetwork.updateBlockNetworks(e.block);
 
   const definition = machineRegistry[e.block.typeId] as
     | RegisteredMachine

@@ -283,4 +283,10 @@ export class MachineNetwork extends DestroyableObject {
       }
     }
   }
+
+  static updateBlockNetworks(block: Block): void {
+    for (const network of MachineNetwork.getAll(block)) {
+      network.destroy();
+    }
+  }
 }

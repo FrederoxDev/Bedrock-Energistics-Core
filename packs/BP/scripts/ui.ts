@@ -124,7 +124,7 @@ function fillUiBar(
 
     itemStack.nameTag = `§r§${labelColorCode}${amount.toString()}/${MAX_MACHINE_STORAGE.toString()} ${name}`;
     if (change) {
-      itemStack.nameTag += ` (${change < 0 ? "" : "+"}${truncateNumber(change, 1)}/t)`;
+      itemStack.nameTag += ` (${change < 0 ? "" : "+"}${truncateNumber(change, 2)}/t)`;
     }
 
     inventory.setItem(i, itemStack);

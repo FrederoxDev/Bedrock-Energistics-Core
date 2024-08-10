@@ -34,6 +34,7 @@ import {
   SerializableDimensionLocation,
 } from "@/public_api/src/internal";
 import { makeErrorString } from "./utils/log";
+import { RegisteredMachine } from "@/public_api/src";
 
 export const PROGRESS_INDICATOR_MAX_VALUES: Record<
   UiProgressIndicatorElementType,
@@ -276,12 +277,11 @@ function handleProgressIndicator(
 }
 
 async function updateEntityUi(
+  definition: RegisteredMachine,
   entity: Entity,
   player: Player,
   init: boolean,
 ): Promise<void> {
-  const definition = machineRegistry[entity.typeId];
-
   if (!definition.description.ui) {
     throw new Error(
       makeErrorString(
@@ -401,7 +401,8 @@ world.afterEvents.playerInteractWithEntity.subscribe((e) => {
   }
 
   playersInUi.set(e.target, e.player);
-  void updateEntityUi(e.target, e.player, true);
+  const definition = machineRegistry[e.target.typeId];
+  void updateEntityUi(definition, e.target, e.player, true);
 });
 
 world.afterEvents.entitySpawn.subscribe((e) => {
@@ -421,6 +422,18 @@ system.runInterval(() => {
       continue;
     }
 
-    void updateEntityUi(entity, player, false);
+    const definition = machineRegistry[entity.typeId];
+    if (definition.description.persistentEntity) {
+      const players = entity.dimension.getPlayers({
+        location: entity.location,
+        maxDistance: 10,
+      });
+      if (!players.length) {
+        playersInUi.delete(entity);
+        continue;
+      }
+    }
+
+    void updateEntityUi(definition, entity, player, false);
   }
 }, 5);

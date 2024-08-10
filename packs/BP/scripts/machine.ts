@@ -13,6 +13,24 @@ export const machineComponent: BlockCustomComponent = {
   onPlace(e) {
     if (e.block.typeId === e.previousBlock.type.id) return;
     MachineNetwork.updateAdjacent(e.block);
+
+    const definition = machineRegistry[e.block.typeId] as
+      | RegisteredMachine
+      | undefined;
+    if (!definition) {
+      throw new Error(
+        makeErrorString(
+          `can't process onPlace event for block '${e.block.typeId}': this block uses the 'fluffyalien_energisticscore:machine' custom component but it could not be found in the machine registry`,
+        ),
+      );
+    }
+
+    if (definition.description.persistentEntity) {
+      e.block.dimension.spawnEntity(
+        e.block.typeId,
+        e.block.bottomCenter(),
+      ).nameTag = e.block.typeId;
+    }
   },
   onPlayerInteract(e) {
     const definition = machineRegistry[e.block.typeId] as
@@ -21,7 +39,7 @@ export const machineComponent: BlockCustomComponent = {
     if (!definition) {
       throw new Error(
         makeErrorString(
-          `can't process interaction for block '${e.block.typeId}': this block uses the 'fluffyalien_energisticscore:machine' custom component but it could not be found in the machine registry`,
+          `can't process onPlayerInteract event for block '${e.block.typeId}': this block uses the 'fluffyalien_energisticscore:machine' custom component but it could not be found in the machine registry`,
         ),
       );
     }
@@ -44,7 +62,16 @@ world.beforeEvents.playerBreakBlock.subscribe((e) => {
   const definition = machineRegistry[e.block.typeId] as
     | RegisteredMachine
     | undefined;
-  if (!definition?.description.ui) return;
+  if (!definition) {
+    throw new Error(
+      makeErrorString(
+        `can't process playerBreakBlock event for block '${e.block.typeId}': this block uses the 'fluffyalien_energisticscore:machine' custom component but it could not be found in the machine registry`,
+      ),
+    );
+  }
+  if (!definition.description.ui || definition.description.persistentEntity) {
+    return;
+  }
 
   system.run(() => {
     for (const element of Object.values(definition.description.ui!.elements)) {
@@ -66,10 +93,24 @@ world.beforeEvents.playerBreakBlock.subscribe((e) => {
 world.afterEvents.entityHitEntity.subscribe((e) => {
   if (
     e.damagingEntity.typeId !== "minecraft:player" ||
-    !e.hitEntity.matches({
-      families: ["fluffyalien_energisticscore:machine_entity"],
-    })
+    !e.hitEntity
+      .getComponent("type_family")
+      ?.hasTypeFamily("fluffyalien_energisticscore:machine_entity")
   ) {
+    return;
+  }
+
+  const definition = machineRegistry[e.hitEntity.typeId] as
+    | RegisteredMachine
+    | undefined;
+  if (!definition) {
+    throw new Error(
+      makeErrorString(
+        `can't process entityHitEntity event for machine entity '${e.hitEntity.typeId}': this entity has 'fluffyalien_energisticscore:machine_entity' type family but it could not be found in the machine registry`,
+      ),
+    );
+  }
+  if (definition.description.persistentEntity) {
     return;
   }
 

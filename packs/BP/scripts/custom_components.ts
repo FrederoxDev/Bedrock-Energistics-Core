@@ -1,5 +1,5 @@
 import { world } from "@minecraft/server";
-import { machineComponent } from "./machine_component";
+import { machineComponent } from "./machine";
 import { conduitComponent } from "./conduit_component";
 
 world.beforeEvents.worldInitialize.subscribe((e) => {

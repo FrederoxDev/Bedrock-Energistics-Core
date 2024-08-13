@@ -46,10 +46,10 @@ export function dispatchScriptEvent(event: string, payload: unknown): void {
 // total number of invokes this session, used to create a unique response listener ID
 let invokeCount = 0;
 
-export async function invokeScriptEvent<TPayload, TResponse>(
+export async function invokeScriptEvent<TResponse>(
   event: string,
   namespace: string,
-  payload: TPayload,
+  payload: unknown,
 ): Promise<TResponse> {
   const responseListenerId = `${namespace}:ipc.internal.handler_response_listener${invokeCount.toString()}`;
   invokeCount++;

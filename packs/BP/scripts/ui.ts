@@ -29,10 +29,7 @@ import {
 } from "./data";
 import { stringifyDimensionLocation, truncateNumber } from "./utils/string";
 import { invokeScriptEvent } from "@/public_api/src/addon_ipc";
-import {
-  makeSerializableDimensionLocation,
-  SerializableDimensionLocation,
-} from "@/public_api/src/internal";
+import { makeSerializableDimensionLocation } from "@/public_api/src/internal";
 import { makeErrorString } from "./utils/log";
 import { RegisteredMachine } from "@/public_api/src";
 
@@ -305,10 +302,7 @@ async function updateEntityUi(
     dimension: entity.dimension,
   };
 
-  const result = await invokeScriptEvent<
-    SerializableDimensionLocation,
-    UpdateUiHandlerResponse
-  >(
+  const result = await invokeScriptEvent<UpdateUiHandlerResponse>(
     definition.updateUiEvent,
     "fluffyalien_energisticscore",
     makeSerializableDimensionLocation(dimensionLocation),

@@ -43,7 +43,9 @@ export const machineComponent: BlockCustomComponent = {
         ),
       );
     }
-    if (!definition.description.ui) return;
+    if (!definition.description.ui || definition.description.persistentEntity) {
+      return;
+    }
 
     e.block.dimension.spawnEntity(
       e.block.typeId,

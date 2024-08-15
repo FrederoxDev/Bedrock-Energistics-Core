@@ -1,11 +1,44 @@
-import { world } from "@minecraft/server";
-import { logInfo } from "./utils/log";
-import { RegisteredMachine, StorageTypeDefinition } from "@/public_api/src";
+import { DimensionLocation, world } from "@minecraft/server";
+import { logInfo, makeErrorString } from "./utils/log";
+import {
+  RegisteredMachine,
+  StorageTypeDefinition,
+  UpdateUiHandlerResponse,
+} from "@/public_api/src";
+import { invokeScriptEvent } from "@/public_api/src/addon_ipc";
+import {
+  makeSerializableDimensionLocation,
+  MangledRegisteredMachine,
+} from "@/public_api/src/internal";
 
 export * from "@/public_api/src/registry_types";
 
-export const machineRegistry: Record<string, RegisteredMachine> = {};
+export const machineRegistry: Record<string, InternalRegisteredMachine> = {};
 export const storageTypeRegistry: Record<string, StorageTypeDefinition> = {};
+
+export class InternalRegisteredMachine extends RegisteredMachine {
+  get updateUiEvent(): string | undefined {
+    return this.internal.d;
+  }
+
+  callUpdateUiHandler(
+    dimensionLocation: DimensionLocation,
+  ): Promise<UpdateUiHandlerResponse> {
+    if (!this.updateUiEvent) {
+      throw new Error(
+        makeErrorString(
+          "trying to call the 'updateUi' handler but it is not defined",
+        ),
+      );
+    }
+
+    return invokeScriptEvent<UpdateUiHandlerResponse>(
+      this.updateUiEvent,
+      "fluffyalien_energisticscore",
+      makeSerializableDimensionLocation(dimensionLocation),
+    );
+  }
+}
 
 // register energy by default
 registerStorageTypeScriptEventListener({
@@ -16,13 +49,15 @@ registerStorageTypeScriptEventListener({
 });
 
 export function registerMachineScriptEventListener(
-  data: RegisteredMachine,
+  mData: MangledRegisteredMachine,
 ): void {
-  if (data.description.id in machineRegistry) {
-    logInfo(`overrode machine '${data.description.id}'`);
+  const data = new InternalRegisteredMachine(mData);
+
+  if (data.id in machineRegistry) {
+    logInfo(`overrode machine '${data.id}'`);
   }
 
-  machineRegistry[data.description.id] = data;
+  machineRegistry[data.id] = data;
 }
 
 export function registerStorageTypeScriptEventListener(

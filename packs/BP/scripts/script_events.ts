@@ -17,6 +17,7 @@ import {
 } from "@/public_api/src/addon_ipc";
 import {
   deserializeDimensionLocation,
+  MangledRegisteredMachine,
   SerializableDimensionLocation,
 } from "@/public_api/src/internal";
 import { getBlockIoCategories } from "./io";
@@ -33,7 +34,7 @@ interface QueueSendPayload {
   amount: number;
 }
 
-registerScriptEventListener<RegisteredMachine>(
+registerScriptEventListener<MangledRegisteredMachine>(
   "fluffyalien_energisticscore:ipc.register_machine",
   registerMachineScriptEventListener,
 );

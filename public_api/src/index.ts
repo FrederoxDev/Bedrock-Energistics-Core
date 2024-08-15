@@ -1,8 +1,8 @@
 import { Block, DimensionLocation, ItemTypes } from "@minecraft/server";
 import {
-  Description,
   MachineDefinition,
   StorageTypeDefinition,
+  UiElement,
   UpdateUiHandlerResponse,
 } from "./registry_types";
 import {
@@ -14,6 +14,7 @@ import {
   getStorageScoreboardObjective,
   makeErrorString,
   makeSerializableDimensionLocation,
+  MangledRegisteredMachine,
   SerializableDimensionLocation,
 } from "./internal";
 import {
@@ -40,28 +41,44 @@ export interface MachineItemStack {
   count: number;
 }
 
-/**
- * Serializable {@link MachineDefinition}.
- * @beta
- * @see {@link MachineDefinition}, {@link registerMachine}
- */
-export interface RegisteredMachine {
-  description: Description;
-  updateUiEvent?: string;
-}
-
 export interface InitOptions {
   namespace: string;
 }
 
 /**
  * The amount that each storage bar segment in a machine is worth.
+ * @beta
  */
 export const STORAGE_AMOUNT_PER_BAR_SEGMENT = 100;
 /**
  * The max storage of each storage type in a machine.
+ * @beta
  */
 export const MAX_MACHINE_STORAGE = STORAGE_AMOUNT_PER_BAR_SEGMENT * 64;
+
+/**
+ * Representation of a machine definition that has been registered.
+ * @beta
+ * @see {@link MachineDefinition}, {@link registerMachine}
+ */
+export class RegisteredMachine {
+  /**
+   * @internal This class should not be manually constructed. Use {@link getRegisteredMachine} to get this object.
+   */
+  constructor(protected readonly internal: MangledRegisteredMachine) {}
+
+  get id(): string {
+    return this.internal.a;
+  }
+
+  get persistentEntity(): boolean {
+    return this.internal.b ?? false;
+  }
+
+  get uiElements(): Record<string, UiElement> | undefined {
+    return this.internal.c;
+  }
+}
 
 let initOptions: InitOptions | undefined;
 
@@ -97,23 +114,25 @@ export function isBedrockEnergisticsCoreInWorld(): boolean {
  * Registers a machine. This function should be called in the `worldInitialize` after event.
  * @beta
  */
-export function registerMachine(options: MachineDefinition): void {
+export function registerMachine(definition: MachineDefinition): void {
   ensureInitialized();
 
   let updateUiEvent: string | undefined;
-  if (options.handlers?.updateUi) {
-    updateUiEvent = `${options.description.id}__updateUiHandler`;
+  if (definition.handlers?.updateUi) {
+    updateUiEvent = `${definition.description.id}__updateUiHandler`;
     registerScriptEventHandler<
       SerializableDimensionLocation,
       UpdateUiHandlerResponse
     >(updateUiEvent, (payload) =>
-      options.handlers!.updateUi!(deserializeDimensionLocation(payload)),
+      definition.handlers!.updateUi!(deserializeDimensionLocation(payload)),
     );
   }
 
-  const payload: RegisteredMachine = {
-    description: options.description,
-    updateUiEvent,
+  const payload: MangledRegisteredMachine = {
+    a: definition.description.id,
+    b: definition.description.persistentEntity,
+    c: definition.description.ui?.elements,
+    d: updateUiEvent,
   };
 
   dispatchScriptEvent(
@@ -371,14 +390,16 @@ export function generate(
  * @returns The {@link RegisteredMachine} with the specified `id` or `null` if it doesn't exist.
  * @throws if Bedrock Energistics Core takes too long to respond.
  */
-export function getRegisteredMachine(
+export async function getRegisteredMachine(
   id: string,
 ): Promise<RegisteredMachine | null> {
   ensureInitialized();
 
-  return invokeScriptEvent(
+  const mangled = await invokeScriptEvent<MangledRegisteredMachine>(
     "fluffyalien_energisticscore:ipc.get_registered_machine",
     initOptions!.namespace,
     id,
   );
+
+  return new RegisteredMachine(mangled);
 }

@@ -4,9 +4,8 @@ import {
   machineItemStackToItemStack,
   removeBlockFromScoreboards,
 } from "./data";
-import { machineRegistry } from "./registry";
+import { InternalRegisteredMachine, machineRegistry } from "./registry";
 import { MachineNetwork } from "./network";
-import { RegisteredMachine } from "@/public_api/src";
 import { makeErrorString } from "./utils/log";
 
 export const machineComponent: BlockCustomComponent = {
@@ -15,7 +14,7 @@ export const machineComponent: BlockCustomComponent = {
     MachineNetwork.updateAdjacent(e.block);
 
     const definition = machineRegistry[e.block.typeId] as
-      | RegisteredMachine
+      | InternalRegisteredMachine
       | undefined;
     if (!definition) {
       throw new Error(
@@ -25,7 +24,7 @@ export const machineComponent: BlockCustomComponent = {
       );
     }
 
-    if (definition.description.persistentEntity) {
+    if (definition.persistentEntity) {
       e.block.dimension.spawnEntity(
         e.block.typeId,
         e.block.bottomCenter(),
@@ -34,7 +33,7 @@ export const machineComponent: BlockCustomComponent = {
   },
   onPlayerInteract(e) {
     const definition = machineRegistry[e.block.typeId] as
-      | RegisteredMachine
+      | InternalRegisteredMachine
       | undefined;
     if (!definition) {
       throw new Error(
@@ -43,7 +42,7 @@ export const machineComponent: BlockCustomComponent = {
         ),
       );
     }
-    if (!definition.description.ui || definition.description.persistentEntity) {
+    if (!definition.uiElements || definition.persistentEntity) {
       return;
     }
 
@@ -62,7 +61,7 @@ world.beforeEvents.playerBreakBlock.subscribe((e) => {
   MachineNetwork.updateBlockNetworks(e.block);
 
   const definition = machineRegistry[e.block.typeId] as
-    | RegisteredMachine
+    | InternalRegisteredMachine
     | undefined;
   if (!definition) {
     throw new Error(
@@ -71,12 +70,12 @@ world.beforeEvents.playerBreakBlock.subscribe((e) => {
       ),
     );
   }
-  if (!definition.description.ui || definition.description.persistentEntity) {
+  if (!definition.uiElements || definition.persistentEntity) {
     return;
   }
 
   system.run(() => {
-    for (const element of Object.values(definition.description.ui!.elements)) {
+    for (const element of Object.values(definition.uiElements!)) {
       if (element.type !== "itemSlot") continue;
 
       const item = getItemInMachineSlot(e.block, element.slotId);
@@ -103,7 +102,7 @@ world.afterEvents.entityHitEntity.subscribe((e) => {
   }
 
   const definition = machineRegistry[e.hitEntity.typeId] as
-    | RegisteredMachine
+    | InternalRegisteredMachine
     | undefined;
   if (!definition) {
     throw new Error(
@@ -112,7 +111,7 @@ world.afterEvents.entityHitEntity.subscribe((e) => {
       ),
     );
   }
-  if (definition.description.persistentEntity) {
+  if (definition.persistentEntity) {
     return;
   }
 

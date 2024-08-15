@@ -1,11 +1,11 @@
 import {
+  InternalRegisteredMachine,
   machineRegistry,
   StorageTypeColor,
   storageTypeRegistry,
   UiItemSlotElement,
   UiProgressIndicatorElementType,
   UiStorageBarUpdateOptions,
-  UpdateUiHandlerResponse,
 } from "./registry";
 import {
   Container,
@@ -28,10 +28,7 @@ import {
   setItemInMachineSlot,
 } from "./data";
 import { stringifyDimensionLocation, truncateNumber } from "./utils/string";
-import { invokeScriptEvent } from "@/public_api/src/addon_ipc";
-import { makeSerializableDimensionLocation } from "@/public_api/src/internal";
 import { makeErrorString } from "./utils/log";
-import { RegisteredMachine } from "@/public_api/src";
 
 export const PROGRESS_INDICATOR_MAX_VALUES: Record<
   UiProgressIndicatorElementType,
@@ -274,12 +271,12 @@ function handleProgressIndicator(
 }
 
 async function updateEntityUi(
-  definition: RegisteredMachine,
+  definition: InternalRegisteredMachine,
   entity: Entity,
   player: Player,
   init: boolean,
 ): Promise<void> {
-  if (!definition.description.ui) {
+  if (!definition.uiElements) {
     throw new Error(
       makeErrorString(
         `machine '${entity.typeId}' does not have 'description.ui' defined but has a machine entity`,
@@ -302,11 +299,7 @@ async function updateEntityUi(
     dimension: entity.dimension,
   };
 
-  const result = await invokeScriptEvent<UpdateUiHandlerResponse>(
-    definition.updateUiEvent,
-    "fluffyalien_energisticscore",
-    makeSerializableDimensionLocation(dimensionLocation),
-  );
+  const result = await definition.callUpdateUiHandler(dimensionLocation);
 
   // ensure the entity is still valid after invoking updateUi
   if (!entity.isValid()) {
@@ -337,9 +330,7 @@ async function updateEntityUi(
 
   const inventory = entity.getComponent("inventory")!.container!;
 
-  for (const [id, options] of Object.entries(
-    definition.description.ui.elements,
-  )) {
+  for (const [id, options] of Object.entries(definition.uiElements)) {
     switch (options.type) {
       case "storageBar": {
         const changeOptions = storageBarChanges[id] as
@@ -417,7 +408,7 @@ system.runInterval(() => {
     }
 
     const definition = machineRegistry[entity.typeId];
-    if (definition.description.persistentEntity) {
+    if (definition.persistentEntity) {
       const players = entity.dimension.getPlayers({
         location: entity.location,
         maxDistance: 10,

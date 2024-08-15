@@ -94,6 +94,14 @@ export function getScore(
   return objective.getScore(participant);
 }
 
+export function removeBlockFromScoreboards(loc: DimensionLocation): void {
+  const participantId = getBlockUniqueId(loc);
+
+  for (const objective of world.scoreboard.getObjectives()) {
+    objective.removeParticipant(participantId);
+  }
+}
+
 function makeLogString(logLevel: string, message: string): string {
   return `[Bedrock Energistics Core API v${VERSION}] ${logLevel} ${message}`;
 }

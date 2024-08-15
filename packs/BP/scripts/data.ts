@@ -1,4 +1,4 @@
-import { DimensionLocation, ItemStack, world } from "@minecraft/server";
+import { DimensionLocation, ItemStack } from "@minecraft/server";
 import { UiItemSlotElement } from "./registry";
 import { machineChangedItemSlots } from "./ui";
 import {
@@ -11,6 +11,7 @@ import {
   getBlockUniqueId,
   getItemTypeScoreboardObjective,
   getItemCountScoreboardObjective,
+  removeBlockFromScoreboards,
 } from "@/public_api/src/internal";
 
 export {
@@ -18,15 +19,8 @@ export {
   getMachineStorage,
   setMachineStorage,
   getItemInMachineSlot,
+  removeBlockFromScoreboards,
 };
-
-export function removeBlockFromScoreboards(loc: DimensionLocation): void {
-  const participantId = getBlockUniqueId(loc);
-
-  for (const objective of world.scoreboard.getObjectives()) {
-    objective.removeParticipant(participantId);
-  }
-}
 
 export function setItemInMachineSlot(
   loc: DimensionLocation,

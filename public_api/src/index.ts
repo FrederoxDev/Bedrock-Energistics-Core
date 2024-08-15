@@ -1,4 +1,4 @@
-import { Block, DimensionLocation, ItemTypes } from "@minecraft/server";
+import { Block, DimensionLocation, ItemTypes, system } from "@minecraft/server";
 import {
   MachineDefinition,
   StorageTypeDefinition,
@@ -15,6 +15,7 @@ import {
   makeErrorString,
   makeSerializableDimensionLocation,
   MangledRegisteredMachine,
+  removeBlockFromScoreboards,
   SerializableDimensionLocation,
 } from "./internal";
 import {
@@ -402,4 +403,17 @@ export async function getRegisteredMachine(
   );
 
   return new RegisteredMachine(mangled);
+}
+
+/**
+ * Cleans up machine data and updates it's networks.
+ * This is automatically done by Bedrock Energistics Core when a machine is destroyed by a player.
+ * If you destroy a machine from script, call this function before the block is removed.
+ * @param blockLocation The location of the machine.
+ */
+export function removeMachine(blockLocation: DimensionLocation): void {
+  updateBlockNetworks(blockLocation);
+  system.run(() => {
+    removeBlockFromScoreboards(blockLocation);
+  });
 }

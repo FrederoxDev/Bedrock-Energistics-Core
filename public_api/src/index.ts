@@ -42,6 +42,9 @@ export interface MachineItemStack {
   count: number;
 }
 
+/**
+ * @beta
+ */
 export interface InitOptions {
   namespace: string;
 }
@@ -60,11 +63,11 @@ export const MAX_MACHINE_STORAGE = STORAGE_AMOUNT_PER_BAR_SEGMENT * 64;
 /**
  * Representation of a machine definition that has been registered.
  * @beta
- * @see {@link MachineDefinition}, {@link registerMachine}
+ * @see {@link MachineDefinition}, {@link registerMachine}, {@link getRegisteredMachine}
  */
 export class RegisteredMachine {
   /**
-   * @internal This class should not be manually constructed. Use {@link getRegisteredMachine} to get this object.
+   * @internal This class shouldn't be manually constructed. Use {@link getRegisteredMachine} to get this object.
    */
   constructor(protected readonly internal: MangledRegisteredMachine) {}
 
@@ -407,6 +410,8 @@ export async function getRegisteredMachine(
 
 /**
  * Cleans up machine data and updates it's networks.
+ * @beta
+ * @remarks
  * This is automatically done by Bedrock Energistics Core when a machine is destroyed by a player.
  * If you destroy a machine from script, call this function before the block is removed.
  * @param blockLocation The location of the machine.

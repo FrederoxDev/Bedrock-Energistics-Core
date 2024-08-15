@@ -16,31 +16,15 @@ const STORAGE_BAR_COLORS: string[] = [
   "yellow",
 ];
 
-const arrowProgressEmpty = (await imgManip.decode(
-  fs.readFileSync(
-    "packs/data/ui_composite/progress_indicators/arrow_empty.png",
-  ),
-)) as imgManip.Image;
-
-const arrowProgressFull = (await imgManip.decode(
-  fs.readFileSync("packs/data/ui_composite/progress_indicators/arrow_full.png"),
-)) as imgManip.Image;
-
-const flameProgressEmpty = (await imgManip.decode(
-  fs.readFileSync(
-    "packs/data/ui_composite/progress_indicators/flame_empty.png",
-  ),
-)) as imgManip.Image;
-
-const flameProgressFull = (await imgManip.decode(
-  fs.readFileSync("packs/data/ui_composite/progress_indicators/flame_full.png"),
-)) as imgManip.Image;
-
 const itemTexturePath = path.join(TMP_DIR, "RP/textures/item_texture.json");
 
 const itemTexture = JSON.parse(fs.readFileSync(itemTexturePath, "utf8")) as {
   texture_data: Record<string, { textures: string }>;
 };
+
+function readImg(imgPath: string): Promise<imgManip.Image> {
+  return imgManip.decode(fs.readFileSync(imgPath)) as Promise<imgManip.Image>;
+}
 
 function createUiItem(itemId: string): string {
   return JSON.stringify({
@@ -96,6 +80,19 @@ async function makeStorageBar(
   }
 }
 
+const arrowProgressEmpty = await readImg(
+  "packs/data/ui_composite/progress_indicators/arrow_empty.png",
+);
+const arrowProgressFull = await readImg(
+  "packs/data/ui_composite/progress_indicators/arrow_full.png",
+);
+const flameProgressEmpty = await readImg(
+  "packs/data/ui_composite/progress_indicators/flame_empty.png",
+);
+const flameProgressFull = await readImg(
+  "packs/data/ui_composite/progress_indicators/flame_full.png",
+);
+
 // storage bars
 for (const color of STORAGE_BAR_COLORS) {
   const imgBasePath = `packs/data/ui_composite/storage_bar_segments/${color}`;
@@ -111,7 +108,6 @@ for (const color of STORAGE_BAR_COLORS) {
 }
 
 // progress bar IDs must match `ui_progress_${indicator}${progress}`
-// see available `indicator` values in scripts/machine_definition_schema.ts under UI elements
 
 // arrow progress bar
 for (let progress = 0; progress <= 16; progress++) {

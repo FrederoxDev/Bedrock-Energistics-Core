@@ -35,6 +35,7 @@ export const PROGRESS_INDICATOR_MAX_VALUES: Record<
   number
 > = {
   arrow: 16,
+  flame: 13,
 };
 
 const STORAGE_TYPE_COLOR_TO_FORMATTING_CODE: Record<StorageTypeColor, string> =

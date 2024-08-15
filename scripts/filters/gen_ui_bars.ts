@@ -97,12 +97,8 @@ const flameProgressFull = await readImg(
 for (const color of STORAGE_BAR_COLORS) {
   const imgBasePath = `packs/data/ui_composite/storage_bar_segments/${color}`;
 
-  const onImg = (await imgManip.decode(
-    fs.readFileSync(`${imgBasePath}_on.png`),
-  )) as imgManip.Image;
-  const offImg = (await imgManip.decode(
-    fs.readFileSync(`${imgBasePath}_off.png`),
-  )) as imgManip.Image;
+  const onImg = await readImg(`${imgBasePath}_on.png`);
+  const offImg = await readImg(`${imgBasePath}_off.png`);
 
   await makeStorageBar(`ui_storage_bar_segment_${color}`, onImg, offImg);
 }

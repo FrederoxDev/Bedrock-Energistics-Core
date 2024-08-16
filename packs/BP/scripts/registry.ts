@@ -32,11 +32,11 @@ export class InternalRegisteredMachine extends RegisteredMachine {
       );
     }
 
-    return invokeScriptEvent<UpdateUiHandlerResponse>(
+    return invokeScriptEvent(
       this.updateUiEvent,
       "fluffyalien_energisticscore",
       makeSerializableDimensionLocation(dimensionLocation),
-    );
+    ) as Promise<UpdateUiHandlerResponse>;
   }
 }
 

@@ -12,6 +12,7 @@ import {
   getItemTypeScoreboardObjective,
   getScore,
   getStorageScoreboardObjective,
+  logInfo,
   makeErrorString,
   makeSerializableDimensionLocation,
   MangledRegisteredMachine,
@@ -22,6 +23,7 @@ import {
   dispatchScriptEvent,
   invokeScriptEvent,
   registerScriptEventHandler,
+  streamScriptEvent,
 } from "./addon_ipc";
 
 export * from "./registry_types";
@@ -118,7 +120,10 @@ export function isBedrockEnergisticsCoreInWorld(): boolean {
  * Registers a machine. This function should be called in the `worldInitialize` after event.
  * @beta
  */
-export function registerMachine(definition: MachineDefinition): void {
+export function registerMachine(
+  definition: MachineDefinition,
+  fallbackToStream = true,
+): void {
   ensureInitialized();
 
   let updateUiEvent: string | undefined;
@@ -139,10 +144,34 @@ export function registerMachine(definition: MachineDefinition): void {
     d: updateUiEvent,
   };
 
-  dispatchScriptEvent(
-    "fluffyalien_energisticscore:ipc.register_machine",
-    payload,
-  );
+  try {
+    dispatchScriptEvent(
+      "fluffyalien_energisticscore:ipc.register_machine",
+      payload,
+    );
+  } catch (e) {
+    const caughtErrMessage = `caught error when trying to register machine '${definition.description.id}': ${e instanceof Error ? e.message : "unknown error"}`;
+
+    if (!fallbackToStream) {
+      throw new Error(
+        makeErrorString(
+          `${caughtErrMessage}. falling back to streaming is disabled`,
+        ),
+      );
+    }
+
+    logInfo(`${caughtErrMessage}. falling back to streaming`);
+
+    system.runJob(
+      streamScriptEvent(
+        "fluffyalien_energisticscore:ipc.stream.register_machine",
+        initOptions!.namespace,
+        payload,
+      ),
+    );
+
+    return;
+  }
 }
 
 /**
@@ -399,11 +428,11 @@ export async function getRegisteredMachine(
 ): Promise<RegisteredMachine | null> {
   ensureInitialized();
 
-  const mangled = await invokeScriptEvent<MangledRegisteredMachine>(
+  const mangled = (await invokeScriptEvent(
     "fluffyalien_energisticscore:ipc.get_registered_machine",
     initOptions!.namespace,
     id,
-  );
+  )) as MangledRegisteredMachine;
 
   return new RegisteredMachine(mangled);
 }

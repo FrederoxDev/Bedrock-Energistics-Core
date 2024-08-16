@@ -14,6 +14,7 @@ import { setItemInMachineSlot } from "./data";
 import {
   registerScriptEventHandler,
   registerScriptEventListener,
+  registerScriptEventStreamListener,
 } from "@/public_api/src/addon_ipc";
 import {
   deserializeDimensionLocation,
@@ -36,6 +37,11 @@ interface QueueSendPayload {
 
 registerScriptEventListener<MangledRegisteredMachine>(
   "fluffyalien_energisticscore:ipc.register_machine",
+  registerMachineScriptEventListener,
+);
+
+registerScriptEventStreamListener<MangledRegisteredMachine>(
+  "fluffyalien_energisticscore:ipc.stream.register_machine",
   registerMachineScriptEventListener,
 );
 

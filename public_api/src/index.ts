@@ -24,7 +24,7 @@ import {
   invokeScriptEvent,
   registerScriptEventHandler,
   streamScriptEvent,
-} from "./addon_ipc";
+} from "mcbe-addon-ipc";
 
 export * from "./registry_types";
 

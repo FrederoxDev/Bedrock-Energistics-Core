@@ -5,7 +5,7 @@ import {
   StorageTypeDefinition,
   UpdateUiHandlerResponse,
 } from "@/public_api/src";
-import { invokeScriptEvent } from "@/public_api/src/addon_ipc";
+import { invokeScriptEvent } from "mcbe-addon-ipc";
 import {
   makeSerializableDimensionLocation,
   MangledRegisteredMachine,

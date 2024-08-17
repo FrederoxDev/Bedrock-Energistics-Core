@@ -15,7 +15,7 @@ import {
   registerScriptEventHandler,
   registerScriptEventListener,
   registerScriptEventStreamListener,
-} from "@/public_api/src/addon_ipc";
+} from "mcbe-addon-ipc";
 import {
   deserializeDimensionLocation,
   MangledRegisteredMachine,

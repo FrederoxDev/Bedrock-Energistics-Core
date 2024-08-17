@@ -1,6 +1,6 @@
 import { BlockCustomComponent, system, world } from "@minecraft/server";
 import {
-  getItemInMachineSlot,
+  getMachineSlotItem,
   machineItemStackToItemStack,
   removeBlockFromScoreboards,
 } from "./data";
@@ -78,7 +78,7 @@ world.beforeEvents.playerBreakBlock.subscribe((e) => {
     for (const element of Object.values(definition.uiElements!)) {
       if (element.type !== "itemSlot") continue;
 
-      const item = getItemInMachineSlot(e.block, element.slotId);
+      const item = getMachineSlotItem(e.block, element.slotId);
       if (item) {
         e.dimension.spawnItem(
           machineItemStackToItemStack(element, item),

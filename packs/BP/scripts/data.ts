@@ -5,7 +5,7 @@ import {
   getMachineStorage,
   setMachineStorage,
   MachineItemStack,
-  getItemInMachineSlot,
+  getMachineSlotItem,
 } from "@/public_api/src";
 import {
   getBlockUniqueId,
@@ -18,11 +18,11 @@ export {
   getBlockUniqueId,
   getMachineStorage,
   setMachineStorage,
-  getItemInMachineSlot,
+  getMachineSlotItem,
   removeBlockFromScoreboards,
 };
 
-export function setItemInMachineSlot(
+export function setMachineSlotItem(
   loc: DimensionLocation,
   slot: number,
   newItemStack?: MachineItemStack,

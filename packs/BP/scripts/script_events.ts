@@ -10,7 +10,7 @@ import {
   RegisteredMachine,
   StorageTypeDefinition,
 } from "@/public_api/src";
-import { setItemInMachineSlot } from "./data";
+import { setMachineSlotItem } from "./data";
 import {
   registerScriptEventHandler,
   registerScriptEventListener,
@@ -105,7 +105,7 @@ registerScriptEventListener<QueueSendPayload>(
 registerScriptEventListener<SetItemInMachineSlotPayload>(
   "fluffyalien_energisticscore:ipc.setMachineSlot",
   (payload) => {
-    setItemInMachineSlot(
+    setMachineSlotItem(
       deserializeDimensionLocation(payload.loc),
       payload.slot,
       payload.item,

@@ -22,10 +22,10 @@ import {
 } from "./constants";
 import {
   getBlockUniqueId,
-  getItemInMachineSlot,
+  getMachineSlotItem,
   getMachineStorage,
   machineItemStackToItemStack,
-  setItemInMachineSlot,
+  setMachineSlotItem,
 } from "./data";
 import { stringifyDimensionLocation, truncateNumber } from "./utils/string";
 import { makeErrorString } from "./utils/log";
@@ -184,7 +184,7 @@ function handleItemSlot(
   player: Player,
   init: boolean,
 ): void {
-  const expectedMachineItem = getItemInMachineSlot(loc, element.slotId);
+  const expectedMachineItem = getMachineSlotItem(loc, element.slotId);
   const expectedItemStack = machineItemStackToItemStack(
     element,
     expectedMachineItem,
@@ -202,7 +202,7 @@ function handleItemSlot(
 
   if (!containerSlot.hasItem()) {
     clearUiItemsFromPlayer(player);
-    setItemInMachineSlot(loc, element.slotId, undefined, false);
+    setMachineSlotItem(loc, element.slotId, undefined, false);
     containerSlot.setItem(machineItemStackToItemStack(element));
     return;
   }
@@ -212,7 +212,7 @@ function handleItemSlot(
       expectedMachineItem &&
       containerSlot.amount !== expectedItemStack.amount
     ) {
-      setItemInMachineSlot(
+      setMachineSlotItem(
         loc,
         element.slotId,
         {
@@ -230,13 +230,13 @@ function handleItemSlot(
 
   const newTypeIndex = element.allowedItems.indexOf(containerSlot.typeId);
   if (newTypeIndex === -1) {
-    setItemInMachineSlot(loc, element.slotId, undefined, false);
+    setMachineSlotItem(loc, element.slotId, undefined, false);
     player.dimension.spawnItem(containerSlot.getItem()!, player.location);
     containerSlot.setItem(machineItemStackToItemStack(element));
     return;
   }
 
-  setItemInMachineSlot(
+  setMachineSlotItem(
     loc,
     element.slotId,
     {

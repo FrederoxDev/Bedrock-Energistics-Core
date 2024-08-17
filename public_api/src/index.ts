@@ -28,6 +28,8 @@ import {
 
 export * from "./registry_types";
 
+const UPDATE_UI_HANDLER_SUFFIX = "__h0";
+
 /**
  * Representation of an item stack stored in a machine inventory.
  * @beta
@@ -118,17 +120,23 @@ export function isBedrockEnergisticsCoreInWorld(): boolean {
 
 /**
  * Registers a machine. This function should be called in the `worldInitialize` after event.
+ * @param shortId If a handler event cannot be created because the block ID is too long, pass a string here to use it as the prefix instead of the block ID.
+ * @param fallbackToStream If the {@link MachineDefinition} cannot be sent, fall back to streaming.
+ * @throws If the block ID is too long and a handler is defined, this function will throw an error. Pass `shortId` to use that as the prefix for handler event IDs instead of the block ID.
  * @beta
  */
 export function registerMachine(
   definition: MachineDefinition,
+  shortId?: string,
   fallbackToStream = true,
 ): void {
   ensureInitialized();
 
   let updateUiEvent: string | undefined;
   if (definition.handlers?.updateUi) {
-    updateUiEvent = `${definition.description.id}__updateUiHandler`;
+    updateUiEvent =
+      (shortId ?? definition.description.id) + UPDATE_UI_HANDLER_SUFFIX;
+
     registerScriptEventHandler<
       SerializableDimensionLocation,
       UpdateUiHandlerResponse

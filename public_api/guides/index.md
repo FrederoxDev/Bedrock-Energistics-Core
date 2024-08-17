@@ -2,6 +2,7 @@
 title: Guides
 children:
   - ./common-ui-controls.md
+  - ./custom-conduits.md
   - ./getting-started.md
   - ./machine-block-tags.md
   - ./persistent-entities.md

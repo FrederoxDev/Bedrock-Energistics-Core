@@ -1,7 +1,15 @@
 # Bedrock Energistics Core
 
-APIs for creating high quality, performant, and integratable tech add-ons.
-All machines using these APIs integrate with each other even if they're from different add-ons.
+APIs for creating tech add-ons.
 
-Bedrock Energistics Core handles machine UI, data storage, and networking.
-Bedrock Energistics Core allows you to create machines that can store items without the need for entities.
+## Features
+
+- Machines using these APIs work with each other even if they're from different add-ons.
+- Simple APIs for basic machines, while still having more powerful APIs for more complicated machines.
+- Item storage APIs without persistent entities.
+- Easily create machine UI.
+- Create your own storage types (water, lava, etc) and share them between add-ons, not just energy.
+
+## Getting Started
+
+See [Getting Started](#).

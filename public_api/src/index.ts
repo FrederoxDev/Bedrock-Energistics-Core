@@ -154,7 +154,7 @@ export function registerMachine(
 
   try {
     dispatchScriptEvent(
-      "fluffyalien_energisticscore:ipc.register_machine",
+      "fluffyalien_energisticscore:ipc.registerMachine",
       payload,
     );
   } catch (e) {
@@ -172,7 +172,7 @@ export function registerMachine(
 
     system.runJob(
       streamScriptEvent(
-        "fluffyalien_energisticscore:ipc.stream.register_machine",
+        "fluffyalien_energisticscore:ipc.stream.registerMachine",
         initOptions!.namespace,
         payload,
       ),
@@ -198,31 +198,31 @@ export function registerStorageType(definition: StorageTypeDefinition): void {
   };
 
   dispatchScriptEvent(
-    "fluffyalien_energisticscore:ipc.register_storage_type",
+    "fluffyalien_energisticscore:ipc.registerStorageType",
     payload,
   );
 }
 
 /**
- * Updates the networks that a block belongs to, if it has any.
+ * Updates the networks that a machine belongs to, if it has any.
  * @beta
  */
-export function updateBlockNetworks(blockLocation: DimensionLocation): void {
+export function updateMachineNetworks(blockLocation: DimensionLocation): void {
   dispatchScriptEvent(
-    "fluffyalien_energisticscore:ipc.update_block_networks",
+    "fluffyalien_energisticscore:ipc.updateMachineNetworks",
     makeSerializableDimensionLocation(blockLocation),
   );
 }
 
 /**
- * Updates the networks adjacent to a block that the block can connect to.
+ * Updates the networks adjacent to a machine that the machine can connect to.
  * @beta
  */
-export function updateBlockConnectableNetworks(
+export function updateMachineConnectableNetworks(
   blockLocation: DimensionLocation,
 ): void {
   dispatchScriptEvent(
-    "fluffyalien_energisticscore:ipc.update_block_connectable_networks",
+    "fluffyalien_energisticscore:ipc.updateMachineConnectableNetworks",
     makeSerializableDimensionLocation(blockLocation),
   );
 }
@@ -231,11 +231,11 @@ export function updateBlockConnectableNetworks(
  * Updates the networks adjacent to a block.
  * @beta
  */
-export function updateBlockAdjacentNetworks(
+export function updateMachineAdjacentNetworks(
   blockLocation: DimensionLocation,
 ): void {
   dispatchScriptEvent(
-    "fluffyalien_energisticscore:ipc.update_block_adjacent_networks",
+    "fluffyalien_energisticscore:ipc.updateMachineAdjacentNetworks",
     makeSerializableDimensionLocation(blockLocation),
   );
 }
@@ -322,7 +322,7 @@ export function setMachineStorage(
  * @param slotId The number ID of the slot as defined when the machine was registered (see {@link UiItemSlotElement}).
  * @returns The {@link MachineItemStack}.
  */
-export function getItemInMachineSlot(
+export function getMachineSlotItem(
   loc: DimensionLocation,
   slotId: number,
 ): MachineItemStack | undefined {
@@ -357,19 +357,16 @@ export function getItemInMachineSlot(
  * @param slotId The number ID of the slot as defined when the machine was registered (see {@link UiItemSlotElement}).
  * @param newItemStack The {@link MachineItemStack} to put in the slot. Pass `undefined` to remove the item in the slot.
  */
-export function setItemInMachineSlot(
+export function setMachineSlotItem(
   loc: DimensionLocation,
   slotId: number,
   newItemStack?: MachineItemStack,
 ): void {
-  dispatchScriptEvent(
-    "fluffyalien_energisticscore:ipc.set_item_in_machine_slot",
-    {
-      loc: makeSerializableDimensionLocation(loc),
-      slot: slotId,
-      item: newItemStack,
-    },
-  );
+  dispatchScriptEvent("fluffyalien_energisticscore:ipc.setMachineSlot", {
+    loc: makeSerializableDimensionLocation(loc),
+    slot: slotId,
+    item: newItemStack,
+  });
 }
 
 /**
@@ -389,7 +386,7 @@ export function queueSend(
   type: string,
   amount: number,
 ): void {
-  dispatchScriptEvent("fluffyalien_energisticscore:ipc.queue_send", {
+  dispatchScriptEvent("fluffyalien_energisticscore:ipc.queueSend", {
     loc: makeSerializableDimensionLocation(blockLocation),
     type,
     amount,
@@ -437,7 +434,7 @@ export async function getRegisteredMachine(
   ensureInitialized();
 
   const mangled = (await invokeScriptEvent(
-    "fluffyalien_energisticscore:ipc.get_registered_machine",
+    "fluffyalien_energisticscore:ipc.getRegisteredMachine",
     initOptions!.namespace,
     id,
   )) as MangledRegisteredMachine;
@@ -454,7 +451,7 @@ export async function getRegisteredMachine(
  * @param blockLocation The location of the machine.
  */
 export function removeMachine(blockLocation: DimensionLocation): void {
-  updateBlockNetworks(blockLocation);
+  updateMachineNetworks(blockLocation);
   system.run(() => {
     removeBlockFromScoreboards(blockLocation);
   });

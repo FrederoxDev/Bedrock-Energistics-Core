@@ -36,22 +36,22 @@ interface QueueSendPayload {
 }
 
 registerScriptEventListener<MangledRegisteredMachine>(
-  "fluffyalien_energisticscore:ipc.register_machine",
+  "fluffyalien_energisticscore:ipc.registerMachine",
   registerMachineScriptEventListener,
 );
 
 registerScriptEventStreamListener<MangledRegisteredMachine>(
-  "fluffyalien_energisticscore:ipc.stream.register_machine",
+  "fluffyalien_energisticscore:ipc.stream.registerMachine",
   registerMachineScriptEventListener,
 );
 
 registerScriptEventListener<StorageTypeDefinition>(
-  "fluffyalien_energisticscore:ipc.register_storage_type",
+  "fluffyalien_energisticscore:ipc.registerStorageType",
   registerStorageTypeScriptEventListener,
 );
 
 registerScriptEventListener<SerializableDimensionLocation>(
-  "fluffyalien_energisticscore:ipc.update_block_networks",
+  "fluffyalien_energisticscore:ipc.updateMachineNetworks",
   (payload) => {
     const loc = deserializeDimensionLocation(payload);
     const block = loc.dimension.getBlock(loc);
@@ -64,7 +64,7 @@ registerScriptEventListener<SerializableDimensionLocation>(
 );
 
 registerScriptEventListener<SerializableDimensionLocation>(
-  "fluffyalien_energisticscore:ipc.update_block_connectable_networks",
+  "fluffyalien_energisticscore:ipc.updateMachineConnectableNetworks",
   (payload) => {
     const loc = deserializeDimensionLocation(payload);
     const block = loc.dimension.getBlock(loc);
@@ -75,7 +75,7 @@ registerScriptEventListener<SerializableDimensionLocation>(
 );
 
 registerScriptEventListener<SerializableDimensionLocation>(
-  "fluffyalien_energisticscore:ipc.update_block_adjacent_networks",
+  "fluffyalien_energisticscore:ipc.updateMachineAdjacentNetworks",
   (payload) => {
     const loc = deserializeDimensionLocation(payload);
     const block = loc.dimension.getBlock(loc);
@@ -86,7 +86,7 @@ registerScriptEventListener<SerializableDimensionLocation>(
 );
 
 registerScriptEventListener<QueueSendPayload>(
-  "fluffyalien_energisticscore:ipc.queue_send",
+  "fluffyalien_energisticscore:ipc.queueSend",
   (payload) => {
     const loc = deserializeDimensionLocation(payload.loc);
     const block = loc.dimension.getBlock(loc);
@@ -103,7 +103,7 @@ registerScriptEventListener<QueueSendPayload>(
 );
 
 registerScriptEventListener<SetItemInMachineSlotPayload>(
-  "fluffyalien_energisticscore:ipc.set_item_in_machine_slot",
+  "fluffyalien_energisticscore:ipc.setMachineSlot",
   (payload) => {
     setItemInMachineSlot(
       deserializeDimensionLocation(payload.loc),
@@ -114,6 +114,6 @@ registerScriptEventListener<SetItemInMachineSlotPayload>(
 );
 
 registerScriptEventHandler<string, RegisteredMachine | null>(
-  "fluffyalien_energisticscore:ipc.get_registered_machine",
+  "fluffyalien_energisticscore:ipc.getRegisteredMachine",
   (machineId) => machineRegistry[machineId] ?? null,
 );

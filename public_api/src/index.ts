@@ -1,3 +1,7 @@
+/**
+ * @module API
+ */
+
 import { Block, DimensionLocation, ItemTypes, system } from "@minecraft/server";
 import {
   MachineDefinition,
@@ -71,9 +75,14 @@ export const MAX_MACHINE_STORAGE = STORAGE_AMOUNT_PER_BAR_SEGMENT * 64;
  */
 export class RegisteredMachine {
   /**
-   * @internal This class shouldn't be manually constructed. Use {@link getRegisteredMachine} to get this object.
+   * @internal
    */
-  constructor(protected readonly internal: MangledRegisteredMachine) {}
+  constructor(
+    /**
+     * @internal
+     */
+    protected readonly internal: MangledRegisteredMachine,
+  ) {}
 
   get id(): string {
     return this.internal.a;

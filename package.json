@@ -8,7 +8,7 @@
     "tsx": "tsx",
     "gen-cfpost": "tsx scripts/gen_cfpost",
     "build-public-api": "tsc -p public_api --noEmit false --declaration --emitDeclarationOnly && esbuild public_api/src/index.ts --outfile=public_api/dist/index.js --bundle --format=esm --external:@minecraft/common --external:@minecraft/debug-utilities --external:@minecraft/server --external:@minecraft/server-* && terser public_api/dist/index.js --module -cmo public_api/dist/index.js",
-    "gen-docs": "typedoc --tsconfig public_api/tsconfig.json --out public_api/docs --name \"Bedrock Energistics Core API\" --excludeInternal public_api/src"
+    "gen-docs": "typedoc --options typedoc.json"
   },
   "devDependencies": {
     "@eslint/js": "^9.9.0",

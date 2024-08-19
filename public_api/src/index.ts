@@ -51,6 +51,7 @@ export interface MachineItemStack {
 }
 
 /**
+ * Initialization options. Used as an argument for {@link init}.
  * @beta
  */
 export interface InitOptions {
@@ -100,7 +101,7 @@ export class RegisteredMachine {
 let initOptions: InitOptions | undefined;
 
 /**
- * Sets global info to be used by functions in this package.
+ * Initializes this package. Some APIs require this to be called.
  * @beta
  */
 export function init(options: InitOptions): void {
@@ -379,12 +380,12 @@ export function setMachineSlotItem(
 }
 
 /**
- * Queue sending energy, gas, or fluid over a machine network.
+ * Queue sending a storage type over a machine network.
  * @beta
  * @remarks
  * Note: in most cases, prefer {@link generate} over this function.
  * Automatically sets the machine's reserve storage to the amount that was not received.
- * @param blockLocation The location of the machine that is sending the energy, gas, or fluid.
+ * @param blockLocation The location of the machine that is sending the storage type.
  * @param type The storage type to send.
  * @param amount The amount to send.
  * @throws if `amount` is <= 0.
@@ -403,7 +404,7 @@ export function queueSend(
 }
 
 /**
- * Sends energy, gas, or fluid over a machine network. Includes reserve storage as well.
+ * Sends a storage type over a machine network. Includes reserve storage as well.
  * @beta
  * @remarks
  * This function should be called every block tick for generators even if the generation is `0` because it sends reserve storage.

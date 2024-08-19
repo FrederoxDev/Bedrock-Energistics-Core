@@ -8,6 +8,10 @@ import { DimensionLocation } from "@minecraft/server";
 export type UiProgressIndicatorElementType = "arrow" | "flame";
 
 /**
+ * Options for defining a storage bar UI element.
+ * @remarks
+ * A storage bar element takes up 4 slots in an inventory,
+ * so ensure that the machine entity's inventory is properly sized.
  * @beta
  */
 export interface UiStorageBarElement {
@@ -16,6 +20,11 @@ export interface UiStorageBarElement {
 }
 
 /**
+ * Options for defining an item slot UI element.
+ * @remarks
+ * This is used to store items without persistent entities.
+ * If your machine uses a persistent entity, we recommend
+ * accessing the entity's inventory directly rather than using this.
  * @beta
  */
 export interface UiItemSlotElement {
@@ -26,6 +35,7 @@ export interface UiItemSlotElement {
 }
 
 /**
+ * Options for defining a progress indicator UI element.
  * @beta
  */
 export interface UiProgressIndicatorElement {
@@ -35,6 +45,7 @@ export interface UiProgressIndicatorElement {
 }
 
 /**
+ * See each element type for more information.
  * @beta
  */
 export type UiElement =

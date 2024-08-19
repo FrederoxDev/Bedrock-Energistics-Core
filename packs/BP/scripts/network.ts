@@ -56,7 +56,7 @@ export class MachineNetwork extends DestroyableObject {
   }
 
   /**
-   * processes the `sendQueue`. sends energy, gas, or fluid to the consumers in the network starting
+   * processes the `sendQueue`. sends storage types to the consumers in the network starting
    * with the ones with the least stored.
    * automatically sets each generator's storage to the amount it sent that was not received.
    * returns automatically if the object is not valid.

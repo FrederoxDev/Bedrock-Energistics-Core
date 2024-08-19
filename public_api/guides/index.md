@@ -6,6 +6,7 @@ children:
   - ./getting-started.md
   - ./machine-block-tags.md
   - ./persistent-entities.md
+  - ./storage-types.md
   - ./versioning.md
 ---
 

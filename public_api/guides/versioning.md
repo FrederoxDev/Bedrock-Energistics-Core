@@ -4,7 +4,7 @@ title: Versioning
 
 # Versioning
 
-Both Bedrock Energistics Core and Bedrock Energistics Core API use a modified version [Semantic Versioning v2](https://semver.org/).
+Both Bedrock Energistics Core and Bedrock Energistics Core API use a modified version of [Semantic Versioning v2](https://semver.org/).
 
 Note that Bedrock Energistics Core and Bedrock Energistics Core API are versioned independently of each other. Each Bedrock Energistics Core API release will note which Bedrock Energistics Core versions it supports.
 

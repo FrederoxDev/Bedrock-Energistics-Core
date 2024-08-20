@@ -4,6 +4,8 @@ title: Machine Block Tags
 
 # Machine Block Tags
 
+Note: remember to update the machine's networks using [updateMachineNetworks](#) if any tags change.
+
 ## Required Tags
 
 - `fluffyalien_energisticscore:machine`

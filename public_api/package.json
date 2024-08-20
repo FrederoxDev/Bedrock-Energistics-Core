@@ -7,7 +7,7 @@
     "type": "git",
     "url": "git+https://github.com/Fluffyalien1422/bedrock-energistics-core.git"
   },
-  "readme": "https://fluffyalien1422.github.io/mcbe-addon-ipc/",
+  "readme": "https://fluffyalien1422.github.io/bedrock-energistics-core/",
   "license": "ISC",
   "type": "module",
   "main": "dist/index.js",

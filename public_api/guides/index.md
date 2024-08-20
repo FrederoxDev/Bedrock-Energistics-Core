@@ -1,7 +1,7 @@
 ---
 title: Guides
 children:
-  - ./custom-conduits.md
+  - ./conduits.md
   - ./getting-started.md
   - ./machine-block-tags.md
   - ./machine-ui.md

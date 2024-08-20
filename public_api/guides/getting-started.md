@@ -92,7 +92,7 @@ This is the full entity JSON:
   "minecraft:entity": {
     "description": {
       // Machine entities must have the same ID as their block.
-      "identifier": "example:passive_generator",\
+      "identifier": "example:passive_generator",
       // Machine entities must be summonable.
       "is_summonable": true,
       "is_spawnable": false
@@ -165,7 +165,7 @@ This is the full entity JSON:
 
 The UI backend is handled by Bedrock Energistics Core, but you will need to use JSON UI to design your machine's frontend UI. JSON UI is complicated, so we will not go over it in this guide. You can learn more about JSON UI [here](https://wiki.bedrock.dev/json-ui/json-ui-intro.html).
 
-Bedrock Energistics Core also provides some commonly used UI controls, which we will be using to make our UI. See [Common UI Controls](common-ui-controls.md) for more information on these.
+Bedrock Energistics Core also provides some commonly used UI controls, which we will be using to make our UI. See [Machine UI](machine-ui.md) for more information on these.
 
 Copy this into `RP/ui/example/passive_generator.json`:
 
@@ -274,7 +274,7 @@ Copy this into `RP/ui/chest_screen.json`:
 }
 ```
 
-Copy this into `RP/ui/_ui_defs.json`
+Copy this into `RP/ui/_ui_defs.json`:
 
 ```json
 {

@@ -8,7 +8,7 @@ A storage type is something that a machine can consume or generate. All storage 
 
 Energy is registered by default. It's ID is `energy` and it's category is `energy`.
 
-To register a new storage type, use [registerStorageType](#).
+To register a new storage type, use [registerStorageType](https://fluffyalien1422.github.io/bedrock-energistics-core/functions/API.registerStorageType.html).
 
 ## Conventions
 

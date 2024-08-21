@@ -1,7 +1,7 @@
 {
   "name": "bedrock-energistics-core-api",
   "description": "Bedrock Energistics Core public API",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "author": "Fluffyalien",
   "repository": {
     "type": "git",
@@ -11,11 +11,14 @@
   "license": "ISC",
   "type": "module",
   "main": "dist/index.js",
-  "scripts": {
-    "build": "tsc"
-  },
   "types": "dist/index.d.ts",
   "files": [
     "dist"
-  ]
+  ],
+  "scripts": {
+    "build": "tsc"
+  },
+  "dependencies": {
+    "mcbe-addon-ipc": "^0.1.0"
+  }
 }

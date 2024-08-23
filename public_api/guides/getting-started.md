@@ -18,7 +18,7 @@ npm i bedrock-energistics-core-api@latest
 
 Bedrock Energistics Core API needs to be bundled with the rest of your scripts in order to be used in Minecraft. This can be done with a bundler such as [esbuild](https://esbuild.github.io/) or [rollup.js](https://rollupjs.org/).
 
-We recommend minifying your bundle in production builds to reduce the size. This can be done with a minifier such as [terser](https://terser.org/)
+We recommend minifying your bundle in production builds to reduce the size. This can be done with a minifier such as [terser](https://terser.org/).
 
 We recommend using [Regolith](https://bedrock-oss.github.io/regolith/) to automatically run your bundler and your minifier if you choose to minify your bundle.
 

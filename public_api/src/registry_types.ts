@@ -63,7 +63,7 @@ export interface UiOptions {
 /**
  * @beta
  */
-export interface Description {
+export interface MachineDefinitionDescription {
   id: string;
   persistentEntity?: boolean;
   ui?: UiOptions;
@@ -100,7 +100,7 @@ export interface UpdateUiHandlerResponse {
 /**
  * @beta
  */
-export interface Handlers {
+export interface MachineDefinitionHandlers {
   updateUi?(blockLocation: DimensionLocation): UpdateUiHandlerResponse;
 }
 
@@ -110,8 +110,8 @@ export interface Handlers {
  * @beta
  */
 export interface MachineDefinition {
-  description: Description;
-  handlers?: Handlers;
+  description: MachineDefinitionDescription;
+  handlers?: MachineDefinitionHandlers;
 }
 
 // storage type options

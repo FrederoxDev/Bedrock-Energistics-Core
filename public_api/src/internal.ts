@@ -14,15 +14,15 @@ export interface SerializableDimensionLocation extends Vector3 {
 
 export interface MangledRegisteredMachine {
   /**
-   * Description.id
+   * description.id
    */
   a: string;
   /**
-   * Description.persistentEntity
+   * description.persistentEntity
    */
   b?: boolean;
   /**
-   * UiOptions.elements
+   * description.ui.elements
    */
   c?: Record<string, UiElement>;
   /**

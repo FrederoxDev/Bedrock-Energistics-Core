@@ -1,4 +1,4 @@
-# Bedrock Energistics Core
+![Bedrock Energistics Core](keyart/thumbnail.png)
 
 APIs for creating tech add-ons.
 

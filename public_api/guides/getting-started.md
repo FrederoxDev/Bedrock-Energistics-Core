@@ -6,6 +6,8 @@ title: Getting Started
 
 This guide assumes that you have a basic understanding of [JavaScript](https://developer.mozilla.org/en-US/docs/Web/JavaScript), [Node.js](https://nodejs.org/), [npm](https://www.npmjs.com/), and an advanced understanding of [Minecraft Bedrock add-on development](https://learn.microsoft.com/en-us/minecraft/creator/documents/gettingstarted).
 
+Before getting started, ensure that you're using a Minecraft version that Bedrock Energistics Core supports. Each release will note which Minecraft versions it supports. Bedrock Energistics Core's latest release usually supports the latest Minecraft stable release. See [releases](https://github.com/Fluffyalien1422/bedrock-energistics-core/releases).
+
 ## Including Bedrock Energistics Core API
 
 In order for your add-on to interact with Bedrock Energistics Core. You need to include Bedrock Energistics Core API in your project.
@@ -21,6 +23,8 @@ Bedrock Energistics Core API needs to be bundled with the rest of your scripts i
 We recommend minifying your bundle in production builds to reduce the size. This can be done with a minifier such as [terser](https://terser.org/).
 
 We recommend using [Regolith](https://bedrock-oss.github.io/regolith/) to automatically run your bundler and your minifier if you choose to minify your bundle.
+
+Ensure that your add-on is using a version of `@minecraft/server` that Bedrock Energistics Core API supports. Each release will note which `@minecraft/server` versions it supports. See [releases](https://github.com/Fluffyalien1422/bedrock-energistics-core/releases).
 
 ## Creating a Machine
 

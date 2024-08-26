@@ -18,7 +18,10 @@
   "scripts": {
     "build": "tsc"
   },
+  "devDependencies": {
+    "@minecraft/server": "1.14.0-beta.1.21.21-stable"
+  },
   "dependencies": {
-    "mcbe-addon-ipc": "^0.1.0"
+    "mcbe-addon-ipc": "^0.2.0"
   }
 }

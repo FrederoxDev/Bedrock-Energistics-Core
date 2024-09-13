@@ -55,7 +55,7 @@ export function registerMachineScriptEventListener(
   const data = new InternalRegisteredMachine(mData);
 
   const entityExistingAttachment = machineEntityToBlockIdMap[data.entityId];
-  if (entityExistingAttachment !== data.id) {
+  if (entityExistingAttachment && entityExistingAttachment !== data.id) {
     throw new Error(
       makeErrorString(
         `can't register machine '${data.id}': the machine entity '${data.entityId}' is already attached to the machine '${entityExistingAttachment}'`,

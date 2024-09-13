@@ -4,7 +4,11 @@ import {
   machineItemStackToItemStack,
   removeBlockFromScoreboards,
 } from "./data";
-import { InternalRegisteredMachine, machineRegistry } from "./registry";
+import {
+  InternalRegisteredMachine,
+  machineEntityToBlockIdMap,
+  machineRegistry,
+} from "./registry";
 import { MachineNetwork } from "./network";
 import { makeErrorString } from "./utils/log";
 
@@ -26,7 +30,7 @@ export const machineComponent: BlockCustomComponent = {
 
     if (definition.persistentEntity) {
       e.block.dimension.spawnEntity(
-        e.block.typeId,
+        definition.entityId,
         e.block.bottomCenter(),
       ).nameTag = e.block.typeId;
     }
@@ -47,7 +51,7 @@ export const machineComponent: BlockCustomComponent = {
     }
 
     e.block.dimension.spawnEntity(
-      e.block.typeId,
+      definition.entityId,
       e.block.bottomCenter(),
     ).nameTag = e.block.typeId;
   },
@@ -101,16 +105,18 @@ world.afterEvents.entityHitEntity.subscribe((e) => {
     return;
   }
 
-  const definition = machineRegistry[e.hitEntity.typeId] as
-    | InternalRegisteredMachine
+  const machineId = machineEntityToBlockIdMap[e.hitEntity.typeId] as
+    | string
     | undefined;
-  if (!definition) {
+  if (!machineId) {
     throw new Error(
       makeErrorString(
-        `can't process entityHitEntity event for machine entity '${e.hitEntity.typeId}': this entity has 'fluffyalien_energisticscore:machine_entity' type family but it could not be found in the machine registry`,
+        `can't process entityHitEntity event for machine entity '${e.hitEntity.typeId}': this entity has the 'fluffyalien_energisticscore:machine_entity' type family but it is not attached to a machine`,
       ),
     );
   }
+
+  const definition = machineRegistry[machineId];
   if (definition.persistentEntity) {
     return;
   }

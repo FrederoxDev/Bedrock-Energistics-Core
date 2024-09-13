@@ -85,14 +85,34 @@ export class RegisteredMachine {
     protected readonly internal: MangledRegisteredMachine,
   ) {}
 
+  /**
+   * @returns The ID of this machine.
+   * @beta
+   */
   get id(): string {
     return this.internal.a;
   }
 
+  /**
+   * @returns The ID for this machine's entity.
+   * @beta
+   */
+  get entityId(): string {
+    return this.internal.e ?? this.internal.a;
+  }
+
+  /**
+   * @returns Whether this machine has a persistent entity or not
+   * @beta
+   */
   get persistentEntity(): boolean {
     return this.internal.b ?? false;
   }
 
+  /**
+   * @returns The UI elements defined for this machine, or `undefined` if the machine has no UI.
+   * @beta
+   */
   get uiElements(): Record<string, UiElement> | undefined {
     return this.internal.c;
   }
@@ -160,6 +180,7 @@ export function registerMachine(
     b: definition.description.persistentEntity,
     c: definition.description.ui?.elements,
     d: updateUiEvent,
+    e: definition.description.entityId,
   };
 
   try {

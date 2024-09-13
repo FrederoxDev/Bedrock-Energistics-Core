@@ -29,6 +29,10 @@ export interface MangledRegisteredMachine {
    * updateUiEvent
    */
   d?: string;
+  /**
+   * description.entityId
+   */
+  e?: string;
 }
 
 export function makeSerializableDimensionLocation(

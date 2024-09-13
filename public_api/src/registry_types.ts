@@ -65,7 +65,19 @@ export interface UiOptions {
  */
 export interface MachineDefinitionDescription {
   id: string;
+  /**
+   * The ID of the machine entity. Defaults to the value of `id`.
+   */
+  entityId?: string;
+  /**
+   * Is the machine entity persistent?
+   * See [Persistent Entities](https://fluffyalien1422.github.io/bedrock-energistics-core/documents/Guides.Persistent_Entities.html).
+   */
   persistentEntity?: boolean;
+  /**
+   * UI options for your machine.
+   * If this is undefined, then Bedrock Energistics Core will skip UI handling for this machine entity.
+   */
   ui?: UiOptions;
 }
 

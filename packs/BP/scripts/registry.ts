@@ -14,6 +14,7 @@ import {
 export * from "@/public_api/src/registry_types";
 
 export const machineRegistry: Record<string, InternalRegisteredMachine> = {};
+export const machineEntityToBlockIdMap: Record<string, string> = {};
 export const storageTypeRegistry: Record<string, StorageTypeDefinition> = {};
 
 export class InternalRegisteredMachine extends RegisteredMachine {
@@ -53,11 +54,21 @@ export function registerMachineScriptEventListener(
 ): void {
   const data = new InternalRegisteredMachine(mData);
 
+  const entityExistingAttachment = machineEntityToBlockIdMap[data.entityId];
+  if (entityExistingAttachment !== data.id) {
+    throw new Error(
+      makeErrorString(
+        `can't register machine '${data.id}': the machine entity '${data.entityId}' is already attached to the machine '${entityExistingAttachment}'`,
+      ),
+    );
+  }
+
   if (data.id in machineRegistry) {
     logInfo(`overrode machine '${data.id}'`);
   }
 
   machineRegistry[data.id] = data;
+  machineEntityToBlockIdMap[data.entityId] = data.id;
 }
 
 export function registerStorageTypeScriptEventListener(

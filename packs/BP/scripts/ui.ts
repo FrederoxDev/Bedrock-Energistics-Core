@@ -1,5 +1,6 @@
 import {
   InternalRegisteredMachine,
+  machineEntityToBlockIdMap,
   machineRegistry,
   StorageTypeColor,
   storageTypeRegistry,
@@ -280,7 +281,7 @@ async function updateEntityUi(
   if (!definition.uiElements) {
     throw new Error(
       makeErrorString(
-        `machine '${entity.typeId}' does not have 'description.ui' defined but has a machine entity`,
+        `machine '${definition.id}' does not have 'description.ui' defined but has a machine entity`,
       ),
     );
   }
@@ -288,7 +289,7 @@ async function updateEntityUi(
   if (!definition.updateUiEvent) {
     throw new Error(
       makeErrorString(
-        `machine '${entity.typeId}' is missing the 'updateUi' handler but has 'description.ui' defined`,
+        `machine '${definition.id}' is missing the 'updateUi' handler but has 'description.ui' defined`,
       ),
     );
   }
@@ -386,8 +387,19 @@ world.afterEvents.playerInteractWithEntity.subscribe((e) => {
     return;
   }
 
+  const machineId = machineEntityToBlockIdMap[e.target.typeId] as
+    | string
+    | undefined;
+  if (!machineId) {
+    throw new Error(
+      makeErrorString(
+        `can't process playerInteractWithEntity event for machine entity '${e.target.typeId}': this entity has the 'fluffyalien_energisticscore:machine_entity' type family but it is not attached to a machine`,
+      ),
+    );
+  }
+
   playersInUi.set(e.target, e.player);
-  const definition = machineRegistry[e.target.typeId];
+  const definition = machineRegistry[machineId];
   void updateEntityUi(definition, e.target, e.player, true);
 });
 

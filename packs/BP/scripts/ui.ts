@@ -208,7 +208,7 @@ function handleItemSlot(
     return;
   }
 
-  if (containerSlot.typeId === expectedItemStack.typeId) {
+  if (containerSlot.isStackableWith(expectedItemStack)) {
     if (
       expectedMachineItem &&
       containerSlot.amount !== expectedItemStack.amount
@@ -230,7 +230,11 @@ function handleItemSlot(
   clearUiItemsFromPlayer(player);
 
   const newTypeIndex = element.allowedItems.indexOf(containerSlot.typeId);
-  if (newTypeIndex === -1) {
+  if (
+    newTypeIndex === -1 ||
+    // ensure the item has no special properties
+    !containerSlot.isStackableWith(new ItemStack(containerSlot.typeId))
+  ) {
     setMachineSlotItem(loc, element.slotId, undefined, false);
     player.dimension.spawnItem(containerSlot.getItem()!, player.location);
     containerSlot.setItem(machineItemStackToItemStack(element));

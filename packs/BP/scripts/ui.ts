@@ -259,6 +259,15 @@ function handleProgressIndicator(
   player: Player,
   value = 0,
 ): void {
+  const maxValue = PROGRESS_INDICATOR_MAX_VALUES[indicator];
+  if (value < 0 || value > maxValue || !Number.isInteger(value)) {
+    throw new Error(
+      makeErrorString(
+        `can't update UI: can't update progress indicator (indicator: '${indicator}'): expected 'value' to be an integer between 0 and ${maxValue.toString()} (inclusive) but got ${value.toString()}`,
+      ),
+    );
+  }
+
   const inventoryItem = inventory.getItem(index);
   if (!inventoryItem?.hasTag("fluffyalien_energisticscore:ui_item")) {
     clearUiItemsFromPlayer(player);

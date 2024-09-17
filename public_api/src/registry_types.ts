@@ -104,6 +104,21 @@ export interface UiStorageBarUpdateOptions extends UiElementUpdateOptions {
 /**
  * @beta
  */
+export interface MachineHandlerArg {
+  blockLocation: DimensionLocation;
+}
+
+/**
+ * @beta
+ */
+export interface MachineRecieveHandlerArg extends MachineHandlerArg {
+  receiveType: string;
+  receiveAmount: number;
+}
+
+/**
+ * @beta
+ */
 export interface UpdateUiHandlerResponse {
   storageBars?: UiStorageBarUpdateOptions[];
   progressIndicators?: Record<string, number>;
@@ -113,7 +128,14 @@ export interface UpdateUiHandlerResponse {
  * @beta
  */
 export interface MachineDefinitionHandlers {
-  updateUi?(blockLocation: DimensionLocation): UpdateUiHandlerResponse;
+  updateUi?(arg: MachineHandlerArg): UpdateUiHandlerResponse;
+  /**
+   * Called before a machine recieves a storage type.
+   * @returns a number that overrides the amount that was received
+   * (must be a non-negative integer),
+   * or `undefined` to not change anything.
+   */
+  receive?(arg: MachineRecieveHandlerArg): number | undefined;
 }
 
 // registered machine

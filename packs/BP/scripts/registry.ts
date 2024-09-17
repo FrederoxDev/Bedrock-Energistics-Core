@@ -8,6 +8,7 @@ import {
 import { invokeScriptEvent } from "mcbe-addon-ipc";
 import {
   makeSerializableDimensionLocation,
+  MangledRecieveHandlerPayload,
   MangledRegisteredMachine,
 } from "@/public_api/src/internal";
 
@@ -20,6 +21,10 @@ export const storageTypeRegistry: Record<string, StorageTypeDefinition> = {};
 export class InternalRegisteredMachine extends RegisteredMachine {
   get updateUiEvent(): string | undefined {
     return this.internal.d;
+  }
+
+  get recieveHandlerEvent(): string | undefined {
+    return this.internal.f;
   }
 
   callUpdateUiHandler(
@@ -38,6 +43,32 @@ export class InternalRegisteredMachine extends RegisteredMachine {
       "fluffyalien_energisticscore",
       makeSerializableDimensionLocation(dimensionLocation),
     ) as Promise<UpdateUiHandlerResponse>;
+  }
+
+  callRecieveHandler(
+    blockLocation: DimensionLocation,
+    recieveType: string,
+    recieveAmount: number,
+  ): Promise<number> {
+    if (!this.recieveHandlerEvent) {
+      throw new Error(
+        makeErrorString(
+          "trying to call the 'recieve' handler but it is not defined",
+        ),
+      );
+    }
+
+    const payload: MangledRecieveHandlerPayload = {
+      a: makeSerializableDimensionLocation(blockLocation),
+      b: recieveType,
+      c: recieveAmount,
+    };
+
+    return invokeScriptEvent(
+      this.recieveHandlerEvent,
+      "fluffyalien_energisticscore",
+      payload,
+    ) as Promise<number>;
   }
 }
 

@@ -19,6 +19,7 @@ import {
   logInfo,
   makeErrorString,
   makeSerializableDimensionLocation,
+  MangledRecieveHandlerPayload,
   MangledRegisteredMachine,
   removeBlockFromScoreboards,
   SerializableDimensionLocation,
@@ -33,6 +34,7 @@ import {
 export * from "./registry_types";
 
 const UPDATE_UI_HANDLER_SUFFIX = "__h0";
+const RECIEVE_HANDLER_SUFFIX = "__h1";
 
 /**
  * Representation of an item stack stored in a machine inventory.
@@ -162,16 +164,34 @@ export function registerMachine(
 ): void {
   ensureInitialized();
 
+  const eventIdPrefix = shortId ?? definition.description.id;
+
   let updateUiEvent: string | undefined;
   if (definition.handlers?.updateUi) {
-    updateUiEvent =
-      (shortId ?? definition.description.id) + UPDATE_UI_HANDLER_SUFFIX;
+    updateUiEvent = eventIdPrefix + UPDATE_UI_HANDLER_SUFFIX;
 
     registerScriptEventHandler<
       SerializableDimensionLocation,
       UpdateUiHandlerResponse
     >(updateUiEvent, (payload) =>
-      definition.handlers!.updateUi!(deserializeDimensionLocation(payload)),
+      definition.handlers!.updateUi!({
+        blockLocation: deserializeDimensionLocation(payload),
+      }),
+    );
+  }
+
+  let receiveHandlerEvent: string | undefined;
+  if (definition.handlers?.receive) {
+    receiveHandlerEvent = eventIdPrefix + RECIEVE_HANDLER_SUFFIX;
+
+    registerScriptEventHandler<MangledRecieveHandlerPayload, number>(
+      receiveHandlerEvent,
+      (payload) =>
+        definition.handlers!.receive!({
+          blockLocation: deserializeDimensionLocation(payload.a),
+          receiveType: payload.b,
+          receiveAmount: payload.c,
+        }) ?? payload.c,
     );
   }
 
@@ -181,6 +201,7 @@ export function registerMachine(
     c: definition.description.ui?.elements,
     d: updateUiEvent,
     e: definition.description.entityId,
+    f: receiveHandlerEvent,
   };
 
   try {

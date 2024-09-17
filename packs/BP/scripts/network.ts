@@ -1,7 +1,7 @@
 import { Block, Dimension, Vector3, system } from "@minecraft/server";
 import { Vector3Utils } from "@minecraft/math";
 import { DestroyableObject } from "./utils/destroyable";
-import { makeErrorString } from "./utils/log";
+import { logWarn, makeErrorString } from "./utils/log";
 import { MAX_MACHINE_STORAGE } from "./constants";
 import { getMachineStorage, setMachineStorage } from "./data";
 import {
@@ -9,6 +9,7 @@ import {
   STR_DIRECTIONS,
   StrDirection,
 } from "./utils/direction";
+import { InternalRegisteredMachine, machineRegistry } from "./registry";
 
 interface SendQueueItem {
   block: Block;
@@ -67,6 +68,7 @@ export class MachineNetwork extends DestroyableObject {
     interface Target {
       block: Block;
       amount: number;
+      definition: InternalRegisteredMachine;
     }
 
     const targets: Record<string, Target[]> = {};
@@ -76,12 +78,10 @@ export class MachineNetwork extends DestroyableObject {
       if (!(queuedSend.type in targets)) {
         const targetsArr: Target[] = [];
 
+        const consumerTag = `fluffyalien_energisticscore:consumer.${queuedSend.type}`;
+
         for (const block of this.connections.machines) {
-          if (
-            !block.hasTag(
-              `fluffyalien_energisticscore:consumer.${queuedSend.type}`,
-            )
-          ) {
+          if (!block.hasTag(consumerTag)) {
             continue;
           }
 
@@ -91,9 +91,21 @@ export class MachineNetwork extends DestroyableObject {
             continue;
           }
 
+          const definition = machineRegistry[block.typeId] as
+            | InternalRegisteredMachine
+            | undefined;
+
+          if (!definition) {
+            logWarn(
+              `can't send '${queuedSend.type}' to machine '${block.typeId}': this block has the '${consumerTag}' tag but it couldn't be found in the machine registry`,
+            );
+            continue;
+          }
+
           targetsArr.push({
             block,
             amount,
+            definition,
           });
 
           yield;
@@ -113,10 +125,30 @@ export class MachineNetwork extends DestroyableObject {
         // so get the actual current amount
         const currentAmount = getMachineStorage(target.block, queuedSend.type);
 
-        const sendAmount = Math.min(
+        let sendAmount = Math.min(
           MAX_MACHINE_STORAGE - currentAmount,
           unsentAmount,
         );
+
+        //TODO: make this code better
+        if (target.definition.recieveHandlerEvent) {
+          let result: number | undefined;
+
+          target.definition
+            .callRecieveHandler(target.block, queuedSend.type, sendAmount)
+            .then((value) => {
+              result = value;
+            })
+            .catch(() => {
+              result = sendAmount;
+            });
+
+          while (result === undefined) {
+            yield;
+          }
+
+          sendAmount = result;
+        }
 
         setMachineStorage(
           target.block,

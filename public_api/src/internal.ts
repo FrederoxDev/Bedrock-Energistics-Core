@@ -33,6 +33,25 @@ export interface MangledRegisteredMachine {
    * description.entityId
    */
   e?: string;
+  /**
+   * receiveHandlerEvent
+   */
+  f?: string;
+}
+
+export interface MangledRecieveHandlerPayload {
+  /**
+   * blockLocation
+   */
+  a: SerializableDimensionLocation;
+  /**
+   * recieveType
+   */
+  b: string;
+  /**
+   * recieveAmount
+   */
+  c: number;
 }
 
 export function makeSerializableDimensionLocation(

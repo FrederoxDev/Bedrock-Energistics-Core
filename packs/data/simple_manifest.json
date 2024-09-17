@@ -1,10 +1,10 @@
 {
-  "version": [0, 1, 0],
-  "minEngineVersion": [1, 21, 20],
+  "version": [0, 2, 0],
+  "minEngineVersion": [1, 21, 30],
   "scriptModules": [
     {
       "name": "@minecraft/server",
-      "version": "1.14.0-beta"
+      "version": "1.15.0-beta"
     }
   ],
   "uuids": {

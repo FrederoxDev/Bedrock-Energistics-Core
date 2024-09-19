@@ -42,7 +42,7 @@ export class MachineNetwork extends DestroyableObject {
       if (this.sendJobRunning || !this.sendQueue.length) return;
       this.sendJobRunning = true;
       system.runJob(this.send());
-    }, 5);
+    }, 2);
   }
 
   destroy(): void {
@@ -82,12 +82,14 @@ export class MachineNetwork extends DestroyableObject {
 
         for (const block of this.connections.machines) {
           if (!block.hasTag(consumerTag)) {
+            yield;
             continue;
           }
 
           const amount = getMachineStorage(block, queuedSend.type);
 
           if (amount >= MAX_MACHINE_STORAGE) {
+            yield;
             continue;
           }
 
@@ -99,6 +101,7 @@ export class MachineNetwork extends DestroyableObject {
             logWarn(
               `can't send '${queuedSend.type}' to machine '${block.typeId}': this block has the '${consumerTag}' tag but it couldn't be found in the machine registry`,
             );
+            yield;
             continue;
           }
 
@@ -130,7 +133,6 @@ export class MachineNetwork extends DestroyableObject {
           unsentAmount,
         );
 
-        //TODO: make this code better
         if (target.definition.recieveHandlerEvent) {
           let result: number | undefined;
 
@@ -139,7 +141,10 @@ export class MachineNetwork extends DestroyableObject {
             .then((value) => {
               result = value;
             })
-            .catch(() => {
+            .catch((err: unknown) => {
+              logWarn(
+                `failed to call the 'recieve' handler (ID: '${target.definition.recieveHandlerEvent!}') for machine '${target.definition.id}': ${err instanceof Error || typeof err === "string" ? err.toString() : "unknown error"}. this may cause significant delays when sending storage types`,
+              );
               result = sendAmount;
             });
 

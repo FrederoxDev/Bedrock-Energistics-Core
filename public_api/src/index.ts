@@ -209,8 +209,8 @@ export function registerMachine(
       "fluffyalien_energisticscore:ipc.registerMachine",
       payload,
     );
-  } catch (e) {
-    const caughtErrMessage = `caught error when trying to register machine '${definition.description.id}': ${e instanceof Error ? e.message : "unknown error"}`;
+  } catch (err) {
+    const caughtErrMessage = `caught error when trying to register machine '${definition.description.id}': ${err instanceof Error || typeof err === "string" ? err.toString() : "unknown error"}`;
 
     if (!fallbackToStream) {
       throw new Error(

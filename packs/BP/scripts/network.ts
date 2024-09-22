@@ -2,7 +2,6 @@ import { Block, Dimension, Vector3, system } from "@minecraft/server";
 import { Vector3Utils } from "@minecraft/math";
 import { DestroyableObject } from "./utils/destroyable";
 import { logWarn, makeErrorString } from "./utils/log";
-import { MAX_MACHINE_STORAGE } from "./constants";
 import { getMachineStorage, setMachineStorage } from "./data";
 import {
   getBlockInDirection,
@@ -15,6 +14,7 @@ interface SendQueueItem {
   block: Block;
   amount: number;
   type: string;
+  definition: InternalRegisteredMachine;
 }
 
 interface NetworkConnections {
@@ -89,13 +89,6 @@ export class MachineNetwork extends DestroyableObject {
             continue;
           }
 
-          const amount = getMachineStorage(block, queuedSend.type);
-
-          if (amount >= MAX_MACHINE_STORAGE) {
-            yield;
-            continue;
-          }
-
           const definition = machineRegistry[block.typeId] as
             | InternalRegisteredMachine
             | undefined;
@@ -104,6 +97,13 @@ export class MachineNetwork extends DestroyableObject {
             logWarn(
               `can't send '${queuedSend.type}' to machine '${block.typeId}': this block is configured as a machine but it couldn't be found in the machine registry`,
             );
+            yield;
+            continue;
+          }
+
+          const amount = getMachineStorage(block, queuedSend.type);
+
+          if (amount >= definition.maxStorage) {
             yield;
             continue;
           }
@@ -132,7 +132,7 @@ export class MachineNetwork extends DestroyableObject {
         const currentAmount = getMachineStorage(target.block, queuedSend.type);
 
         let sendAmount = Math.min(
-          MAX_MACHINE_STORAGE - currentAmount,
+          target.definition.maxStorage - currentAmount,
           unsentAmount,
         );
 
@@ -172,7 +172,7 @@ export class MachineNetwork extends DestroyableObject {
       setMachineStorage(
         queuedSend.block,
         queuedSend.type,
-        Math.min(unsentAmount, MAX_MACHINE_STORAGE),
+        Math.min(unsentAmount, queuedSend.definition.maxStorage),
       );
 
       yield;
@@ -212,7 +212,19 @@ export class MachineNetwork extends DestroyableObject {
       );
     }
 
-    this.sendQueue.push({ block, type, amount });
+    const definition = machineRegistry[block.typeId] as
+      | InternalRegisteredMachine
+      | undefined;
+
+    if (!definition) {
+      throw new Error(
+        makeErrorString(
+          `can't queue sending '${type}' from machine '${block.typeId}': the machine to send from could not be found in the machine registry`,
+        ),
+      );
+    }
+
+    this.sendQueue.push({ block, type, amount, definition });
   }
 
   private static discoverConnections(

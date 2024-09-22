@@ -37,6 +37,10 @@ export interface MangledRegisteredMachine {
    * receiveHandlerEvent
    */
   f?: string;
+  /**
+   * description.maxStorage
+   */
+  g?: number;
 }
 
 export interface MangledRecieveHandlerPayload {

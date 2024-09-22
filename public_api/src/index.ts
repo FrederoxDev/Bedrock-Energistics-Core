@@ -61,17 +61,6 @@ export interface InitOptions {
 }
 
 /**
- * The amount that each storage bar segment in a machine is worth.
- * @beta
- */
-export const STORAGE_AMOUNT_PER_BAR_SEGMENT = 100;
-/**
- * The max storage of each storage type in a machine.
- * @beta
- */
-export const MAX_MACHINE_STORAGE = STORAGE_AMOUNT_PER_BAR_SEGMENT * 64;
-
-/**
  * Representation of a machine definition that has been registered.
  * @beta
  * @see {@link MachineDefinition}, {@link registerMachine}, {@link getRegisteredMachine}
@@ -109,6 +98,13 @@ export class RegisteredMachine {
    */
   get persistentEntity(): boolean {
     return this.internal.b ?? false;
+  }
+
+  /**
+   * @returns The max amount of each storage type in this machine.
+   */
+  get maxStorage(): number {
+    return this.internal.g ?? 6400;
   }
 
   /**
@@ -202,6 +198,7 @@ export function registerMachine(
     d: updateUiEvent,
     e: definition.description.entityId,
     f: receiveHandlerEvent,
+    g: definition.description.maxStorage,
   };
 
   try {
@@ -328,7 +325,6 @@ export function getMachineStorage(
  * @param type The type of storage to set.
  * @param value The new value. Must be an integer.
  * @throws Throws if the storage type does not exist.
- * @throws Throws if the new value is negative or greater than {@link MAX_MACHINE_STORAGE}.
  * @throws Throws if the new value is not an integer.
  * @throws Throws if the block is not valid
  */
@@ -349,14 +345,6 @@ export function setMachineStorage(
     throw new Error(
       makeErrorString(
         `trying to set machine storage of type '${type}' to ${value.toString()} which is less than the minimum value (0)`,
-      ),
-    );
-  }
-
-  if (value > MAX_MACHINE_STORAGE) {
-    throw new Error(
-      makeErrorString(
-        `trying to set machine storage of type '${type}' to ${value.toString()} which is greater than the maximum value (${MAX_MACHINE_STORAGE.toString()})`,
       ),
     );
   }

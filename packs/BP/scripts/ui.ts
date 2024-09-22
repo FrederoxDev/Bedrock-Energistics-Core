@@ -18,10 +18,6 @@ import {
   world,
 } from "@minecraft/server";
 import {
-  MAX_MACHINE_STORAGE,
-  STORAGE_AMOUNT_PER_BAR_SEGMENT,
-} from "./constants";
-import {
   getBlockUniqueId,
   getMachineSlotItem,
   getMachineStorage,
@@ -109,9 +105,11 @@ function fillUiBar(
   inventory: Container,
   amount: number,
   startIndex: number,
+  maxStorage: number,
   change = 0,
 ): void {
-  let remainingSegments = Math.floor(amount / STORAGE_AMOUNT_PER_BAR_SEGMENT);
+  // there are 4 items, each item has 16 segments, so divide by 64
+  let remainingSegments = Math.floor(amount / (maxStorage / 64));
 
   for (let i = startIndex + 3; i >= startIndex; i--) {
     const segments = Math.min(16, remainingSegments);
@@ -119,7 +117,7 @@ function fillUiBar(
 
     const itemStack = new ItemStack(segmentItemBaseId + segments.toString());
 
-    itemStack.nameTag = `§r§${labelColorCode}${amount.toString()}/${MAX_MACHINE_STORAGE.toString()} ${name}`;
+    itemStack.nameTag = `§r§${labelColorCode}${amount.toString()}/${maxStorage.toString()} ${name}`;
     if (change) {
       itemStack.nameTag += ` (${change < 0 ? "" : "+"}${truncateNumber(change, 2)}/t)`;
     }
@@ -133,6 +131,7 @@ function handleBarItems(
   inventory: Container,
   startIndex: number,
   player: Player,
+  maxStorage: number,
   type: string = "_disabled",
   change = 0,
 ): void {
@@ -173,6 +172,7 @@ function handleBarItems(
     inventory,
     getMachineStorage(location, type),
     startIndex,
+    maxStorage,
     change,
   );
 }
@@ -357,6 +357,7 @@ async function updateEntityUi(
             inventory,
             options.startIndex,
             player,
+            changeOptions.max ?? definition.maxStorage,
             changeOptions.type,
             changeOptions.change,
           );
@@ -368,6 +369,7 @@ async function updateEntityUi(
           inventory,
           options.startIndex,
           player,
+          definition.maxStorage,
         );
         break;
       }

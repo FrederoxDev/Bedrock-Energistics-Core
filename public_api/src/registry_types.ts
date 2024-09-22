@@ -75,6 +75,11 @@ export interface MachineDefinitionDescription {
    */
   persistentEntity?: boolean;
   /**
+   * Max amount of each storage type in this machine.
+   * @default 6400
+   */
+  maxStorage?: number;
+  /**
    * UI options for your machine.
    * If this is undefined, then Bedrock Energistics Core will skip UI handling for this machine entity.
    */
@@ -99,6 +104,10 @@ export interface UiStorageBarUpdateOptions extends UiElementUpdateOptions {
    */
   type: string;
   change: number;
+  /**
+   * The max amount to display on this on storage bar. Defaults to the {@link MachineDefinitionDescription.maxStorage}
+   */
+  max?: number;
 }
 
 /**

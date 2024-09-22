@@ -78,10 +78,13 @@ export class MachineNetwork extends DestroyableObject {
       if (!(queuedSend.type in targets)) {
         const targetsArr: Target[] = [];
 
-        const consumerTag = `fluffyalien_energisticscore:consumer.${queuedSend.type}`;
-
         for (const block of this.connections.machines) {
-          if (!block.hasTag(consumerTag)) {
+          if (
+            !block.hasTag(
+              `fluffyalien_energisticscore:consumer.${queuedSend.type}`,
+            ) &&
+            !block.hasTag("fluffyalien_energisticscore:consumer._any")
+          ) {
             yield;
             continue;
           }
@@ -99,7 +102,7 @@ export class MachineNetwork extends DestroyableObject {
 
           if (!definition) {
             logWarn(
-              `can't send '${queuedSend.type}' to machine '${block.typeId}': this block has the '${consumerTag}' tag but it couldn't be found in the machine registry`,
+              `can't send '${queuedSend.type}' to machine '${block.typeId}': this block is configured as a machine but it couldn't be found in the machine registry`,
             );
             yield;
             continue;
@@ -244,7 +247,8 @@ export class MachineNetwork extends DestroyableObject {
       }
 
       if (
-        nextBlock.hasTag(`fluffyalien_energisticscore:io.${category}`) &&
+        (nextBlock.hasTag(`fluffyalien_energisticscore:io.${category}`) ||
+          nextBlock.hasTag("fluffyalien_energisticscore:io._any")) &&
         !visitedLocations.some((loc) =>
           Vector3Utils.equals(loc, nextBlock.location),
         )

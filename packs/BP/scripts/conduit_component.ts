@@ -5,7 +5,12 @@ import { getBlockIoCategories } from "./io";
 export const conduitComponent: BlockCustomComponent = {
   onPlace(e) {
     if (e.block.typeId === e.previousBlock.type.id) return;
-    MachineNetwork.updateAdjacent(e.block, getBlockIoCategories(e.block));
+
+    const ioCategories = getBlockIoCategories(e.block);
+    MachineNetwork.updateAdjacent(
+      e.block,
+      ioCategories === "any" ? undefined : ioCategories,
+    );
   },
 };
 

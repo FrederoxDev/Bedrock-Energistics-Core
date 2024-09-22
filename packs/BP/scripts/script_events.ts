@@ -57,9 +57,7 @@ registerScriptEventListener<SerializableDimensionLocation>(
     const block = loc.dimension.getBlock(loc);
     if (!block) return;
 
-    for (const category of getBlockIoCategories(block)) {
-      MachineNetwork.get(category, block)?.destroy();
-    }
+    MachineNetwork.updateBlockNetworks(block);
   },
 );
 
@@ -70,7 +68,12 @@ registerScriptEventListener<SerializableDimensionLocation>(
     const block = loc.dimension.getBlock(loc);
     if (!block) return;
 
-    MachineNetwork.updateAdjacent(block, getBlockIoCategories(block));
+    const ioCategories = getBlockIoCategories(block);
+
+    MachineNetwork.updateAdjacent(
+      block,
+      ioCategories === "any" ? undefined : ioCategories,
+    );
   },
 );
 

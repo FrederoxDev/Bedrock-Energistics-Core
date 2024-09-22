@@ -134,7 +134,6 @@ function handleBarItems(
   startIndex: number,
   player: Player,
   type: string = "_disabled",
-  amount = 0,
   change = 0,
 ): void {
   for (let i = startIndex; i < startIndex + 4; i++) {
@@ -172,7 +171,7 @@ function handleBarItems(
     STORAGE_TYPE_COLOR_TO_FORMATTING_CODE[storageTypeOptions.color],
     storageTypeOptions.name,
     inventory,
-    amount,
+    getMachineStorage(location, type),
     startIndex,
     change,
   );
@@ -359,7 +358,6 @@ async function updateEntityUi(
             options.startIndex,
             player,
             changeOptions.type,
-            getMachineStorage(dimensionLocation, changeOptions.type),
             changeOptions.change,
           );
           break;

@@ -325,7 +325,7 @@ export function getMachineStorage(
  * @param type The type of storage to set.
  * @param value The new value. Must be an integer.
  * @throws Throws if the storage type does not exist.
- * @throws Throws if the new value is not an integer.
+ * @throws Throws if the new value isn't a non-negative integer.
  * @throws Throws if the block is not valid
  */
 export function setMachineStorage(

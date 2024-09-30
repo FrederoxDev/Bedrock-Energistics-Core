@@ -19,5 +19,5 @@ world.beforeEvents.playerBreakBlock.subscribe((e) => {
     return;
   }
 
-  MachineNetwork.updateBlockNetworks(e.block);
+  MachineNetwork.updateWithBlock(e.block);
 });

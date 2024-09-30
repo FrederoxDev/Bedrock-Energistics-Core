@@ -62,7 +62,7 @@ world.beforeEvents.playerBreakBlock.subscribe((e) => {
     return;
   }
 
-  MachineNetwork.updateBlockNetworks(e.block);
+  MachineNetwork.updateWithBlock(e.block);
 
   const definition = machineRegistry[e.block.typeId] as
     | InternalRegisteredMachine
@@ -91,6 +91,20 @@ world.beforeEvents.playerBreakBlock.subscribe((e) => {
       }
     }
 
+    removeBlockFromScoreboards(e.block);
+  });
+});
+
+world.afterEvents.blockExplode.subscribe((e) => {
+  if (
+    !e.explodedBlockPermutation.hasTag("fluffyalien_energisticscore:machine")
+  ) {
+    return;
+  }
+
+  MachineNetwork.updateWith(e.dimension, e.block.location, "machine");
+
+  system.run(() => {
     removeBlockFromScoreboards(e.block);
   });
 });

@@ -57,7 +57,7 @@ registerScriptEventListener<SerializableDimensionLocation>(
     const block = loc.dimension.getBlock(loc);
     if (!block) return;
 
-    MachineNetwork.updateBlockNetworks(block);
+    MachineNetwork.updateWithBlock(block);
   },
 );
 

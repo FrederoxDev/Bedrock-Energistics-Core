@@ -1,0 +1,24 @@
+{
+  "format_version": "1.20.80",
+  "minecraft:item": {
+    "description": {
+      "identifier": "fluffyalien_energisticscore:ui_error",
+      "menu_category": {
+        "category": "none"
+      }
+    },
+    "components": {
+      "minecraft:tags": {
+        "tags": ["fluffyalien_energisticscore:ui_item"]
+      },
+      "minecraft:icon": {
+        "textures": {
+          "default": "fluffyalien_energisticscore:ui_error"
+        }
+      },
+      "minecraft:display_name": {
+        "value": "ERROR: See content log"
+      }
+    }
+  }
+}

@@ -4,6 +4,7 @@ import {
   machineRegistry,
   StorageTypeColor,
   storageTypeRegistry,
+  UiButtonElement,
   UiItemSlotElement,
   UiProgressIndicatorElementType,
   UiStorageBarUpdateOptions,
@@ -25,7 +26,7 @@ import {
   setMachineSlotItem,
 } from "./data";
 import { stringifyDimensionLocation, truncateNumber } from "./utils/string";
-import { makeErrorString } from "./utils/log";
+import { logWarn, makeErrorString } from "./utils/log";
 
 export const PROGRESS_INDICATOR_MAX_VALUES: Record<
   UiProgressIndicatorElementType,
@@ -284,6 +285,53 @@ function handleProgressIndicator(
   );
 }
 
+function handleButton(
+  inventory: Container,
+  entity: Entity,
+  player: Player,
+  init: boolean,
+  element: UiButtonElement,
+): void {
+  if (init) {
+    const item = new ItemStack(element.buttonItem);
+    if (!item.hasTag("fluffyalien_energisticscore:ui_item")) {
+      logWarn(
+        `error when creating button element: the button item '${element.buttonItem}' does not have the 'fluffyalien_energisticscore:ui_item' tag`,
+      );
+      inventory.setItem(
+        element.index,
+        new ItemStack("fluffyalien_energisticscore:ui_error"),
+      );
+      return;
+    }
+
+    inventory.setItem(element.index, item);
+    return;
+  }
+
+  const inventoryItem = inventory.getItem(element.index);
+  if (!inventoryItem?.hasTag("fluffyalien_energisticscore:ui_item")) {
+    clearUiItemsFromPlayer(player);
+
+    if (inventoryItem) {
+      player.dimension.spawnItem(inventoryItem, player.location);
+    }
+
+    if (element.commandInitiator === "entity") {
+      entity.runCommand(element.onClickCommand);
+    } else {
+      player.runCommand(element.onClickCommand);
+    }
+
+    let btnItem = new ItemStack(element.buttonItem);
+    if (!btnItem.hasTag("fluffyalien_energisticscore:ui_item")) {
+      btnItem = new ItemStack("fluffyalien_energisticscore:ui_error");
+    }
+
+    inventory.setItem(element.index, btnItem);
+  }
+}
+
 async function updateEntityUi(
   definition: InternalRegisteredMachine,
   entity: Entity,
@@ -384,6 +432,9 @@ async function updateEntityUi(
           player,
           progressIndicators[id],
         );
+        break;
+      case "button":
+        handleButton(inventory, entity, player, init, options);
         break;
     }
   }

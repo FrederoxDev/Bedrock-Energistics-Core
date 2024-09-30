@@ -44,6 +44,32 @@ export interface UiProgressIndicatorElement {
   index: number;
 }
 
+// todos to match the updated button element proposal
+//TODO: remove commands and add a 'onButtonPressed' event (not handler)
+//TODO: add buttonId number property to pass to the 'onButtonPressed' event
+//TODO: change 'buttonItem' to 'defaultButtonItem' and make the buttonItem settable in 'updateUi'
+/**
+ * Options for defining a button UI element.
+ * @beta
+ */
+export interface UiButtonElement {
+  type: "button";
+  index: number;
+  /**
+   * The item to use as the button. This item must have the `fluffyalien_energisticscore:ui_item` tag.
+   */
+  buttonItem: string;
+  /**
+   * The command to run when the button is "pressed."
+   */
+  onClickCommand: string;
+  /**
+   * The command initiator. "player" is the player who pressed the button, "entity" is the machine entity.
+   * @default "player"
+   */
+  commandInitiator?: "player" | "entity";
+}
+
 /**
  * See each element type for more information.
  * @beta
@@ -51,7 +77,8 @@ export interface UiProgressIndicatorElement {
 export type UiElement =
   | UiStorageBarElement
   | UiItemSlotElement
-  | UiProgressIndicatorElement;
+  | UiProgressIndicatorElement
+  | UiButtonElement;
 
 /**
  * @beta

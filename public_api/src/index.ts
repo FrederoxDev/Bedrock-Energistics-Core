@@ -19,6 +19,7 @@ import {
   logInfo,
   makeErrorString,
   makeSerializableDimensionLocation,
+  MangledOnButtonPressedPayload,
   MangledRecieveHandlerPayload,
   MangledRegisteredMachine,
   removeBlockFromScoreboards,
@@ -28,6 +29,7 @@ import {
   dispatchScriptEvent,
   invokeScriptEvent,
   registerScriptEventHandler,
+  registerScriptEventListener,
   streamScriptEvent,
 } from "mcbe-addon-ipc";
 
@@ -35,6 +37,7 @@ export * from "./registry_types";
 
 const UPDATE_UI_HANDLER_SUFFIX = "__h0";
 const RECIEVE_HANDLER_SUFFIX = "__h1";
+const ON_BUTTON_PRESSED_EVENT_SUFFIX = "__e0";
 
 /**
  * Representation of an item stack stored in a machine inventory.
@@ -166,11 +169,13 @@ export function registerMachine(
   if (definition.handlers?.updateUi) {
     updateUiEvent = eventIdPrefix + UPDATE_UI_HANDLER_SUFFIX;
 
+    const callback = definition.handlers.updateUi.bind(null);
+
     registerScriptEventHandler<
       SerializableDimensionLocation,
       UpdateUiHandlerResponse
     >(updateUiEvent, (payload) =>
-      definition.handlers!.updateUi!({
+      callback({
         blockLocation: deserializeDimensionLocation(payload),
       }),
     );
@@ -180,14 +185,35 @@ export function registerMachine(
   if (definition.handlers?.receive) {
     receiveHandlerEvent = eventIdPrefix + RECIEVE_HANDLER_SUFFIX;
 
+    const callback = definition.handlers.receive.bind(null);
+
     registerScriptEventHandler<MangledRecieveHandlerPayload, number>(
       receiveHandlerEvent,
       (payload) =>
-        definition.handlers!.receive!({
+        callback({
           blockLocation: deserializeDimensionLocation(payload.a),
           receiveType: payload.b,
           receiveAmount: payload.c,
         }) ?? payload.c,
+    );
+  }
+
+  let onButtonPressedEvent: string | undefined;
+  if (definition.events?.onButtonPressed) {
+    onButtonPressedEvent = eventIdPrefix + ON_BUTTON_PRESSED_EVENT_SUFFIX;
+
+    const callback = definition.events.onButtonPressed.bind(null);
+
+    registerScriptEventListener<MangledOnButtonPressedPayload>(
+      onButtonPressedEvent,
+      (payload) => {
+        callback({
+          blockLocation: deserializeDimensionLocation(payload.a),
+          playerId: payload.b,
+          entityId: payload.c,
+          elementId: payload.d,
+        });
+      },
     );
   }
 
@@ -199,6 +225,7 @@ export function registerMachine(
     e: definition.description.entityId,
     f: receiveHandlerEvent,
     g: definition.description.maxStorage,
+    h: onButtonPressedEvent,
   };
 
   try {

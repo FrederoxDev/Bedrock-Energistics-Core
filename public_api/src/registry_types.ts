@@ -44,10 +44,21 @@ export interface UiProgressIndicatorElement {
   index: number;
 }
 
-// todos to match the updated button element proposal
-//TODO: remove commands and add a 'onButtonPressed' event (not handler)
-//TODO: add buttonId number property to pass to the 'onButtonPressed' event
-//TODO: change 'buttonItem' to 'defaultButtonItem' and make the buttonItem settable in 'updateUi'
+/**
+ * @beta
+ */
+export interface UiButtonElementUpdateOptions {
+  /**
+   * The item to use as the button. This item must have the `fluffyalien_energisticscore:ui_item` tag.
+   * @default "fluffyalien_energisticscore:ui_empty_slot"
+   */
+  itemId?: string;
+  /**
+   * The name tag for the item.
+   */
+  name?: string;
+}
+
 /**
  * Options for defining a button UI element.
  * @beta
@@ -56,18 +67,9 @@ export interface UiButtonElement {
   type: "button";
   index: number;
   /**
-   * The item to use as the button. This item must have the `fluffyalien_energisticscore:ui_item` tag.
+   * The default options for this button if nothing is specified in `updateUi`.
    */
-  buttonItem: string;
-  /**
-   * The command to run when the button is "pressed."
-   */
-  onClickCommand: string;
-  /**
-   * The command initiator. "player" is the player who pressed the button, "entity" is the machine entity.
-   * @default "player"
-   */
-  commandInitiator?: "player" | "entity";
+  defaults?: UiButtonElementUpdateOptions;
 }
 
 /**
@@ -113,19 +115,65 @@ export interface MachineDefinitionDescription {
   ui?: UiOptions;
 }
 
-// handlers
+// common callback types
 
 /**
  * @beta
  */
-export interface UiElementUpdateOptions {
-  element: string;
+export interface MachineCallbackArg {
+  blockLocation: DimensionLocation;
 }
 
 /**
  * @beta
  */
-export interface UiStorageBarUpdateOptions extends UiElementUpdateOptions {
+export type MachineCallback<TArg extends MachineCallbackArg, TReturn> = (
+  this: null,
+  arg: TArg,
+) => TReturn;
+
+// events
+
+/**
+ * @beta
+ */
+export type MachineEventCallback<TArg extends MachineCallbackArg> =
+  MachineCallback<TArg, void>;
+
+/**
+ * @beta
+ */
+export interface MachineOnButtonPressedEventArg extends MachineCallbackArg {
+  /**
+   * The ID of the player who "pressed" the button.
+   * @beta
+   */
+  playerId: string;
+  /**
+   * The ID of the machine entity.
+   * @beta
+   */
+  entityId: string;
+  /**
+   * The ID of the button element.
+   * @beta
+   */
+  elementId: string;
+}
+
+/**
+ * @beta
+ */
+export interface MachineDefinitionEvents {
+  onButtonPressed?: MachineEventCallback<MachineOnButtonPressedEventArg>;
+}
+
+// handlers
+
+/**
+ * @beta
+ */
+export interface UiStorageBarUpdateOptions {
   /**
    * The type of this storage bar. Set to "_disabled" to disable the storage bar.
    */
@@ -140,14 +188,7 @@ export interface UiStorageBarUpdateOptions extends UiElementUpdateOptions {
 /**
  * @beta
  */
-export interface MachineHandlerArg {
-  blockLocation: DimensionLocation;
-}
-
-/**
- * @beta
- */
-export interface MachineRecieveHandlerArg extends MachineHandlerArg {
+export interface MachineRecieveHandlerArg extends MachineCallbackArg {
   receiveType: string;
   receiveAmount: number;
 }
@@ -156,22 +197,23 @@ export interface MachineRecieveHandlerArg extends MachineHandlerArg {
  * @beta
  */
 export interface UpdateUiHandlerResponse {
-  storageBars?: UiStorageBarUpdateOptions[];
+  storageBars?: Record<string, UiStorageBarUpdateOptions>;
   progressIndicators?: Record<string, number>;
+  buttons?: Record<string, UiButtonElementUpdateOptions>;
 }
 
 /**
  * @beta
  */
 export interface MachineDefinitionHandlers {
-  updateUi?(arg: MachineHandlerArg): UpdateUiHandlerResponse;
+  updateUi?: MachineCallback<MachineCallbackArg, UpdateUiHandlerResponse>;
   /**
    * Called before a machine recieves a storage type.
    * @returns a number that overrides the amount that was received
    * (must be a non-negative integer),
    * or `undefined` to not change anything.
    */
-  receive?(arg: MachineRecieveHandlerArg): number | undefined;
+  receive?: MachineCallback<MachineRecieveHandlerArg, number | undefined>;
 }
 
 // registered machine
@@ -182,6 +224,7 @@ export interface MachineDefinitionHandlers {
 export interface MachineDefinition {
   description: MachineDefinitionDescription;
   handlers?: MachineDefinitionHandlers;
+  events?: MachineDefinitionEvents;
 }
 
 // storage type options

@@ -4,7 +4,7 @@ import {
   machineRegistry,
   StorageTypeColor,
   storageTypeRegistry,
-  UiButtonElement,
+  UiButtonElementUpdateOptions,
   UiItemSlotElement,
   UiProgressIndicatorElementType,
   UiStorageBarUpdateOptions,
@@ -287,29 +287,35 @@ function handleProgressIndicator(
 
 function handleButton(
   inventory: Container,
+  machine: InternalRegisteredMachine,
+  dimensionLocation: DimensionLocation,
+  elementId: string,
+  index: number,
   entity: Entity,
   player: Player,
+  buttonItemId: string,
   init: boolean,
-  element: UiButtonElement,
+  buttonItemName?: string,
 ): void {
   if (init) {
-    const item = new ItemStack(element.buttonItem);
+    const item = new ItemStack(buttonItemId);
     if (!item.hasTag("fluffyalien_energisticscore:ui_item")) {
       logWarn(
-        `error when creating button element: the button item '${element.buttonItem}' does not have the 'fluffyalien_energisticscore:ui_item' tag`,
+        `error when creating button element: the button item '${buttonItemId}' does not have the 'fluffyalien_energisticscore:ui_item' tag`,
       );
       inventory.setItem(
-        element.index,
+        index,
         new ItemStack("fluffyalien_energisticscore:ui_error"),
       );
       return;
     }
 
-    inventory.setItem(element.index, item);
+    item.nameTag = buttonItemName;
+    inventory.setItem(index, item);
     return;
   }
 
-  const inventoryItem = inventory.getItem(element.index);
+  const inventoryItem = inventory.getItem(index);
   if (!inventoryItem?.hasTag("fluffyalien_energisticscore:ui_item")) {
     clearUiItemsFromPlayer(player);
 
@@ -317,18 +323,22 @@ function handleButton(
       player.dimension.spawnItem(inventoryItem, player.location);
     }
 
-    if (element.commandInitiator === "entity") {
-      entity.runCommand(element.onClickCommand);
-    } else {
-      player.runCommand(element.onClickCommand);
+    if (machine.onButtonPressedEvent) {
+      machine.callOnButtonPressedEvent(
+        dimensionLocation,
+        entity.id,
+        player.id,
+        elementId,
+      );
     }
 
-    let btnItem = new ItemStack(element.buttonItem);
+    let btnItem = new ItemStack(buttonItemId);
     if (!btnItem.hasTag("fluffyalien_energisticscore:ui_item")) {
       btnItem = new ItemStack("fluffyalien_energisticscore:ui_error");
     }
 
-    inventory.setItem(element.index, btnItem);
+    btnItem.nameTag = buttonItemName;
+    inventory.setItem(index, btnItem);
   }
 }
 
@@ -346,14 +356,6 @@ async function updateEntityUi(
     );
   }
 
-  if (!definition.updateUiEvent) {
-    throw new Error(
-      makeErrorString(
-        `machine '${definition.id}' is missing the 'updateUi' handler but has 'description.ui' defined`,
-      ),
-    );
-  }
-
   const dimensionLocation = {
     x: Math.floor(entity.location.x),
     y: Math.floor(entity.location.y),
@@ -361,33 +363,30 @@ async function updateEntityUi(
     dimension: entity.dimension,
   };
 
-  const result = await definition.callUpdateUiHandler(dimensionLocation);
+  const updateUiResult = definition.updateUiEvent
+    ? await definition.invokeUpdateUiHandler(dimensionLocation)
+    : null;
 
   // ensure the entity is still valid after invoking updateUi
   if (!entity.isValid()) {
     return;
   }
 
+  const progressIndicators = updateUiResult?.progressIndicators ?? {};
+  const buttons = updateUiResult?.buttons ?? {};
+
   const storageBarChanges: Record<string, UiStorageBarUpdateOptions> = {};
-
-  let progressIndicators: Record<string, number> = {};
-
-  if (result.storageBars) {
-    for (const changeOptions of result.storageBars) {
-      if (changeOptions.element in storageBarChanges) {
-        storageBarChanges[changeOptions.element].change += changeOptions.change;
+  if (updateUiResult?.storageBars) {
+    for (const [element, changeOptions] of Object.entries(
+      updateUiResult.storageBars,
+    )) {
+      if (element in storageBarChanges) {
+        storageBarChanges[element].change += changeOptions.change;
         continue;
       }
 
-      storageBarChanges[changeOptions.element] = changeOptions;
+      storageBarChanges[element] = changeOptions;
     }
-  }
-
-  if (result.progressIndicators) {
-    progressIndicators = {
-      ...progressIndicators,
-      ...result.progressIndicators,
-    };
   }
 
   const inventory = entity.getComponent("inventory")!.container!;
@@ -433,9 +432,32 @@ async function updateEntityUi(
           progressIndicators[id],
         );
         break;
-      case "button":
-        handleButton(inventory, entity, player, init, options);
+      case "button": {
+        const updateOptions = buttons[id] as
+          | UiButtonElementUpdateOptions
+          | undefined;
+
+        const itemId =
+          updateOptions?.itemId ??
+          options.defaults?.itemId ??
+          "fluffyalien_energisticscore:ui_empty_slot";
+        const itemName = updateOptions?.name ?? options.defaults?.name;
+
+        handleButton(
+          inventory,
+          definition,
+          dimensionLocation,
+          id,
+          options.index,
+          entity,
+          player,
+          itemId,
+          init,
+          itemName,
+        );
+
         break;
+      }
     }
   }
 

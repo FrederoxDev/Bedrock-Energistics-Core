@@ -158,7 +158,7 @@ export class MachineNetwork extends DestroyableObject {
           let result: number | undefined;
 
           target.definition
-            .callRecieveHandler(target.block, queuedSend.type, sendAmount)
+            .invokeRecieveHandler(target.block, queuedSend.type, sendAmount)
             .then((value) => {
               result = value;
             })

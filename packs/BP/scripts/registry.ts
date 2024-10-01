@@ -5,9 +5,10 @@ import {
   StorageTypeDefinition,
   UpdateUiHandlerResponse,
 } from "@/public_api/src";
-import { invokeScriptEvent } from "mcbe-addon-ipc";
+import { dispatchScriptEvent, invokeScriptEvent } from "mcbe-addon-ipc";
 import {
   makeSerializableDimensionLocation,
+  MangledOnButtonPressedPayload,
   MangledRecieveHandlerPayload,
   MangledRegisteredMachine,
 } from "@/public_api/src/internal";
@@ -27,7 +28,11 @@ export class InternalRegisteredMachine extends RegisteredMachine {
     return this.internal.f;
   }
 
-  callUpdateUiHandler(
+  get onButtonPressedEvent(): string | undefined {
+    return this.internal.h;
+  }
+
+  invokeUpdateUiHandler(
     dimensionLocation: DimensionLocation,
   ): Promise<UpdateUiHandlerResponse> {
     if (!this.updateUiEvent) {
@@ -45,7 +50,7 @@ export class InternalRegisteredMachine extends RegisteredMachine {
     ) as Promise<UpdateUiHandlerResponse>;
   }
 
-  callRecieveHandler(
+  invokeRecieveHandler(
     blockLocation: DimensionLocation,
     recieveType: string,
     recieveAmount: number,
@@ -69,6 +74,30 @@ export class InternalRegisteredMachine extends RegisteredMachine {
       "fluffyalien_energisticscore",
       payload,
     ) as Promise<number>;
+  }
+
+  callOnButtonPressedEvent(
+    blockLocation: DimensionLocation,
+    entityId: string,
+    playerId: string,
+    buttonElementId: string,
+  ): void {
+    if (!this.onButtonPressedEvent) {
+      throw new Error(
+        makeErrorString(
+          "trying to call the 'onButtonPressed' event but it is not defined",
+        ),
+      );
+    }
+
+    const payload: MangledOnButtonPressedPayload = {
+      a: makeSerializableDimensionLocation(blockLocation),
+      b: playerId,
+      c: entityId,
+      d: buttonElementId,
+    };
+
+    dispatchScriptEvent(this.onButtonPressedEvent, payload);
   }
 }
 

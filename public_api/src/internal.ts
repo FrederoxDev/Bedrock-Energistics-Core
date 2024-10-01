@@ -41,6 +41,10 @@ export interface MangledRegisteredMachine {
    * description.maxStorage
    */
   g?: number;
+  /**
+   * onButtonPressedEvent
+   */
+  h?: string;
 }
 
 export interface MangledRecieveHandlerPayload {
@@ -56,6 +60,25 @@ export interface MangledRecieveHandlerPayload {
    * recieveAmount
    */
   c: number;
+}
+
+export interface MangledOnButtonPressedPayload {
+  /**
+   * blockLocation
+   */
+  a: SerializableDimensionLocation;
+  /**
+   * playerId
+   */
+  b: string;
+  /**
+   * entityId
+   */
+  c: string;
+  /**
+   * elementId
+   */
+  d: string;
 }
 
 export function makeSerializableDimensionLocation(

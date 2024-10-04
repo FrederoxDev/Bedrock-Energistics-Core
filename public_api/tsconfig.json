@@ -1,11 +1,13 @@
 {
-  "extends": "../tsconfig.json",
   "include": ["./src"],
   "compilerOptions": {
+    "forceConsistentCasingInFileNames": true,
+    "strict": true,
     "module": "nodenext",
     "moduleResolution": "nodenext",
+    "target": "es2022",
     "declaration": true,
     "outDir": "./dist",
-    "noEmit": false
+    "skipLibCheck": true
   }
 }

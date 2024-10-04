@@ -8,7 +8,7 @@ import {
   StorageTypeDefinition,
   UiElement,
   UpdateUiHandlerResponse,
-} from "./registry_types";
+} from "./registry_types.js";
 import {
   deserializeDimensionLocation,
   getBlockUniqueId,
@@ -24,7 +24,7 @@ import {
   MangledRegisteredMachine,
   removeBlockFromScoreboards,
   SerializableDimensionLocation,
-} from "./internal";
+} from "./internal.js";
 import {
   dispatchScriptEvent,
   invokeScriptEvent,
@@ -33,7 +33,7 @@ import {
   streamScriptEvent,
 } from "mcbe-addon-ipc";
 
-export * from "./registry_types";
+export * from "./registry_types.js";
 
 const UPDATE_UI_HANDLER_SUFFIX = "__h0";
 const RECIEVE_HANDLER_SUFFIX = "__h1";

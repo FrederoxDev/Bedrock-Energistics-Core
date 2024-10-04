@@ -4,7 +4,7 @@ import {
   Vector3,
   world,
 } from "@minecraft/server";
-import { UiElement } from "./registry_types";
+import { UiElement } from "./registry_types.js";
 
 const VERSION = "0.1.0";
 

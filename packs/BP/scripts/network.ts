@@ -26,18 +26,20 @@ interface SendQueueItem {
 interface NetworkConnections {
   conduits: Block[];
   machines: Block[];
+  networkLinks: Block[];
 }
 
-type NetworkConnectionType = "conduit" | "machine";
+enum NetworkConnectionType {
+  Conduit = "conduit",
+  Machine = "machine",
+  NetworkLink = "network_link"
+}
 
-export function getBlockNetworkConnectionType(
-  block: Block | BlockPermutation,
-): NetworkConnectionType | null {
-  return block.hasTag("fluffyalien_energisticscore:conduit")
-    ? "conduit"
-    : block.hasTag("fluffyalien_energisticscore:machine")
-      ? "machine"
-      : null;
+export function getBlockNetworkConnectionType(block: Block | BlockPermutation): NetworkConnectionType | null {
+  if (block.hasTag("fluffyalien_energisticscore:conduit")) return NetworkConnectionType.Conduit;
+  if (block.hasTag("fluffyalien_energisticscore:machine")) return NetworkConnectionType.Machine;
+  if (block.hasTag("fluffyalien_energisticscore:network_link")) return NetworkConnectionType.NetworkLink;
+  return null;
 }
 
 export class MachineNetwork extends DestroyableObject {
@@ -210,15 +212,17 @@ export class MachineNetwork extends DestroyableObject {
   ): boolean {
     this.ensureValidity();
 
-    if (dimension.id !== this.dimension.id) {
-      return false;
-    }
+    if (dimension.id !== this.dimension.id) return false;
 
     const condition = (other: Block): boolean =>
       Vector3Utils.equals(location, other.location);
 
-    if (type === "conduit") {
+    if (type === NetworkConnectionType.Conduit) {
       return this.connections.conduits.some(condition);
+    }
+
+    if (type === NetworkConnectionType.NetworkLink) {
+      return this.connections.networkLinks.some(condition);
     }
 
     return this.connections.machines.some(condition);
@@ -263,6 +267,7 @@ export class MachineNetwork extends DestroyableObject {
     const connections: NetworkConnections = {
       conduits: [],
       machines: [],
+      networkLinks: []
     };
 
     const stack: Block[] = [];
@@ -274,6 +279,11 @@ export class MachineNetwork extends DestroyableObject {
 
       if (block.hasTag("fluffyalien_energisticscore:conduit")) {
         connections.conduits.push(block);
+        return;
+      }
+
+      if (block.hasTag("fluffyalien_energisticscore:network_link")) {
+        connections.networkLinks.push(block);
         return;
       }
 
@@ -306,6 +316,8 @@ export class MachineNetwork extends DestroyableObject {
       next(block, "up");
       next(block, "down");
     }
+
+    console.log(JSON.stringify(connections));
 
     return connections;
   }

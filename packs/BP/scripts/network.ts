@@ -2,6 +2,7 @@ import {
   Block,
   BlockPermutation,
   Dimension,
+  DimensionLocation,
   Vector3,
   system,
 } from "@minecraft/server";
@@ -10,8 +11,8 @@ import { DestroyableObject } from "./utils/destroyable";
 import { logWarn, makeErrorString } from "./utils/log";
 import { getMachineStorage, setMachineStorage } from "./data";
 import {
+  DIRECTION_VECTORS,
   getBlockInDirection,
-  STR_DIRECTIONS,
   StrDirection,
 } from "./utils/direction";
 import { InternalRegisteredMachine, machineRegistry } from "./registry";
@@ -204,13 +205,12 @@ export class MachineNetwork extends DestroyableObject {
    * @throws if this object is not valid
    */
   isPartOfNetwork(
-    dimension: Dimension,
-    location: Vector3,
+    location: DimensionLocation,
     type: NetworkConnectionType,
   ): boolean {
     this.ensureValidity();
 
-    if (dimension.id !== this.dimension.id) {
+    if (location.dimension.id !== this.dimension.id) {
       return false;
     }
 
@@ -231,7 +231,7 @@ export class MachineNetwork extends DestroyableObject {
   isBlockPartOfNetwork(block: Block): boolean {
     const type = getBlockNetworkConnectionType(block);
     if (!type) return false;
-    return this.isPartOfNetwork(block.dimension, block.location, type);
+    return this.isPartOfNetwork(block, type);
   }
 
   queueSend(block: Block, type: string, amount: number): void {
@@ -329,14 +329,13 @@ export class MachineNetwork extends DestroyableObject {
    */
   static get(
     category: string,
-    dimension: Dimension,
-    location: Vector3,
+    location: DimensionLocation,
     type: NetworkConnectionType,
   ): MachineNetwork | undefined {
     return MachineNetwork.networks.find(
       (network) =>
         network.category === category &&
-        network.isPartOfNetwork(dimension, location, type),
+        network.isPartOfNetwork(location, type),
     );
   }
 
@@ -349,19 +348,18 @@ export class MachineNetwork extends DestroyableObject {
   ): MachineNetwork | undefined {
     const type = getBlockNetworkConnectionType(block);
     if (!type) return;
-    return this.get(category, block.dimension, block.location, type);
+    return this.get(category, block, type);
   }
 
   /**
    * Get all {@link MachineNetwork}s that contain a block that match the arguments
    */
   static getAll(
-    dimension: Dimension,
-    location: Vector3,
+    location: DimensionLocation,
     type: NetworkConnectionType,
   ): MachineNetwork[] {
     return MachineNetwork.networks.filter((network) =>
-      network.isPartOfNetwork(dimension, location, type),
+      network.isPartOfNetwork(location, type),
     );
   }
 
@@ -371,7 +369,7 @@ export class MachineNetwork extends DestroyableObject {
   static getAllBlockNetworks(block: Block): MachineNetwork[] {
     const type = getBlockNetworkConnectionType(block);
     if (!type) return [];
-    return this.getAll(block.dimension, block.location, type);
+    return this.getAll(block, type);
   }
 
   static getOrEstablish(
@@ -385,11 +383,16 @@ export class MachineNetwork extends DestroyableObject {
   }
 
   /**
-   * Update all {@link MachineNetwork}s adjacent to a block
+   * Update all {@link MachineNetwork}s adjacent to a location
    */
-  static updateAdjacent(block: Block, categories?: string[]): void {
-    for (const direction of STR_DIRECTIONS) {
-      const blockInDirection = getBlockInDirection(block, direction);
+  static updateAdjacent(
+    location: DimensionLocation,
+    categories?: string[],
+  ): void {
+    for (const directionVector of DIRECTION_VECTORS) {
+      const blockInDirection = location.dimension.getBlock(
+        Vector3Utils.add(location, directionVector),
+      );
       if (!blockInDirection) {
         continue;
       }
@@ -413,11 +416,10 @@ export class MachineNetwork extends DestroyableObject {
    * Update all {@link MachineNetwork}s that contain a block that matches the arguments
    */
   static updateWith(
-    dimension: Dimension,
-    location: Vector3,
+    location: DimensionLocation,
     type: NetworkConnectionType,
   ): void {
-    for (const network of MachineNetwork.getAll(dimension, location, type)) {
+    for (const network of MachineNetwork.getAll(location, type)) {
       network.destroy();
     }
   }

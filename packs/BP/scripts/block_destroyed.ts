@@ -27,7 +27,7 @@ world.afterEvents.blockExplode.subscribe((e) => {
     return;
   }
 
-  MachineNetwork.updateWith(e.dimension, e.block.location, connectionType);
+  MachineNetwork.updateWith(e.block, connectionType);
 
   if (connectionType === "machine") {
     removeBlockFromScoreboards(e.block);
@@ -91,11 +91,12 @@ world.afterEvents.pistonActivate.subscribe((e) => {
       const connectionType = getBlockNetworkConnectionType(block);
       if (!connectionType) continue;
 
-      MachineNetwork.updateWith(
-        e.dimension,
-        attachedBlockLocation,
-        connectionType,
-      );
+      const attachedBlockDimensionLocation: DimensionLocation = {
+        dimension: e.dimension,
+        ...attachedBlockLocation,
+      };
+
+      MachineNetwork.updateWith(attachedBlockDimensionLocation, connectionType);
 
       if (connectionType === "conduit") {
         continue;
@@ -140,11 +141,6 @@ world.afterEvents.pistonActivate.subscribe((e) => {
           machineEntity.remove();
         }
       }
-
-      const attachedBlockDimensionLocation: DimensionLocation = {
-        dimension: e.dimension,
-        ...attachedBlockLocation,
-      };
 
       dropItemsStoredInMachine(attachedBlockDimensionLocation, definition);
       removeBlockFromScoreboards(attachedBlockDimensionLocation);

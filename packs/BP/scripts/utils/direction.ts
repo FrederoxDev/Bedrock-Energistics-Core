@@ -27,6 +27,15 @@ export const STR_DIRECTIONS = [
 ] as const;
 export type StrDirection = (typeof STR_DIRECTIONS)[number];
 
+export const DIRECTION_VECTORS: Vector3[] = [
+  { x: 0, y: 0, z: -1 },
+  VECTOR3_EAST,
+  { x: 0, y: 0, z: 1 },
+  VECTOR3_WEST,
+  VECTOR3_UP,
+  VECTOR3_DOWN,
+];
+
 export function getDirectionVector(
   direction: Direction | StrDirection,
 ): Vector3 {

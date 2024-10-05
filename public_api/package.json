@@ -19,7 +19,7 @@
     "build": "tsc"
   },
   "devDependencies": {
-    "@minecraft/server": "^1.14.0"
+    "@minecraft/server": "^1.15.0-rc.1.21.40-preview.25"
   },
   "dependencies": {
     "mcbe-addon-ipc": "^0.2.0"

@@ -30,9 +30,7 @@ world.afterEvents.blockExplode.subscribe((e) => {
   MachineNetwork.updateWith(e.dimension, e.block.location, connectionType);
 
   if (connectionType === "machine") {
-    system.run(() => {
-      removeBlockFromScoreboards(e.block);
-    });
+    removeBlockFromScoreboards(e.block);
   }
 });
 

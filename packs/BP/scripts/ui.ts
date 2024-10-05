@@ -15,6 +15,7 @@ import {
   Entity,
   ItemStack,
   Player,
+  PlayerCursorInventoryComponent,
   system,
   world,
 } from "@minecraft/server";
@@ -68,7 +69,7 @@ function isUiItem(item: ItemStack): boolean {
 function clearUiItemsFromPlayer(player: Player): boolean {
   let anythingCleared = false;
 
-  const playerCursorInventory = player.getComponent("cursor_inventory")!;
+  const playerCursorInventory = player.getComponent("cursor_inventory") as PlayerCursorInventoryComponent;
   if (playerCursorInventory.item && isUiItem(playerCursorInventory.item)) {
     playerCursorInventory.clear();
     anythingCleared = true;

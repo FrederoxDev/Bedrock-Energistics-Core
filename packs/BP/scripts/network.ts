@@ -283,19 +283,15 @@ export class MachineNetwork extends DestroyableObject {
 
     function next(currentBlock: Block, direction: StrDirection): void {
       const nextBlock = getBlockInDirection(currentBlock, direction);
-      if (!nextBlock) {
-        return;
-      }
+      if (!nextBlock) return;
 
-      if (
-        (nextBlock.hasTag(`fluffyalien_energisticscore:io.${category}`) ||
-          nextBlock.hasTag("fluffyalien_energisticscore:io._any")) &&
-        !visitedLocations.some((loc) =>
-          Vector3Utils.equals(loc, nextBlock.location),
-        )
-      ) {
-        handleBlock(nextBlock);
-      }
+      const isHandled = visitedLocations.some(l => Vector3Utils.equals(l, nextBlock.location));
+      if (isHandled) return;
+
+      const isSameCategory = nextBlock.hasTag(`fluffyalien_energisticscore:io.${category}`);
+      const allowsAny = nextBlock.hasTag("fluffyalien_energisticscore:io._any");
+
+      if (isSameCategory || allowsAny) handleBlock(nextBlock);
     }
 
     handleBlock(origin);
@@ -310,6 +306,8 @@ export class MachineNetwork extends DestroyableObject {
       next(block, "up");
       next(block, "down");
     }
+
+    console.log(JSON.stringify(connections))
 
     return connections;
   }

@@ -334,6 +334,7 @@ export function getMachineStorage(
   type: string,
 ): number {
   const objective = getStorageScoreboardObjective(type);
+  
   if (!objective) {
     throw new Error(
       makeErrorString(

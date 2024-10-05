@@ -5,7 +5,7 @@ import {
   Vector3,
   system,
 } from "@minecraft/server";
-import { Vector3Utils } from "@minecraft/math";
+import { Vector3Builder, Vector3Utils } from "@minecraft/math";
 import { DestroyableObject } from "./utils/destroyable";
 import { logWarn, makeErrorString } from "./utils/log";
 import { getMachineStorage, setMachineStorage } from "./data";
@@ -284,6 +284,23 @@ export class MachineNetwork extends DestroyableObject {
 
       if (block.hasTag("fluffyalien_energisticscore:network_link")) {
         connections.networkLinks.push(block);
+
+        // find the associated data entity if it exists.
+        const dataStorageEntity = block.dimension.getEntitiesAtBlockLocation(block.location)
+          .filter(e => e.typeId === "fluffyalien_energisticscore:network_link")[0];
+
+        if (dataStorageEntity === undefined) return;
+
+        // network links store a list of connections that this node has.
+        const rawData = dataStorageEntity.getDynamicProperty("fluffyalien_energisticscore:linked_positions") as string ?? "[]";
+        const data = JSON.parse(rawData) as Vector3[];
+
+        for (const posToSearch of data) {
+          const linkedBlock = origin.dimension.getBlock(posToSearch);
+          if (linkedBlock === undefined || visitedLocations.some(v => Vector3Utils.equals(v, posToSearch))) continue; 
+          handleBlock(linkedBlock);
+        }
+
         return;
       }
 
@@ -308,7 +325,6 @@ export class MachineNetwork extends DestroyableObject {
 
     while (stack.length) {
       const block = stack.pop()!;
-
       next(block, "north");
       next(block, "east");
       next(block, "south");

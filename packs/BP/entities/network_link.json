@@ -1,0 +1,37 @@
+{
+    "format_version": "1.20.80",
+    "minecraft:entity": {
+        "description": {
+            "identifier": "fluffyalien_energisticscore:network_link",
+            "is_spawnable": false,
+            "is_summonable": true,
+            "is_experimental": false
+        },
+        "component_groups": {
+            "fluffyalien_energisticscore:despawn": {
+                "minecraft:instant_despawn": {}
+            }
+        },
+        "components": {
+            "minecraft:physics": {
+                "has_collision": false,
+                "has_gravity": false
+            },
+            "minecraft:damage_sensor": {
+                "triggers": [
+                    {
+                        "cause": "all",
+                        "deals_damage": false
+                    }
+                ]
+            }
+        },
+        "events": {
+            "fluffyalien_energisticscore:despawn": {
+                "add": {
+                    "component_groups": ["fluffyalien_energisticscore:despawn"]
+                }
+            }
+        }
+    }
+}

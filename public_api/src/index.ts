@@ -2,7 +2,7 @@
  * @module API
  */
 
-import { Block, DimensionLocation, ItemTypes, system } from "@minecraft/server";
+import { Block, DimensionLocation, Entity, ItemTypes, system } from "@minecraft/server";
 import {
   MachineDefinition,
   StorageTypeDefinition,
@@ -34,6 +34,7 @@ import {
 } from "mcbe-addon-ipc";
 
 export * from "./registry_types.js";
+export * from "./machinery/network_links.js"
 
 const UPDATE_UI_HANDLER_SUFFIX = "__h0";
 const RECIEVE_HANDLER_SUFFIX = "__h1";
@@ -334,7 +335,7 @@ export function getMachineStorage(
   type: string,
 ): number {
   const objective = getStorageScoreboardObjective(type);
-  
+
   if (!objective) {
     throw new Error(
       makeErrorString(
@@ -530,3 +531,4 @@ export function removeMachine(blockLocation: DimensionLocation): void {
     removeBlockFromScoreboards(blockLocation);
   });
 }
+

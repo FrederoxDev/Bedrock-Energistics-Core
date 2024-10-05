@@ -163,3 +163,7 @@ export function makeErrorString(message: string): string {
 export function logInfo(message: string): void {
   console.info(makeLogString("INFO", message));
 }
+
+export function makeError(message: string) {
+  throw new Error(makeErrorString(message));
+}

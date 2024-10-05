@@ -81,10 +81,7 @@ registerScriptEventListener<SerializableDimensionLocation>(
   "fluffyalien_energisticscore:ipc.updateMachineAdjacentNetworks",
   (payload) => {
     const loc = deserializeDimensionLocation(payload);
-    const block = loc.dimension.getBlock(loc);
-    if (!block) return;
-
-    MachineNetwork.updateAdjacent(block);
+    MachineNetwork.updateAdjacent(loc);
   },
 );
 

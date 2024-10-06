@@ -34,7 +34,8 @@ import {
 } from "mcbe-addon-ipc";
 
 export * from "./registry_types.js";
-export * from "./machinery/network_links.js"
+export * as NetworkLinks from "./network_links/network_links.js"
+export * from "./network_links/network_link_node.js"
 
 const UPDATE_UI_HANDLER_SUFFIX = "__h0";
 const RECIEVE_HANDLER_SUFFIX = "__h1";

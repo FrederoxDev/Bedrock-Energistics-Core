@@ -1,46 +1,8 @@
-import { Block, Dimension, Entity, Vector3 } from "@minecraft/server";
-import { makeError } from "../internal.js";
+import { Entity, Vector3 } from "@minecraft/server";
 import { Vector3Utils } from "@minecraft/math";
-
-const NETWORK_LINK_TAG = "fluffyalien_energisticscore:network_link";
-const NETWORK_LINK_ENTITY = "fluffyalien_energisticscore:network_link";
-const DATA_PROP_KEY = "fluffyalien_energisticscore:linked_positions";
-
-export class NetworkLinks {
-    /**
-     * Finds the network link entity associated with a block, or creates it if it doesn't exist yet.
-     * @param block
-     * @throws If the block does not have the `fluffyalien_energisticscore:network_link` block tag
-     * @returns The associated network link node
-     */
-    static getNetworkLink(block: Block): NetworkLinkNode {
-        let dataStorageEntity = block.dimension.getEntitiesAtBlockLocation(block.location)
-            .filter(e => e.typeId === NETWORK_LINK_ENTITY)[0];
-
-        // Only verify the block tag when creating an entity, this is easier for after events when the network link block  
-        // is destroyed, but we still need to get it to cleanup.
-        if (!dataStorageEntity && !block.hasTag(NETWORK_LINK_TAG)) 
-            makeError(`NetworkLinks::getNetworkLink expected block of id: '${block.typeId}' to have the '${NETWORK_LINK_TAG}' tag before creating a network link storage entity at this location`);
-        
-        // Spawn entity if tag check passed and it is null.
-        dataStorageEntity ??= block.dimension.spawnEntity(NETWORK_LINK_ENTITY, block.location);
-        return new NetworkLinkNode(dataStorageEntity, block.location);
-    }
-
-    /**
-     * Finds the network link entity associated with a block, or returns undefined if its not been created yet.
-     * @param block
-     * @throws If the block does not have the `fluffyalien_energisticscore:network_link` block tag
-     * @returns The associated network link node
-     */
-    static tryGetNetworkLinkAt(dimension: Dimension, location: Vector3): NetworkLinkNode | undefined {
-        let dataStorageEntity = dimension.getEntitiesAtBlockLocation(location)
-            .filter(e => e.typeId === NETWORK_LINK_ENTITY)[0];
-
-        if (dataStorageEntity === undefined) return undefined;
-        return new NetworkLinkNode(dataStorageEntity, location);
-    }
-}
+import { NetworkLinks } from "../index.js";
+import { NETWORK_LINK_POSITIONS_KEY } from "./network_links.js";
+import { makeError } from "../internal.js";
 
 /**
  * Represents a single network link node in the machine network.
@@ -50,7 +12,7 @@ export class NetworkLinkNode {
     private _blockPos: Vector3;
 
     /**
-     * @private
+     * @internal
      * Internal method, use NetworkLinks.getNetworkLink instead!
      */
     constructor(entity: Entity, blockPos: Vector3) {
@@ -63,7 +25,8 @@ export class NetworkLinkNode {
      * Gets all the locations that this network link node is connected too.
      */
     public getConnections(): Vector3[] {
-        const rawData = this._entity.getDynamicProperty(DATA_PROP_KEY) as string ?? "[]";
+        this._ensureValid();
+        const rawData = this._entity.getDynamicProperty(NETWORK_LINK_POSITIONS_KEY) as string ?? "[]";
         return JSON.parse(rawData) as Vector3[];
     }
 
@@ -108,6 +71,14 @@ export class NetworkLinkNode {
         this._entity.triggerEvent("fluffyalien_energisticscore:despawn");
     }
 
+    /**
+     * @beta
+     * Checks if this network node is still valid
+     */
+    public isValid(): boolean {
+        return this._entity.isValid();
+    }
+
     ////////////////////////////////
     /** Internal helper functions */
     ////////////////////////////////
@@ -122,6 +93,12 @@ export class NetworkLinkNode {
     }
 
     private _serializeConnections(connections: Vector3[]) {
-        this._entity.setDynamicProperty(DATA_PROP_KEY, JSON.stringify(connections));
+        this._ensureValid();
+        this._entity.setDynamicProperty(NETWORK_LINK_POSITIONS_KEY, JSON.stringify(connections));
+        console.log("_serializeConnections", JSON.stringify(this._blockPos), JSON.stringify(connections));
+    }
+
+    private _ensureValid(): void {
+        if (!this._entity.isValid()) makeError(`NetworkLinkNode instance is not valid.`);
     }
 }

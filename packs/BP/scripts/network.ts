@@ -15,6 +15,7 @@ import {
   StrDirection,
 } from "./utils/direction";
 import { InternalRegisteredMachine, machineRegistry } from "./registry";
+import { NetworkLinks } from "@/public_api/src";
 
 interface SendQueueItem {
   block: Block;
@@ -285,19 +286,15 @@ export class MachineNetwork extends DestroyableObject {
       if (block.hasTag("fluffyalien_energisticscore:network_link")) {
         connections.networkLinks.push(block);
 
-        // find the associated data entity if it exists.
-        const dataStorageEntity = block.dimension.getEntitiesAtBlockLocation(block.location)
-          .filter(e => e.typeId === "fluffyalien_energisticscore:network_link")[0];
+        const netLink = NetworkLinks.tryGetNetworkLinkAt(block.dimension, block.location);
+        if (!netLink) return;
 
-        if (dataStorageEntity === undefined) return;
+        const linkedPositions = netLink.getConnections();
+        console.log("linkedPositions: ", JSON.stringify(linkedPositions), JSON.stringify(block.location));
 
-        // network links store a list of connections that this node has.
-        const rawData = dataStorageEntity.getDynamicProperty("fluffyalien_energisticscore:linked_positions") as string ?? "[]";
-        const data = JSON.parse(rawData) as Vector3[];
-
-        for (const posToSearch of data) {
-          const linkedBlock = origin.dimension.getBlock(posToSearch);
-          if (linkedBlock === undefined || visitedLocations.some(v => Vector3Utils.equals(v, posToSearch))) continue; 
+        for (const pos of linkedPositions) {
+          const linkedBlock = block.dimension.getBlock(pos);
+          if (linkedBlock === undefined || visitedLocations.some(v => Vector3Utils.equals(v, pos))) continue;
           handleBlock(linkedBlock);
         }
 
@@ -450,6 +447,7 @@ export class MachineNetwork extends DestroyableObject {
    * Update all {@link MachineNetwork}s that contain a block
    */
   static updateWithBlock(block: Block): void {
+    console.log("updateWithBlock")
     for (const network of MachineNetwork.getAllBlockNetworks(block)) {
       network.destroy();
     }

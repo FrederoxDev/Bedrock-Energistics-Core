@@ -5,15 +5,19 @@ import { invokeScriptEvent } from "mcbe-addon-ipc";
 import { NetworkLinkAddRequest, NetworkLinkDestroyRequest, NetworkLinkGetRequest, NetworkLinkGetResponse } from "./ipc_events.js";
 
 /**
- * Represents a single network link node in the machine network.
+ * A NetworkLinkNode represents a single node in the machine network
+ * 
+ * - NetworkLinkNodes can be used to combine two seperate networks without any physcical connection between them.
+ * - An example use case is to create wireless power transmission.
+ * - To get an instance of a `NetworkLinkNode` use `NetworkLinks.getNetworkLink`
  */
 export class NetworkLinkNode {
     private _entity: Entity;
     private _blockPos: Vector3;
 
     /**
-     * @internal
      * Internal method, use NetworkLinks.getNetworkLink instead!
+     * @internal
      */
     constructor(entity: Entity, blockPos: Vector3) {
         this._entity = entity;
@@ -21,8 +25,9 @@ export class NetworkLinkNode {
     }
 
     /**
+     * Fetches all of the outbound connections to other {@link NetworkLinkNode}s
+     * @returns The block positions of each connection
      * @beta
-     * Gets all the locations that this network link node is connected too.
      */
     public async getConnections() {
         const payload: NetworkLinkGetRequest = {
@@ -39,8 +44,9 @@ export class NetworkLinkNode {
     } 
 
     /**
+     * Sends a request to create a two way connection between this {@link NetworkLinkNode} and the location of another.
+     * @param location The block location of the other node.
      * @beta
-     * Adds both an incoming and outgoing connection from this node to the node at the location passed in.
      */
     public async addConnection(location: Vector3) {
         const payload: NetworkLinkAddRequest = {
@@ -56,8 +62,9 @@ export class NetworkLinkNode {
     }
 
     /**
+     * Sends a request to break an existing two way connection between this {@link NetworkLinkNode} and the location of another.
+     * @param location The block location of the other node.
      * @beta
-     * Removes a specific location which this network link node is connected too.
      */
     public async removeConnection(location: Vector3) {
         const payload: NetworkLinkAddRequest = {
@@ -73,8 +80,8 @@ export class NetworkLinkNode {
     }
 
     /**
+     * Sends a request to break all connections and clean-up the backend side.
      * @beta
-     * Removes this node from the network and removes any links coming into this node.
      */
     public async destroyNode() {
         const payload: NetworkLinkDestroyRequest = {

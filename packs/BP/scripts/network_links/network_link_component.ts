@@ -4,7 +4,7 @@ import { MachineNetwork } from "../network";
 import { registerScriptEventHandler } from "mcbe-addon-ipc";
 import { deserializeDimensionLocation, makeError, SerializableDimensionLocation } from "@/public_api/src/internal";
 import { NetworkLinkGetRequest, NetworkLinkGetResponse, NetworkLinkAddRequest, NetworkLinkRemoveRequest, NetworkLinkDestroyRequest } from "@/public_api/src/network_links/ipc_events";
-import { NetworkLinkNodeInternal } from "./network_link_internal";
+import { NetworkLinkNode } from "./network_link_internal";
 
 export const networkLinkComponent: BlockCustomComponent = {
     onPlace(ev) {
@@ -16,7 +16,7 @@ export const networkLinkComponent: BlockCustomComponent = {
     },
 
     onPlayerDestroy(ev) {
-        const linkNode = NetworkLinkNodeInternal.tryGetAt(ev.dimension, ev.block.location);
+        const linkNode = NetworkLinkNode.tryGetAt(ev.dimension, ev.block.location);
 
         // remove all incoming and outbound links to this node in the network
         if (linkNode) linkNode.destroyNode();
@@ -30,7 +30,7 @@ function _getNetwork(self: SerializableDimensionLocation) {
     const location = deserializeDimensionLocation(self);
     const block = location.dimension.getBlock(location);
     if (!block) makeError(`_getNetwork failed to get block`);
-    return NetworkLinkNodeInternal.fromBlock(block);
+    return NetworkLinkNode.fromBlock(block);
 }
 
 registerScriptEventHandler<NetworkLinkGetRequest, NetworkLinkGetResponse>("fluffyalien_energisticscore:ipc.network_link_get", (payload => {

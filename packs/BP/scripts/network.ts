@@ -15,7 +15,7 @@ import {
   StrDirection,
 } from "./utils/direction";
 import { InternalRegisteredMachine, machineRegistry } from "./registry";
-import { NetworkLinks } from "@/public_api/src";
+import { NetworkLinkNodeInternal } from "./network_links/network_link_internal";
 
 interface SendQueueItem {
   block: Block;
@@ -286,17 +286,16 @@ export class MachineNetwork extends DestroyableObject {
       if (block.hasTag("fluffyalien_energisticscore:network_link")) {
         connections.networkLinks.push(block);
 
-        const netLink = NetworkLinks.tryGetNetworkLinkAt(block.dimension, block.location);
+        const netLink = NetworkLinkNodeInternal.tryGetAt(block.dimension, block.location);
         if (!netLink) return;
 
-        // const linkedPositions = netLink.getConnections();
-        // console.log("linkedPositions: ", JSON.stringify(linkedPositions), JSON.stringify(block.location));
+        const linkedPositions = netLink.getConnections();
 
-        // for (const pos of linkedPositions) {
-        //   const linkedBlock = block.dimension.getBlock(pos);
-        //   if (linkedBlock === undefined || visitedLocations.some(v => Vector3Utils.equals(v, pos))) continue;
-        //   handleBlock(linkedBlock);
-        // }
+        for (const pos of linkedPositions) {
+          const linkedBlock = block.dimension.getBlock(pos);
+          if (linkedBlock === undefined || visitedLocations.some(v => Vector3Utils.equals(v, pos))) continue;
+          handleBlock(linkedBlock);
+        }
 
         return;
       }
@@ -329,8 +328,6 @@ export class MachineNetwork extends DestroyableObject {
       next(block, "up");
       next(block, "down");
     }
-
-    console.log(JSON.stringify(connections));
 
     return connections;
   }
@@ -447,7 +444,6 @@ export class MachineNetwork extends DestroyableObject {
    * Update all {@link MachineNetwork}s that contain a block
    */
   static updateWithBlock(block: Block): void {
-    console.log("updateWithBlock")
     for (const network of MachineNetwork.getAllBlockNetworks(block)) {
       network.destroy();
     }

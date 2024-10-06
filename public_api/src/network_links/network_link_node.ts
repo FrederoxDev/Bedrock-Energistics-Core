@@ -1,9 +1,8 @@
 import { Entity, Vector3 } from "@minecraft/server";
-import { Vector3Utils } from "@minecraft/math";
-import { initOptions, NetworkLinks } from "../index.js";
-import { NETWORK_LINK_POSITIONS_KEY } from "./network_links.js";
-import { makeError, makeSerializableDimensionLocation, SerializableDimensionLocation } from "../internal.js";
-import { dispatchScriptEvent, invokeScriptEvent } from "mcbe-addon-ipc";
+import { initOptions } from "../index.js";
+import { makeSerializableDimensionLocation } from "../internal.js";
+import { invokeScriptEvent } from "mcbe-addon-ipc";
+import { NetworkLinkAddRequest, NetworkLinkDestroyRequest, NetworkLinkGetRequest, NetworkLinkGetResponse } from "./ipc_events.js";
 
 /**
  * Represents a single network link node in the machine network.
@@ -89,9 +88,3 @@ export class NetworkLinkNode {
         );
     }
 }
-
-export type NetworkLinkGetRequest = { self: SerializableDimensionLocation };
-export type NetworkLinkGetResponse = { locations: Vector3[] };
-export type NetworkLinkAddRequest = { self: SerializableDimensionLocation, other: Vector3 };
-export type NetworkLinkRemoveRequest = { self: SerializableDimensionLocation, other: Vector3 };
-export type NetworkLinkDestroyRequest = { self: SerializableDimensionLocation };

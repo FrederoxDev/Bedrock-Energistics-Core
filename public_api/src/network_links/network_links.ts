@@ -1,10 +1,7 @@
 import { Block, Dimension, Vector3 } from "@minecraft/server";
 import { NetworkLinkNode } from "./network_link_node.js";
 import { makeError } from "../internal.js";
-
-export const NETWORK_LINK_BLOCK_TAG = "fluffyalien_energisticscore:network_link";
-export const NETWORK_LINK_ENTITY_ID = "fluffyalien_energisticscore:network_link";
-export const NETWORK_LINK_POSITIONS_KEY = "fluffyalien_energisticscore:linked_positions";
+import { NETWORK_LINK_BLOCK_TAG, NETWORK_LINK_ENTITY_ID } from "./ipc_events.js";
 
 /**
  * Finds the `NetworkLinkNode` associated with this block, or creates it if it doesn't exist

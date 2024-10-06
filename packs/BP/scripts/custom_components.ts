@@ -1,7 +1,7 @@
 import { world } from "@minecraft/server";
 import { machineComponent } from "./machine";
 import { conduitComponent } from "./conduit_component";
-import { networkLinkComponent } from "./network_link_component";
+import { networkLinkComponent } from "./network_links/network_link_component";
 
 world.beforeEvents.worldInitialize.subscribe((e) => {
   e.blockComponentRegistry.registerCustomComponent(

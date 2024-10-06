@@ -9,6 +9,7 @@ import {
   UiElement,
   UpdateUiHandlerResponse,
 } from "./registry_types.js";
+
 import {
   deserializeDimensionLocation,
   getBlockUniqueId,
@@ -25,6 +26,7 @@ import {
   removeBlockFromScoreboards,
   SerializableDimensionLocation,
 } from "./internal.js";
+
 import {
   dispatchScriptEvent,
   invokeScriptEvent,

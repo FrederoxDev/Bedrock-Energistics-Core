@@ -1,4 +1,9 @@
-import { BlockCustomComponent, system, world } from "@minecraft/server";
+import {
+  BlockCustomComponent,
+  DimensionLocation,
+  system,
+  world,
+} from "@minecraft/server";
 import {
   getMachineSlotItem,
   machineItemStackToItemStack,
@@ -11,6 +16,8 @@ import {
 } from "./registry";
 import { MachineNetwork } from "./network";
 import { makeErrorString } from "./utils/log";
+import { Vector3Utils } from "@minecraft/math";
+import { RegisteredMachine } from "@/public_api/src";
 
 export const machineComponent: BlockCustomComponent = {
   onPlace(e) {
@@ -29,10 +36,17 @@ export const machineComponent: BlockCustomComponent = {
     }
 
     if (definition.persistentEntity) {
-      e.block.dimension.spawnEntity(
+      const entity = e.block.dimension.spawnEntity(
         definition.entityId,
         e.block.bottomCenter(),
-      ).nameTag = e.block.typeId;
+      );
+
+      entity.nameTag = e.block.typeId;
+
+      entity.setDynamicProperty(
+        "fluffyalien_energisticscore:block_location",
+        e.block.location,
+      );
     }
   },
   onPlayerInteract(e) {
@@ -50,19 +64,45 @@ export const machineComponent: BlockCustomComponent = {
       return;
     }
 
-    e.block.dimension.spawnEntity(
+    const entity = e.block.dimension.spawnEntity(
       definition.entityId,
       e.block.bottomCenter(),
-    ).nameTag = e.block.typeId;
+    );
+
+    entity.nameTag = e.block.typeId;
+
+    entity.setDynamicProperty(
+      "fluffyalien_energisticscore:block_location",
+      e.block.location,
+    );
   },
 };
+
+export function dropItemsStoredInMachine(
+  blockLocation: DimensionLocation,
+  definition: RegisteredMachine,
+): void {
+  if (!definition.uiElements) {
+    return;
+  }
+
+  for (const element of Object.values(definition.uiElements)) {
+    if (element.type !== "itemSlot") continue;
+
+    const item = getMachineSlotItem(blockLocation, element.slotId);
+    if (item) {
+      blockLocation.dimension.spawnItem(
+        machineItemStackToItemStack(element, item),
+        Vector3Utils.add(blockLocation, { x: 0.5, y: 0.5, z: 0.5 }),
+      );
+    }
+  }
+}
 
 world.beforeEvents.playerBreakBlock.subscribe((e) => {
   if (!e.block.hasTag("fluffyalien_energisticscore:machine")) {
     return;
   }
-
-  MachineNetwork.updateWithBlock(e.block);
 
   const definition = machineRegistry[e.block.typeId] as
     | InternalRegisteredMachine
@@ -74,37 +114,15 @@ world.beforeEvents.playerBreakBlock.subscribe((e) => {
       ),
     );
   }
-  if (!definition.uiElements || definition.persistentEntity) {
+
+  if (definition.persistentEntity) {
     return;
   }
 
-  system.run(() => {
-    for (const element of Object.values(definition.uiElements!)) {
-      if (element.type !== "itemSlot") continue;
-
-      const item = getMachineSlotItem(e.block, element.slotId);
-      if (item) {
-        e.dimension.spawnItem(
-          machineItemStackToItemStack(element, item),
-          e.block.center(),
-        );
-      }
-    }
-
-    removeBlockFromScoreboards(e.block);
-  });
-});
-
-world.afterEvents.blockExplode.subscribe((e) => {
-  if (
-    !e.explodedBlockPermutation.hasTag("fluffyalien_energisticscore:machine")
-  ) {
-    return;
-  }
-
-  MachineNetwork.updateWith(e.dimension, e.block.location, "machine");
+  MachineNetwork.updateWithBlock(e.block);
 
   system.run(() => {
+    dropItemsStoredInMachine(e.block, definition);
     removeBlockFromScoreboards(e.block);
   });
 });

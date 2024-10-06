@@ -3,11 +3,9 @@ import { getBlockIoCategories } from "./io";
 import { MachineNetwork } from "./network";
 import { makeErrorString } from "./utils/log";
 import { Vector3Utils } from "@minecraft/math";
-import { NetworkLinks } from "@/public_api/src"
+import { NetworkLinkGetResponse, NetworkLinks } from "@/public_api/src"
 import { registerScriptEventHandler } from "mcbe-addon-ipc";
 import { deserializeDimensionLocation, SerializableDimensionLocation } from "@/public_api/src/internal";
-
-export const NETWORK_LINK_ENTITY = "fluffyalien_energisticscore:network_link";
 
 export const networkLinkComponent: BlockCustomComponent = {
     onPlace(ev) {
@@ -29,11 +27,10 @@ export const networkLinkComponent: BlockCustomComponent = {
     },
 };
 
-registerScriptEventHandler<SerializableDimensionLocation, Vector3[]>("fluffyalien_energisticscore:ipc.network_link_get", (payload => {
-    console.log(JSON.stringify(payload));
+registerScriptEventHandler<SerializableDimensionLocation, NetworkLinkGetResponse>("fluffyalien_energisticscore:ipc.network_link_get", (payload => {
     const location = deserializeDimensionLocation(payload);
     
     console.log("event recv", JSON.stringify(location));
 
-    return []; 
+    return { locations: [] }; 
 }))

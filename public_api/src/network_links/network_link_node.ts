@@ -25,85 +25,73 @@ export class NetworkLinkNode {
      * @beta
      * Gets all the locations that this network link node is connected too.
      */
-    public async getConnections(): Promise<Vector3[]> {
-        this._ensureValid();
+    public async getConnections() {
+        const payload: NetworkLinkGetRequest = {
+            self: makeSerializableDimensionLocation({ dimension: this._entity.dimension, ...this._blockPos })
+        } 
 
-        return invokeScriptEvent(
+        const res = await invokeScriptEvent(
             "fluffyalien_energisticscore:ipc.network_link_get", 
             initOptions!.namespace,
-            makeSerializableDimensionLocation({ dimension: this._entity.dimension, ...this._blockPos })
-        ) as Promise<Vector3[]>;
+            payload
+        ) as NetworkLinkGetResponse;
+
+        return res.locations;
     } 
-
-    // /**
-    //  * @beta
-    //  * Adds both an incoming and outgoing connection from this node to the node at the location passed in.
-    //  */
-    // public addConnection(location: Vector3): void {
-    //     const otherBlock = this._entity.dimension.getBlock(location)!;
-    //     const other = NetworkLinks.getNetworkLink(otherBlock);
-
-    //     other._addConnection(this._blockPos);
-    //     this._addConnection(other._blockPos);
-    // }
-
-    // /**
-    //  * @beta
-    //  * Removes a specific location which this network link node is connected too.
-    //  */
-    // public removeConnection(location: Vector3): void {
-    //     const otherBlock = this._entity.dimension.getBlock(location)!;
-    //     const other = NetworkLinks.getNetworkLink(otherBlock);
-
-    //     other._removeConnection(this._blockPos);
-    //     this._removeConnection(other._blockPos);
-    // }
-
-    // /**
-    //  * @beta
-    //  * Removes this node from the network and removes any links coming into this node.
-    //  */
-    // public destroyNode() {
-    //     const outboundConnections = this.getConnections();
-
-    //     // links are two way, remove the inbound links to this block.
-    //     for (const connection of outboundConnections) {
-    //         const block = this._entity.dimension.getBlock(connection)!;
-    //         const node = NetworkLinks.getNetworkLink(block);
-    //         node.removeConnection(this._blockPos);
-    //     }
-
-    //     this._entity.triggerEvent("fluffyalien_energisticscore:despawn");
-    // }
 
     /**
      * @beta
-     * Checks if this network node is still valid
+     * Adds both an incoming and outgoing connection from this node to the node at the location passed in.
      */
-    public isValid(): boolean {
-        return this._entity.isValid();
+    public async addConnection(location: Vector3) {
+        const payload: NetworkLinkAddRequest = {
+            self: makeSerializableDimensionLocation({ dimension: this._entity.dimension, ...this._blockPos }),
+            other: location
+        };
+
+        await invokeScriptEvent(
+            "fluffyalien_energisticscore:ipc.network_link_add",
+            initOptions!.namespace,
+            payload
+        );
     }
- 
-    ////////////////////////////////
-    /** Internal helper functions */
-    ////////////////////////////////
 
-    // private _removeConnection(location: Vector3) {
-    //     const filtered = this.getConnections().filter(outbound => !Vector3Utils.equals(outbound, location));
-    //     this._serializeConnections(filtered);
-    // }
+    /**
+     * @beta
+     * Removes a specific location which this network link node is connected too.
+     */
+    public async removeConnection(location: Vector3) {
+        const payload: NetworkLinkAddRequest = {
+            self: makeSerializableDimensionLocation({ dimension: this._entity.dimension, ...this._blockPos }),
+            other: location
+        };
 
-    // private _addConnection(location: Vector3) {
-    //     this._serializeConnections([...this.getConnections(), location]);
-    // }
+        await invokeScriptEvent(
+            "fluffyalien_energisticscore:ipc.network_link_remove",
+            initOptions!.namespace,
+            payload
+        );
+    }
 
-    // private _serializeConnections(connections: Vector3[]) {
-    //     this._ensureValid();
-    //     this._entity.setDynamicProperty(NETWORK_LINK_POSITIONS_KEY, JSON.stringify(connections));
-    //     console.log("_serializeConnections", JSON.stringify(this._blockPos), JSON.stringify(connections));
-    // }
+    /**
+     * @beta
+     * Removes this node from the network and removes any links coming into this node.
+     */
+    public async destroyNode() {
+        const payload: NetworkLinkDestroyRequest = {
+            self: makeSerializableDimensionLocation({ dimension: this._entity.dimension, ...this._blockPos })
+        };
 
-    private _ensureValid(): void {
-        if (!this._entity.isValid()) makeError(`NetworkLinkNode instance is not valid.`);
+        await invokeScriptEvent(
+            "fluffyalien_energisticscore:ipc.network_link_destroy",
+            initOptions!.namespace,
+            payload
+        );
     }
 }
+
+export type NetworkLinkGetRequest = { self: SerializableDimensionLocation };
+export type NetworkLinkGetResponse = { locations: Vector3[] };
+export type NetworkLinkAddRequest = { self: SerializableDimensionLocation, other: Vector3 };
+export type NetworkLinkRemoveRequest = { self: SerializableDimensionLocation, other: Vector3 };
+export type NetworkLinkDestroyRequest = { self: SerializableDimensionLocation };

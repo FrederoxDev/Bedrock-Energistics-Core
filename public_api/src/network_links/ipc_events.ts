@@ -1,7 +1,8 @@
-////////////////////////////////////////////////
-// internal file, do not export to index.ts!  //
-// do not put any end api user content inside //
-////////////////////////////////////////////////
+/////////////////////////////////////////////////
+//  internal file, do not export to index.ts!  //
+//  do not put any end api user content inside //
+// intended for shared types that arent public //
+/////////////////////////////////////////////////
 
 import { Vector3 } from "@minecraft/server";
 import { SerializableDimensionLocation } from "../internal.js";

@@ -1,0 +1,1 @@
+import { registerScriptEventHandler } from "mcbe-addon-ipc";

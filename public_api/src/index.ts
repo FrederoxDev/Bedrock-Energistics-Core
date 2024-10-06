@@ -121,7 +121,7 @@ export class RegisteredMachine {
   }
 }
 
-let initOptions: InitOptions | undefined;
+export let initOptions: InitOptions | undefined;
 
 /**
  * Initializes this package. Some APIs require this to be called.

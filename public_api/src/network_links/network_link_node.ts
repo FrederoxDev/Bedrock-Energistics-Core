@@ -1,8 +1,9 @@
 import { Entity, Vector3 } from "@minecraft/server";
 import { Vector3Utils } from "@minecraft/math";
-import { NetworkLinks } from "../index.js";
+import { initOptions, NetworkLinks } from "../index.js";
 import { NETWORK_LINK_POSITIONS_KEY } from "./network_links.js";
-import { makeError } from "../internal.js";
+import { makeError, makeSerializableDimensionLocation, SerializableDimensionLocation } from "../internal.js";
+import { dispatchScriptEvent, invokeScriptEvent } from "mcbe-addon-ipc";
 
 /**
  * Represents a single network link node in the machine network.
@@ -24,52 +25,56 @@ export class NetworkLinkNode {
      * @beta
      * Gets all the locations that this network link node is connected too.
      */
-    public getConnections(): Vector3[] {
+    public async getConnections(): Promise<Vector3[]> {
         this._ensureValid();
-        const rawData = this._entity.getDynamicProperty(NETWORK_LINK_POSITIONS_KEY) as string ?? "[]";
-        return JSON.parse(rawData) as Vector3[];
-    }
 
-    /**
-     * @beta
-     * Adds both an incoming and outgoing connection from this node to the node at the location passed in.
-     */
-    public addConnection(location: Vector3): void {
-        const otherBlock = this._entity.dimension.getBlock(location)!;
-        const other = NetworkLinks.getNetworkLink(otherBlock);
+        return invokeScriptEvent(
+            "fluffyalien_energisticscore:ipc.network_link_get", 
+            initOptions!.namespace,
+            makeSerializableDimensionLocation({ dimension: this._entity.dimension, ...this._blockPos })
+        ) as Promise<Vector3[]>;
+    } 
 
-        other._addConnection(this._blockPos);
-        this._addConnection(other._blockPos);
-    }
+    // /**
+    //  * @beta
+    //  * Adds both an incoming and outgoing connection from this node to the node at the location passed in.
+    //  */
+    // public addConnection(location: Vector3): void {
+    //     const otherBlock = this._entity.dimension.getBlock(location)!;
+    //     const other = NetworkLinks.getNetworkLink(otherBlock);
 
-    /**
-     * @beta
-     * Removes a specific location which this network link node is connected too.
-     */
-    public removeConnection(location: Vector3): void {
-        const otherBlock = this._entity.dimension.getBlock(location)!;
-        const other = NetworkLinks.getNetworkLink(otherBlock);
+    //     other._addConnection(this._blockPos);
+    //     this._addConnection(other._blockPos);
+    // }
 
-        other._removeConnection(this._blockPos);
-        this._removeConnection(other._blockPos);
-    }
+    // /**
+    //  * @beta
+    //  * Removes a specific location which this network link node is connected too.
+    //  */
+    // public removeConnection(location: Vector3): void {
+    //     const otherBlock = this._entity.dimension.getBlock(location)!;
+    //     const other = NetworkLinks.getNetworkLink(otherBlock);
 
-    /**
-     * @beta
-     * Removes this node from the network and removes any links coming into this node.
-     */
-    public destroyNode() {
-        const outboundConnections = this.getConnections();
+    //     other._removeConnection(this._blockPos);
+    //     this._removeConnection(other._blockPos);
+    // }
 
-        // links are two way, remove the inbound links to this block.
-        for (const connection of outboundConnections) {
-            const block = this._entity.dimension.getBlock(connection)!;
-            const node = NetworkLinks.getNetworkLink(block);
-            node.removeConnection(this._blockPos);
-        }
+    // /**
+    //  * @beta
+    //  * Removes this node from the network and removes any links coming into this node.
+    //  */
+    // public destroyNode() {
+    //     const outboundConnections = this.getConnections();
 
-        this._entity.triggerEvent("fluffyalien_energisticscore:despawn");
-    }
+    //     // links are two way, remove the inbound links to this block.
+    //     for (const connection of outboundConnections) {
+    //         const block = this._entity.dimension.getBlock(connection)!;
+    //         const node = NetworkLinks.getNetworkLink(block);
+    //         node.removeConnection(this._blockPos);
+    //     }
+
+    //     this._entity.triggerEvent("fluffyalien_energisticscore:despawn");
+    // }
 
     /**
      * @beta
@@ -78,25 +83,25 @@ export class NetworkLinkNode {
     public isValid(): boolean {
         return this._entity.isValid();
     }
-
+ 
     ////////////////////////////////
     /** Internal helper functions */
     ////////////////////////////////
 
-    private _removeConnection(location: Vector3) {
-        const filtered = this.getConnections().filter(outbound => !Vector3Utils.equals(outbound, location));
-        this._serializeConnections(filtered);
-    }
+    // private _removeConnection(location: Vector3) {
+    //     const filtered = this.getConnections().filter(outbound => !Vector3Utils.equals(outbound, location));
+    //     this._serializeConnections(filtered);
+    // }
 
-    private _addConnection(location: Vector3) {
-        this._serializeConnections([...this.getConnections(), location]);
-    }
+    // private _addConnection(location: Vector3) {
+    //     this._serializeConnections([...this.getConnections(), location]);
+    // }
 
-    private _serializeConnections(connections: Vector3[]) {
-        this._ensureValid();
-        this._entity.setDynamicProperty(NETWORK_LINK_POSITIONS_KEY, JSON.stringify(connections));
-        console.log("_serializeConnections", JSON.stringify(this._blockPos), JSON.stringify(connections));
-    }
+    // private _serializeConnections(connections: Vector3[]) {
+    //     this._ensureValid();
+    //     this._entity.setDynamicProperty(NETWORK_LINK_POSITIONS_KEY, JSON.stringify(connections));
+    //     console.log("_serializeConnections", JSON.stringify(this._blockPos), JSON.stringify(connections));
+    // }
 
     private _ensureValid(): void {
         if (!this._entity.isValid()) makeError(`NetworkLinkNode instance is not valid.`);

@@ -289,14 +289,14 @@ export class MachineNetwork extends DestroyableObject {
         const netLink = NetworkLinks.tryGetNetworkLinkAt(block.dimension, block.location);
         if (!netLink) return;
 
-        const linkedPositions = netLink.getConnections();
-        console.log("linkedPositions: ", JSON.stringify(linkedPositions), JSON.stringify(block.location));
+        // const linkedPositions = netLink.getConnections();
+        // console.log("linkedPositions: ", JSON.stringify(linkedPositions), JSON.stringify(block.location));
 
-        for (const pos of linkedPositions) {
-          const linkedBlock = block.dimension.getBlock(pos);
-          if (linkedBlock === undefined || visitedLocations.some(v => Vector3Utils.equals(v, pos))) continue;
-          handleBlock(linkedBlock);
-        }
+        // for (const pos of linkedPositions) {
+        //   const linkedBlock = block.dimension.getBlock(pos);
+        //   if (linkedBlock === undefined || visitedLocations.some(v => Vector3Utils.equals(v, pos))) continue;
+        //   handleBlock(linkedBlock);
+        // }
 
         return;
       }

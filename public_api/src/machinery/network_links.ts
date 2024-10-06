@@ -2,11 +2,11 @@ import { Block, Dimension, Entity, Vector3 } from "@minecraft/server";
 import { makeError } from "../internal.js";
 import { Vector3Utils } from "@minecraft/math";
 
+const NETWORK_LINK_TAG = "fluffyalien_energisticscore:network_link";
+const NETWORK_LINK_ENTITY = "fluffyalien_energisticscore:network_link";
+const DATA_PROP_KEY = "fluffyalien_energisticscore:linked_positions";
+
 export class NetworkLinks {
-    static NETWORK_LINK_TAG = "fluffyalien_energisticscore:network_link";
-    static NETWORK_LINK_ENTITY = "fluffyalien_energisticscore:network_link";
-    static DATA_PROP_KEY = "fluffyalien_energisticscore:linked_positions";
-  
     /**
      * Finds the network link entity associated with a block, or creates it if it doesn't exist yet.
      * @param block
@@ -15,15 +15,15 @@ export class NetworkLinks {
      */
     static getNetworkLink(block: Block): NetworkLinkNode {
         let dataStorageEntity = block.dimension.getEntitiesAtBlockLocation(block.location)
-            .filter(e => e.typeId === NetworkLinks.NETWORK_LINK_ENTITY)[0];
+            .filter(e => e.typeId === NETWORK_LINK_ENTITY)[0];
 
         // Only verify the block tag when creating an entity, this is easier for after events when the network link block  
         // is destroyed, but we still need to get it to cleanup.
-        if (!dataStorageEntity && !block.hasTag(NetworkLinks.NETWORK_LINK_TAG)) 
-            makeError(`NetworkLinks::getNetworkLink expected block of id: '${block.typeId}' to have the '${this.NETWORK_LINK_TAG}' tag before creating a network link storage entity at this location`);
+        if (!dataStorageEntity && !block.hasTag(NETWORK_LINK_TAG)) 
+            makeError(`NetworkLinks::getNetworkLink expected block of id: '${block.typeId}' to have the '${NETWORK_LINK_TAG}' tag before creating a network link storage entity at this location`);
         
         // Spawn entity if tag check passed and it is null.
-        dataStorageEntity ??= block.dimension.spawnEntity(NetworkLinks.NETWORK_LINK_ENTITY, block.location);
+        dataStorageEntity ??= block.dimension.spawnEntity(NETWORK_LINK_ENTITY, block.location);
         return new NetworkLinkNode(dataStorageEntity, block.location);
     }
 
@@ -35,7 +35,7 @@ export class NetworkLinks {
      */
     static tryGetNetworkLinkAt(dimension: Dimension, location: Vector3): NetworkLinkNode | undefined {
         let dataStorageEntity = dimension.getEntitiesAtBlockLocation(location)
-            .filter(e => e.typeId === NetworkLinks.NETWORK_LINK_ENTITY)[0];
+            .filter(e => e.typeId === NETWORK_LINK_ENTITY)[0];
 
         if (dataStorageEntity === undefined) return undefined;
         return new NetworkLinkNode(dataStorageEntity, location);
@@ -63,7 +63,7 @@ export class NetworkLinkNode {
      * Gets all the locations that this network link node is connected too.
      */
     public getConnections(): Vector3[] {
-        const rawData = this._entity.getDynamicProperty(NetworkLinks.DATA_PROP_KEY) as string ?? "[]";
+        const rawData = this._entity.getDynamicProperty(DATA_PROP_KEY) as string ?? "[]";
         return JSON.parse(rawData) as Vector3[];
     }
 
@@ -122,7 +122,6 @@ export class NetworkLinkNode {
     }
 
     private _serializeConnections(connections: Vector3[]) {
-        this._entity.setDynamicProperty(NetworkLinks.DATA_PROP_KEY, JSON.stringify(connections));
-        console.log("_serializeConnections", JSON.stringify(this._blockPos), JSON.stringify(connections));
+        this._entity.setDynamicProperty(DATA_PROP_KEY, JSON.stringify(connections));
     }
 }

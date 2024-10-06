@@ -10,7 +10,7 @@ export const NETWORK_LINK_ENTITY = "fluffyalien_energisticscore:network_link";
 export const networkLinkComponent: BlockCustomComponent = {
     onPlace(ev) {
         const linkNode = NetworkLinks.getNetworkLink(ev.block);
-        linkNode.addConnection({ x: -34, y: -59, z: -1 });
+        linkNode.addConnection({ x: -34, y: -59, z: -1 }); 
 
         const ioCategories = getBlockIoCategories(ev.block);
         MachineNetwork.updateAdjacent(

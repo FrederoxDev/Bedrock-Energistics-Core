@@ -13,6 +13,8 @@ Ensure you have the following programs installed and up to date:
 - [Regolith](https://bedrock-oss.github.io/regolith/)
 - [Minecraft (Bedrock Edition Stable)](https://www.xbox.com/en-US/games/store/minecraft/9MVXMVT8ZKWC)
 
+Please read the [coding guidelines](CODING_GUIDELINES.md) as well before contributing.
+
 ### Setting Up
 
 1. Run `npm i`

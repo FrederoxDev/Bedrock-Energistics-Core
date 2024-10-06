@@ -55,7 +55,8 @@ Note: use the `readonly` keyword where possible instead of simply creating a get
 
 ## Diagnostic Messsages
 
-- Use `logInfo`, `logWarn`, and `makeErrorString` (eg. `throw new Error(makeErrorString(...));`) from `packs/BP/scripts/utils/log.ts` for all logging purposes.
+- Use `logInfo`, `logWarn`, and `makeErrorString` (eg. `throw new Error(makeErrorString(...));`) from `packs/BP/scripts/utils/log.ts` for all logging purposes within the Bedrock Energistics Core add-on (not the public API).
+- Use `logInfo`, `logWarn`, and `makeErrorString` from `public_api/src/internal.ts` for all logging purposes within the Bedrock Energistics Core public API (not the add-on).
 
 ## Other
 

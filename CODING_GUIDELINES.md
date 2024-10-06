@@ -36,22 +36,22 @@ This style guide uses elements from the [Google TypeScript Style Guide](https://
 
 ## Private Fields
 
-Do not use private fields (`#myProperty`). Use the `private` keyword instead (`private myProperty`).
+- Do not use private fields (`#myProperty`). Use the `private` keyword instead (`private myProperty`).
 
 ## Accessors
 
-If an accessor is used to wrap a class property, the wrapped property _may_ be prefixed with `internal`.
+- If an accessor is used to wrap a class property, the wrapped property _may_ be prefixed with `internal`.
 
-```ts
-class Foo {
-  private internalBar = "";
-  get bar() {
-    return this.internalBar;
+  ```ts
+  class Foo {
+    private internalBar = "";
+    get bar() {
+      return this.internalBar;
+    }
   }
-}
-```
+  ```
 
-Note: use the `readonly` keyword where possible instead of simply creating a getter with no setter.
+  Note: use the `readonly` keyword where possible instead of simply creating a getter with no setter.
 
 ## Diagnostic Messsages
 
@@ -60,4 +60,4 @@ Note: use the `readonly` keyword where possible instead of simply creating a get
 
 ## Other
 
-ESLint and Prettier will enforce other style guidelines. Remember to check (`npm run check`) and format (`npm run fmt`) your code before pushing.
+- ESLint and Prettier will enforce other style guidelines. Remember to check (`npm run check`) and format (`npm run fmt`) your code before pushing.

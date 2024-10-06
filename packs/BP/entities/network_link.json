@@ -17,6 +17,12 @@
                 "has_collision": false,
                 "has_gravity": false
             },
+            // needs a collider to get found at a block location(I think?) 
+            // so add one with 0, 0 size so it'll never block interactions
+            "minecraft:collision_box": {
+                "height": 0,
+                "width": 0
+            },
             "minecraft:damage_sensor": {
                 "triggers": [
                     {

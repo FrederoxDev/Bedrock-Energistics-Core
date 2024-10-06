@@ -20,7 +20,7 @@ export function getNetworkLink(block: Block): NetworkLinkNode {
         makeError(`NetworkLinks::getNetworkLink expected block of id: '${block.typeId}' to have the '${NETWORK_LINK_BLOCK_TAG}' tag before creating a network link storage entity at this location`);
 
     // Spawn entity if tag check passed and it is null.
-    dataStorageEntity ??= block.dimension.spawnEntity(NETWORK_LINK_ENTITY_ID, block.location);
+    dataStorageEntity ??= block.dimension.spawnEntity(NETWORK_LINK_ENTITY_ID, block.center());
     return new NetworkLinkNode(dataStorageEntity, block.location);
 }
 

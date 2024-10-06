@@ -133,7 +133,7 @@ function handleBarItems(
   startIndex: number,
   player: Player,
   maxStorage: number,
-  type: string = "_disabled",
+  type = "_disabled",
   change = 0,
 ): void {
   for (let i = startIndex; i < startIndex + 4; i++) {

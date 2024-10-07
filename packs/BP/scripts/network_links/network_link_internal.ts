@@ -8,9 +8,10 @@ import { Vector3Utils } from "@minecraft/math";
 import { Block, Dimension, Entity, Vector3 } from "@minecraft/server";
 
 /**
+ * Internal version of the `NetworkLinkNode` class
+ * @remarks
  * There is a difference between the public api facing class since, all entity properties
  * have to be accessed and created from the core pack, since they get sandboxed.
- * @brief Internal version of the `NetworkLinkNode` class
  */
 export class NetworkLinkNode {
   private readonly entity: Entity;

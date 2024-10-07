@@ -9,12 +9,12 @@ import { Block, Dimension, Entity, Vector3 } from "@minecraft/server";
  * @brief Internal version of the `NetworkLinkNode` class
  */
 export class NetworkLinkNode {
-    private readonly _entity: Entity;
-    private readonly _blockPos: Vector3;
+    private readonly entity: Entity;
+    private readonly blockPos: Vector3;
 
     private constructor(entity: Entity, blockPos: Vector3) {
-        this._entity = entity;
-        this._blockPos = blockPos;
+        this.entity = entity;
+        this.blockPos = blockPos;
     }
 
     public static fromBlock(block: Block): NetworkLinkNode {
@@ -40,25 +40,25 @@ export class NetworkLinkNode {
     }
 
     public getConnections(): Vector3[] {
-        this._ensureValid();
-        const rawData = this._entity.getDynamicProperty(NETWORK_LINK_POSITIONS_KEY) as string | undefined;
+        this.ensureValid();
+        const rawData = this.entity.getDynamicProperty(NETWORK_LINK_POSITIONS_KEY) as string | undefined;
         return JSON.parse(rawData ?? "[]") as Vector3[];
     }
 
     public addConnection(location: Vector3): void {
-        const otherBlock = this._entity.dimension.getBlock(location)!;
+        const otherBlock = this.entity.dimension.getBlock(location)!;
         const other = NetworkLinkNode.fromBlock(otherBlock);
 
-        other._addConnection(this._blockPos);
-        this._addConnection(other._blockPos);
+        other.selfAddConnection(this.blockPos);
+        this.selfAddConnection(other.blockPos);
     }
 
     public removeConnection(location: Vector3): void {
-        const otherBlock = this._entity.dimension.getBlock(location)!;
+        const otherBlock = this.entity.dimension.getBlock(location)!;
         const other = NetworkLinkNode.fromBlock(otherBlock);
 
-        other._removeConnection(this._blockPos);
-        this._removeConnection(other._blockPos);
+        other.selfRemoveConnection(this.blockPos);
+        this.selfRemoveConnection(other.blockPos);
     }
 
     public destroyNode(): void {
@@ -66,33 +66,33 @@ export class NetworkLinkNode {
 
         // links are two way, remove the inbound links to this block.
         for (const connection of outboundConnections) {
-            const block = this._entity.dimension.getBlock(connection)!;
+            const block = this.entity.dimension.getBlock(connection)!;
             const node = NetworkLinkNode.fromBlock(block);
-            node.removeConnection(this._blockPos);
+            node.removeConnection(this.blockPos);
         }
 
-        this._entity.remove();
+        this.entity.remove();
     }
 
     public isValid(): boolean {
-        return this._entity.isValid();
+        return this.entity.isValid();
     }
 
-    private _removeConnection(location: Vector3): void {
+    private selfRemoveConnection(location: Vector3): void {
         const filtered = this.getConnections().filter(outbound => !Vector3Utils.equals(outbound, location));
-        this._serializeConnections(filtered);
+        this.selfSerializeConnections(filtered);
     }
 
-    private _addConnection(location: Vector3): void {
-        this._serializeConnections([...this.getConnections(), location]);
+    private selfAddConnection(location: Vector3): void {
+        this.selfSerializeConnections([...this.getConnections(), location]);
     }
 
-    private _serializeConnections(connections: Vector3[]): void {
-        this._ensureValid();
-        this._entity.setDynamicProperty(NETWORK_LINK_POSITIONS_KEY, JSON.stringify(connections));
+    private selfSerializeConnections(connections: Vector3[]): void {
+        this.ensureValid();
+        this.entity.setDynamicProperty(NETWORK_LINK_POSITIONS_KEY, JSON.stringify(connections));
     }
 
-    private _ensureValid(): void {
-        if (!this._entity.isValid()) makeError(`NetworkLinkNode instance is not valid.`);
+    private ensureValid(): void {
+        if (!this.entity.isValid()) makeError(`NetworkLinkNode instance is not valid.`);
     }
 }

@@ -12,16 +12,16 @@ import { NetworkLinkAddRequest, NetworkLinkDestroyRequest, NetworkLinkGetRequest
  * - To get an instance of a `NetworkLinkNode` use `NetworkLinks.getNetworkLink`
  */
 export class NetworkLinkNode {
-    private readonly _entity: Entity;
-    private readonly _blockPos: Vector3;
+    private readonly entity: Entity;
+    private readonly blockPos: Vector3;
 
     /**
      * Internal method, use NetworkLinks.getNetworkLink instead!
      * @internal
      */
     constructor(entity: Entity, blockPos: Vector3) {
-        this._entity = entity;
-        this._blockPos = blockPos;
+        this.entity = entity;
+        this.blockPos = blockPos;
     }
 
     /**
@@ -31,7 +31,7 @@ export class NetworkLinkNode {
      */
     public async getConnections(): Promise<Vector3[]> {
         const payload: NetworkLinkGetRequest = {
-            self: makeSerializableDimensionLocation({ dimension: this._entity.dimension, ...this._blockPos })
+            self: makeSerializableDimensionLocation({ dimension: this.entity.dimension, ...this.blockPos })
         } 
 
         const res = await invokeScriptEvent(
@@ -50,7 +50,7 @@ export class NetworkLinkNode {
      */
     public async addConnection(location: Vector3): Promise<void> {
         const payload: NetworkLinkAddRequest = {
-            self: makeSerializableDimensionLocation({ dimension: this._entity.dimension, ...this._blockPos }),
+            self: makeSerializableDimensionLocation({ dimension: this.entity.dimension, ...this.blockPos }),
             other: location
         };
 
@@ -68,7 +68,7 @@ export class NetworkLinkNode {
      */
     public async removeConnection(location: Vector3): Promise<void> {
         const payload: NetworkLinkAddRequest = {
-            self: makeSerializableDimensionLocation({ dimension: this._entity.dimension, ...this._blockPos }),
+            self: makeSerializableDimensionLocation({ dimension: this.entity.dimension, ...this.blockPos }),
             other: location
         };
 
@@ -85,7 +85,7 @@ export class NetworkLinkNode {
      */
     public async destroyNode(): Promise<void> {
         const payload: NetworkLinkDestroyRequest = {
-            self: makeSerializableDimensionLocation({ dimension: this._entity.dimension, ...this._blockPos })
+            self: makeSerializableDimensionLocation({ dimension: this.entity.dimension, ...this.blockPos })
         };
 
         await invokeScriptEvent(

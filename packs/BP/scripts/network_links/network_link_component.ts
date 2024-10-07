@@ -26,7 +26,7 @@ export const networkLinkComponent: BlockCustomComponent = {
     },
 };
 
-function _getNetwork(self: SerializableDimensionLocation): NetworkLinkNode {
+function getNetwork(self: SerializableDimensionLocation): NetworkLinkNode {
     const location = deserializeDimensionLocation(self);
     const block = location.dimension.getBlock(location);
     if (!block) makeError(`_getNetwork failed to get block`);
@@ -34,24 +34,24 @@ function _getNetwork(self: SerializableDimensionLocation): NetworkLinkNode {
 }
 
 registerScriptEventHandler<NetworkLinkGetRequest, NetworkLinkGetResponse>("fluffyalien_energisticscore:ipc.network_link_get", (payload => {
-    const link = _getNetwork(payload.self);
+    const link = getNetwork(payload.self);
     return { locations: link.getConnections() }; 
 }))
 
 registerScriptEventHandler<NetworkLinkAddRequest, object>("fluffyalien_energisticscore:ipc.network_link_add", (payload => {
-    const link = _getNetwork(payload.self);
+    const link = getNetwork(payload.self);
     link.addConnection(payload.other);
     return {};
 }))
 
 registerScriptEventHandler<NetworkLinkRemoveRequest, object>("fluffyalien_energisticscore:ipc.network_link_remove", (payload => {
-    const link = _getNetwork(payload.self);
+    const link = getNetwork(payload.self);
     link.removeConnection(payload.other);
     return {};
 }))
 
 registerScriptEventHandler<NetworkLinkDestroyRequest, object>("fluffyalien_energisticscore:ipc.network_link_destroy", (payload => {
-    const link = _getNetwork(payload.self);
+    const link = getNetwork(payload.self);
     link.destroyNode();
     return {};
 }))

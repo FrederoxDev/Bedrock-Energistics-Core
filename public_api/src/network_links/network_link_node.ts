@@ -1,5 +1,5 @@
 import { Entity, Vector3 } from "@minecraft/server";
-import { initOptions } from "../index.js";
+import { getInitNamespace } from "../index.js";
 import { makeSerializableDimensionLocation } from "../internal.js";
 import { invokeScriptEvent } from "mcbe-addon-ipc";
 import { NetworkLinkAddRequest, NetworkLinkDestroyRequest, NetworkLinkGetRequest, NetworkLinkGetResponse } from "./ipc_events.js";
@@ -12,16 +12,16 @@ import { NetworkLinkAddRequest, NetworkLinkDestroyRequest, NetworkLinkGetRequest
  * - To get an instance of a `NetworkLinkNode` use `NetworkLinks.getNetworkLink`
  */
 export class NetworkLinkNode {
-    private _entity: Entity;
-    private _blockPos: Vector3;
+    private readonly entity: Entity;
+    private readonly blockPos: Vector3;
 
     /**
      * Internal method, use NetworkLinks.getNetworkLink instead!
      * @internal
      */
     constructor(entity: Entity, blockPos: Vector3) {
-        this._entity = entity;
-        this._blockPos = blockPos;
+        this.entity = entity;
+        this.blockPos = blockPos;
     }
 
     /**
@@ -29,14 +29,14 @@ export class NetworkLinkNode {
      * @returns The block positions of each connection
      * @beta
      */
-    public async getConnections() {
+    public async getConnections(): Promise<Vector3[]> {
         const payload: NetworkLinkGetRequest = {
-            self: makeSerializableDimensionLocation({ dimension: this._entity.dimension, ...this._blockPos })
+            self: makeSerializableDimensionLocation({ dimension: this.entity.dimension, ...this.blockPos })
         } 
 
         const res = await invokeScriptEvent(
             "fluffyalien_energisticscore:ipc.network_link_get", 
-            initOptions!.namespace,
+            getInitNamespace(),
             payload
         ) as NetworkLinkGetResponse;
 
@@ -48,15 +48,15 @@ export class NetworkLinkNode {
      * @param location The block location of the other node.
      * @beta
      */
-    public async addConnection(location: Vector3) {
+    public async addConnection(location: Vector3): Promise<void> {
         const payload: NetworkLinkAddRequest = {
-            self: makeSerializableDimensionLocation({ dimension: this._entity.dimension, ...this._blockPos }),
+            self: makeSerializableDimensionLocation({ dimension: this.entity.dimension, ...this.blockPos }),
             other: location
         };
 
         await invokeScriptEvent(
             "fluffyalien_energisticscore:ipc.network_link_add",
-            initOptions!.namespace,
+            getInitNamespace(),
             payload
         );
     }
@@ -66,15 +66,15 @@ export class NetworkLinkNode {
      * @param location The block location of the other node.
      * @beta
      */
-    public async removeConnection(location: Vector3) {
+    public async removeConnection(location: Vector3): Promise<void> {
         const payload: NetworkLinkAddRequest = {
-            self: makeSerializableDimensionLocation({ dimension: this._entity.dimension, ...this._blockPos }),
+            self: makeSerializableDimensionLocation({ dimension: this.entity.dimension, ...this.blockPos }),
             other: location
         };
 
         await invokeScriptEvent(
             "fluffyalien_energisticscore:ipc.network_link_remove",
-            initOptions!.namespace,
+            getInitNamespace(),
             payload
         );
     }
@@ -83,14 +83,14 @@ export class NetworkLinkNode {
      * Sends a request to break all connections and clean-up the backend side.
      * @beta
      */
-    public async destroyNode() {
+    public async destroyNode(): Promise<void> {
         const payload: NetworkLinkDestroyRequest = {
-            self: makeSerializableDimensionLocation({ dimension: this._entity.dimension, ...this._blockPos })
+            self: makeSerializableDimensionLocation({ dimension: this.entity.dimension, ...this.blockPos })
         };
 
         await invokeScriptEvent(
             "fluffyalien_energisticscore:ipc.network_link_destroy",
-            initOptions!.namespace,
+            getInitNamespace(),
             payload
         );
     }

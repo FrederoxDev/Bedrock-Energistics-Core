@@ -11,8 +11,9 @@ import { NETWORK_LINK_BLOCK_TAG, NETWORK_LINK_ENTITY_ID } from "./ipc_events.js"
  * @throws When the `NetworkLinkNode` does not exist yet, and the block at this location does not have the correct tags
  */
 export function getNetworkLink(block: Block): NetworkLinkNode {
+
     let dataStorageEntity = block.dimension.getEntitiesAtBlockLocation(block.location)
-    .filter(e => e.typeId === NETWORK_LINK_ENTITY_ID)[0];
+        .find(e => e.typeId === NETWORK_LINK_ENTITY_ID);
 
     // Only verify the block tag when creating an entity, this is easier for after events when the network link block  
     // is destroyed, but we still need to get it to cleanup.
@@ -31,8 +32,8 @@ export function getNetworkLink(block: Block): NetworkLinkNode {
  * @returns The associated `NetworkLinkNode` or `undefined` if it does not exist
  */
 export function tryGetNetworkLinkAt(dimension: Dimension, location: Vector3): NetworkLinkNode | undefined {
-    let dataStorageEntity = dimension.getEntitiesAtBlockLocation(location)
-        .filter(e => e.typeId === NETWORK_LINK_ENTITY_ID)[0];
+    const dataStorageEntity = dimension.getEntitiesAtBlockLocation(location)
+        .find(e => e.typeId === NETWORK_LINK_ENTITY_ID);
 
     if (dataStorageEntity === undefined) return undefined;
     return new NetworkLinkNode(dataStorageEntity, location);

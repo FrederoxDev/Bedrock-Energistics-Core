@@ -14,7 +14,10 @@ export default tseslint.config(
   {
     files: ["**/*.ts"],
     ignores: ["public_api/dist/**/*"],
-    extends: tseslint.configs.strictTypeChecked,
+    extends: [
+      ...tseslint.configs.strictTypeChecked,
+      ...tseslint.configs.stylisticTypeChecked,
+    ],
     languageOptions: {
       parserOptions: {
         project: true,
@@ -23,7 +26,11 @@ export default tseslint.config(
       },
     },
     rules: {
+      // non-null assertions are useful when working with the minecraft api
       "@typescript-eslint/no-non-null-assertion": "off",
+      // this rule conflicts with prettier
+      "@typescript-eslint/no-confusing-non-null-assertion": "off",
+
       "@typescript-eslint/explicit-function-return-type": "error",
       "@typescript-eslint/prefer-readonly": "error",
       "@typescript-eslint/switch-exhaustiveness-check": "error",

@@ -2,7 +2,7 @@
  * @module API
  */
 
-import { Block, DimensionLocation, Entity, ItemTypes, system } from "@minecraft/server";
+import { Block, DimensionLocation, ItemTypes, system } from "@minecraft/server";
 import {
   MachineDefinition,
   StorageTypeDefinition,
@@ -18,6 +18,7 @@ import {
   getScore,
   getStorageScoreboardObjective,
   logInfo,
+  makeError,
   makeErrorString,
   makeSerializableDimensionLocation,
   MangledOnButtonPressedPayload,
@@ -36,7 +37,7 @@ import {
 } from "mcbe-addon-ipc";
 
 export * from "./registry_types.js";
-export * as NetworkLinks from "./network_links/network_links.js"
+export * as networkLinks from "./network_links/network_links.js"
 export * from "./network_links/network_link_node.js"
 
 const UPDATE_UI_HANDLER_SUFFIX = "__h0";
@@ -123,7 +124,7 @@ export class RegisteredMachine {
   }
 }
 
-export let initOptions: InitOptions | undefined;
+let initOptions: InitOptions | undefined;
 
 /**
  * Initializes this package. Some APIs require this to be called.
@@ -137,10 +138,15 @@ export function init(options: InitOptions): void {
   initOptions = options;
 }
 
-function ensureInitialized(): void {
+function ensureInitialized(): void | never {
   if (!initOptions) {
-    throw new Error(makeErrorString("'init' has not been called"));
+    makeError(`Library not initialized: Ensure you call the 'init' function`);
   }
+}
+
+export function getInitNamespace(): string {
+  ensureInitialized();
+  return initOptions!.namespace;
 }
 
 /**

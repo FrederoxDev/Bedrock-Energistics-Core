@@ -1,6 +1,6 @@
 import { world } from "@minecraft/server";
 import { machineComponent } from "./machine";
-import { conduitComponent } from "./conduit_component";
+import { conduitComponent } from "./conduit";
 import { networkLinkComponent } from "./network_links/network_link_component";
 
 world.beforeEvents.worldInitialize.subscribe((e) => {

@@ -9,17 +9,17 @@ import { Block, Dimension, Entity, Vector3 } from "@minecraft/server";
  * @brief Internal version of the `NetworkLinkNode` class
  */
 export class NetworkLinkNode {
-    private _entity: Entity;
-    private _blockPos: Vector3;
+    private readonly entity: Entity;
+    private readonly blockPos: Vector3;
 
     private constructor(entity: Entity, blockPos: Vector3) {
-        this._entity = entity;
-        this._blockPos = blockPos;
+        this.entity = entity;
+        this.blockPos = blockPos;
     }
 
-    public static fromBlock(block: Block) {
+    public static fromBlock(block: Block): NetworkLinkNode {
         let dataStorageEntity = block.dimension.getEntitiesAtBlockLocation(block.location)
-            .filter(e => e.typeId === NETWORK_LINK_ENTITY_ID)[0];
+            .find(e => e.typeId === NETWORK_LINK_ENTITY_ID);
 
         // Only verify the block tag when creating an entity, this is easier for after events when the network link block  
         // is destroyed, but we still need to get it to cleanup.
@@ -32,67 +32,67 @@ export class NetworkLinkNode {
     }
 
     public static tryGetAt(dimension: Dimension, location: Vector3): NetworkLinkNode | undefined {
-        let dataStorageEntity = dimension.getEntitiesAtBlockLocation(location)
-            .filter(e => e.typeId === NETWORK_LINK_ENTITY_ID)[0];
+        const dataStorageEntity = dimension.getEntitiesAtBlockLocation(location)
+            .find(e => e.typeId === NETWORK_LINK_ENTITY_ID);
 
         if (dataStorageEntity === undefined) return undefined;
         return new NetworkLinkNode(dataStorageEntity, location);
     }
 
     public getConnections(): Vector3[] {
-        this._ensureValid();
-        const rawData = this._entity.getDynamicProperty(NETWORK_LINK_POSITIONS_KEY) as string ?? "[]";
-        return JSON.parse(rawData) as Vector3[];
+        this.ensureValid();
+        const rawData = this.entity.getDynamicProperty(NETWORK_LINK_POSITIONS_KEY) as string | undefined;
+        return JSON.parse(rawData ?? "[]") as Vector3[];
     }
 
     public addConnection(location: Vector3): void {
-        const otherBlock = this._entity.dimension.getBlock(location)!;
+        const otherBlock = this.entity.dimension.getBlock(location)!;
         const other = NetworkLinkNode.fromBlock(otherBlock);
 
-        other._addConnection(this._blockPos);
-        this._addConnection(other._blockPos);
+        other.selfAddConnection(this.blockPos);
+        this.selfAddConnection(other.blockPos);
     }
 
     public removeConnection(location: Vector3): void {
-        const otherBlock = this._entity.dimension.getBlock(location)!;
+        const otherBlock = this.entity.dimension.getBlock(location)!;
         const other = NetworkLinkNode.fromBlock(otherBlock);
 
-        other._removeConnection(this._blockPos);
-        this._removeConnection(other._blockPos);
+        other.selfRemoveConnection(this.blockPos);
+        this.selfRemoveConnection(other.blockPos);
     }
 
-    public destroyNode() {
+    public destroyNode(): void {
         const outboundConnections = this.getConnections();
 
         // links are two way, remove the inbound links to this block.
         for (const connection of outboundConnections) {
-            const block = this._entity.dimension.getBlock(connection)!;
+            const block = this.entity.dimension.getBlock(connection)!;
             const node = NetworkLinkNode.fromBlock(block);
-            node.removeConnection(this._blockPos);
+            node.removeConnection(this.blockPos);
         }
 
-        this._entity.triggerEvent("fluffyalien_energisticscore:despawn");
+        this.entity.remove();
     }
 
     public isValid(): boolean {
-        return this._entity.isValid();
+        return this.entity.isValid();
     }
 
-    private _removeConnection(location: Vector3) {
+    private selfRemoveConnection(location: Vector3): void {
         const filtered = this.getConnections().filter(outbound => !Vector3Utils.equals(outbound, location));
-        this._serializeConnections(filtered);
+        this.selfSerializeConnections(filtered);
     }
 
-    private _addConnection(location: Vector3) {
-        this._serializeConnections([...this.getConnections(), location]);
+    private selfAddConnection(location: Vector3): void {
+        this.selfSerializeConnections([...this.getConnections(), location]);
     }
 
-    private _serializeConnections(connections: Vector3[]) {
-        this._ensureValid();
-        this._entity.setDynamicProperty(NETWORK_LINK_POSITIONS_KEY, JSON.stringify(connections));
+    private selfSerializeConnections(connections: Vector3[]): void {
+        this.ensureValid();
+        this.entity.setDynamicProperty(NETWORK_LINK_POSITIONS_KEY, JSON.stringify(connections));
     }
 
-    private _ensureValid(): void {
-        if (!this._entity.isValid()) makeError(`NetworkLinkNode instance is not valid.`);
+    private ensureValid(): void {
+        if (!this.entity.isValid()) makeError(`NetworkLinkNode instance is not valid.`);
     }
 }

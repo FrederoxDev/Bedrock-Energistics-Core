@@ -1,4 +1,4 @@
-import { BlockCustomComponent, world } from "@minecraft/server";
+import { BlockCustomComponent } from "@minecraft/server";
 import { getBlockIoCategories } from "../io";
 import { MachineNetwork } from "../network";
 import { registerScriptEventHandler } from "mcbe-addon-ipc";
@@ -26,7 +26,7 @@ export const networkLinkComponent: BlockCustomComponent = {
     },
 };
 
-function _getNetwork(self: SerializableDimensionLocation) {
+function getNetwork(self: SerializableDimensionLocation): NetworkLinkNode {
     const location = deserializeDimensionLocation(self);
     const block = location.dimension.getBlock(location);
     if (!block) makeError(`_getNetwork failed to get block`);
@@ -34,24 +34,24 @@ function _getNetwork(self: SerializableDimensionLocation) {
 }
 
 registerScriptEventHandler<NetworkLinkGetRequest, NetworkLinkGetResponse>("fluffyalien_energisticscore:ipc.network_link_get", (payload => {
-    const link = _getNetwork(payload.self);
+    const link = getNetwork(payload.self);
     return { locations: link.getConnections() }; 
 }))
 
-registerScriptEventHandler<NetworkLinkAddRequest, void>("fluffyalien_energisticscore:ipc.network_link_add", (payload => {
-    const link = _getNetwork(payload.self);
+registerScriptEventHandler<NetworkLinkAddRequest, object>("fluffyalien_energisticscore:ipc.network_link_add", (payload => {
+    const link = getNetwork(payload.self);
     link.addConnection(payload.other);
     return {};
 }))
 
-registerScriptEventHandler<NetworkLinkRemoveRequest, void>("fluffyalien_energisticscore:ipc.network_link_remove", (payload => {
-    const link = _getNetwork(payload.self);
+registerScriptEventHandler<NetworkLinkRemoveRequest, object>("fluffyalien_energisticscore:ipc.network_link_remove", (payload => {
+    const link = getNetwork(payload.self);
     link.removeConnection(payload.other);
     return {};
 }))
 
-registerScriptEventHandler<NetworkLinkDestroyRequest, void>("fluffyalien_energisticscore:ipc.network_link_destroy", (payload => {
-    const link = _getNetwork(payload.self);
+registerScriptEventHandler<NetworkLinkDestroyRequest, object>("fluffyalien_energisticscore:ipc.network_link_destroy", (payload => {
+    const link = getNetwork(payload.self);
     link.destroyNode();
     return {};
 }))

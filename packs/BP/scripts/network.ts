@@ -34,13 +34,18 @@ interface NetworkConnections {
 export enum NetworkConnectionType {
   Conduit = "conduit",
   Machine = "machine",
-  NetworkLink = "network_link"
+  NetworkLink = "network_link",
 }
 
-export function getBlockNetworkConnectionType(block: Block | BlockPermutation): NetworkConnectionType | null {
-  if (block.hasTag("fluffyalien_energisticscore:conduit")) return NetworkConnectionType.Conduit;
-  if (block.hasTag("fluffyalien_energisticscore:machine")) return NetworkConnectionType.Machine;
-  if (block.hasTag("fluffyalien_energisticscore:network_link")) return NetworkConnectionType.NetworkLink;
+export function getBlockNetworkConnectionType(
+  block: Block | BlockPermutation,
+): NetworkConnectionType | null {
+  if (block.hasTag("fluffyalien_energisticscore:conduit"))
+    return NetworkConnectionType.Conduit;
+  if (block.hasTag("fluffyalien_energisticscore:machine"))
+    return NetworkConnectionType.Machine;
+  if (block.hasTag("fluffyalien_energisticscore:network_link"))
+    return NetworkConnectionType.NetworkLink;
   return null;
 }
 
@@ -268,7 +273,7 @@ export class MachineNetwork extends DestroyableObject {
     const connections: NetworkConnections = {
       conduits: [],
       machines: [],
-      networkLinks: []
+      networkLinks: [],
     };
 
     const stack: Block[] = [];
@@ -286,14 +291,21 @@ export class MachineNetwork extends DestroyableObject {
       if (block.hasTag("fluffyalien_energisticscore:network_link")) {
         connections.networkLinks.push(block);
 
-        const netLink = NetworkLinkNode.tryGetAt(block.dimension, block.location);
+        const netLink = NetworkLinkNode.tryGetAt(
+          block.dimension,
+          block.location,
+        );
         if (!netLink) return;
 
         const linkedPositions = netLink.getConnections();
 
         for (const pos of linkedPositions) {
           const linkedBlock = block.dimension.getBlock(pos);
-          if (linkedBlock === undefined || visitedLocations.some(v => Vector3Utils.equals(v, pos))) continue;
+          if (
+            linkedBlock === undefined ||
+            visitedLocations.some((v) => Vector3Utils.equals(v, pos))
+          )
+            continue;
           handleBlock(linkedBlock);
         }
 
@@ -308,10 +320,14 @@ export class MachineNetwork extends DestroyableObject {
       const nextBlock = getBlockInDirection(currentBlock, direction);
       if (!nextBlock) return;
 
-      const isHandled = visitedLocations.some(l => Vector3Utils.equals(l, nextBlock.location));
+      const isHandled = visitedLocations.some((l) =>
+        Vector3Utils.equals(l, nextBlock.location),
+      );
       if (isHandled) return;
 
-      const isSameCategory = nextBlock.hasTag(`fluffyalien_energisticscore:io.${category}`);
+      const isSameCategory = nextBlock.hasTag(
+        `fluffyalien_energisticscore:io.${category}`,
+      );
       const allowsAny = nextBlock.hasTag("fluffyalien_energisticscore:io._any");
 
       if (isSameCategory || allowsAny) handleBlock(nextBlock);

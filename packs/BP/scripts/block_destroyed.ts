@@ -13,7 +13,11 @@ import {
 } from "@minecraft/server";
 import { removeBlockFromScoreboards } from "./data";
 import { InternalRegisteredMachine, machineRegistry } from "./registry";
-import { getBlockNetworkConnectionType, MachineNetwork, NetworkConnectionType } from "./network";
+import {
+  getBlockNetworkConnectionType,
+  MachineNetwork,
+  NetworkConnectionType,
+} from "./network";
 import { logWarn } from "./utils/log";
 import { getDirectionVector, reverseDirection } from "./utils/direction";
 import { Vector3Utils } from "@minecraft/math";

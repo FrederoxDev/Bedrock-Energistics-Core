@@ -1,19 +1,12 @@
 import { BlockCustomComponent } from "@minecraft/server";
 import { getBlockIoCategories } from "../io";
 import { MachineNetwork } from "../network";
-import { registerScriptEventHandler } from "mcbe-addon-ipc";
 import {
   deserializeDimensionLocation,
   makeError,
   SerializableDimensionLocation,
 } from "@/public_api/src/internal";
-import {
-  NetworkLinkGetRequest,
-  NetworkLinkGetResponse,
-  NetworkLinkAddRequest,
-  NetworkLinkRemoveRequest,
-  NetworkLinkDestroyRequest,
-} from "@/public_api/src/network_links/ipc_events";
+
 import { NetworkLinkNode } from "./network_link_internal";
 
 export const networkLinkComponent: BlockCustomComponent = {
@@ -36,44 +29,11 @@ export const networkLinkComponent: BlockCustomComponent = {
   },
 };
 
-function getNetwork(self: SerializableDimensionLocation): NetworkLinkNode {
+export function getNetworkLinkNode(
+  self: SerializableDimensionLocation,
+): NetworkLinkNode {
   const location = deserializeDimensionLocation(self);
   const block = location.dimension.getBlock(location);
   if (!block) makeError(`_getNetwork failed to get block`);
   return NetworkLinkNode.fromBlock(block);
 }
-
-registerScriptEventHandler<NetworkLinkGetRequest, NetworkLinkGetResponse>(
-  "fluffyalien_energisticscore:ipc.network_link_get",
-  (payload) => {
-    const link = getNetwork(payload.self);
-    return { locations: link.getConnections() };
-  },
-);
-
-registerScriptEventHandler<NetworkLinkAddRequest, object>(
-  "fluffyalien_energisticscore:ipc.network_link_add",
-  (payload) => {
-    const link = getNetwork(payload.self);
-    link.addConnection(payload.other);
-    return {};
-  },
-);
-
-registerScriptEventHandler<NetworkLinkRemoveRequest, object>(
-  "fluffyalien_energisticscore:ipc.network_link_remove",
-  (payload) => {
-    const link = getNetwork(payload.self);
-    link.removeConnection(payload.other);
-    return {};
-  },
-);
-
-registerScriptEventHandler<NetworkLinkDestroyRequest, object>(
-  "fluffyalien_energisticscore:ipc.network_link_destroy",
-  (payload) => {
-    const link = getNetwork(payload.self);
-    link.destroyNode();
-    return {};
-  },
-);

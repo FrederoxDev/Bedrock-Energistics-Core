@@ -43,7 +43,7 @@ export class NetworkLinkNode {
     };
 
     const res = (await invokeScriptEvent(
-      "fluffyalien_energisticscore:ipc.network_link_get",
+      "fluffyalien_energisticscore:ipc.networkLinkGet",
       getInitNamespace(),
       payload,
     )) as NetworkLinkGetResponse;
@@ -66,7 +66,7 @@ export class NetworkLinkNode {
     };
 
     await invokeScriptEvent(
-      "fluffyalien_energisticscore:ipc.network_link_add",
+      "fluffyalien_energisticscore:ipc.networkLinkAdd",
       getInitNamespace(),
       payload,
     );
@@ -87,7 +87,7 @@ export class NetworkLinkNode {
     };
 
     await invokeScriptEvent(
-      "fluffyalien_energisticscore:ipc.network_link_remove",
+      "fluffyalien_energisticscore:ipc.networkLinkRemove",
       getInitNamespace(),
       payload,
     );
@@ -106,7 +106,7 @@ export class NetworkLinkNode {
     };
 
     await invokeScriptEvent(
-      "fluffyalien_energisticscore:ipc.network_link_destroy",
+      "fluffyalien_energisticscore:ipc.networkLinkDestroy",
       getInitNamespace(),
       payload,
     );

@@ -13,6 +13,8 @@ Ensure you have the following programs installed and up to date:
 - [Regolith](https://bedrock-oss.github.io/regolith/)
 - [Minecraft (Bedrock Edition Stable)](https://www.xbox.com/en-US/games/store/minecraft/9MVXMVT8ZKWC)
 
+Please read the [coding guidelines](CODING_GUIDELINES.md) as well before contributing.
+
 ### Setting Up
 
 1. Run `npm i`
@@ -46,8 +48,13 @@ To build your code, simply run `regolith run`.
 
 ## Before Pushing
 
-Before pushing new changes, follow this checklist:
+Before pushing new code, ensure that your code is formatted (`npm run fmt`) and checked (`npm run check`)
 
-- Your code is formatted and checked.
+## Before Submitting a PR
+
+Before submitting a PR, follow this checklist:
+
+- Your code is formatted (`npm run fmt`) and checked (`npm run check`).
+- Your code adheres to the [coding guidelines](CODING_GUIDELINES.md).
 - You have tested your changes in Minecraft.
 - You have generated the new documentation if you changed the public API.

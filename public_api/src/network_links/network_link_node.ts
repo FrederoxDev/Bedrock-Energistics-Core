@@ -1,5 +1,5 @@
 import { Entity, Vector3 } from "@minecraft/server";
-import { initOptions } from "../index.js";
+import { getInitNamespace } from "../index.js";
 import { makeSerializableDimensionLocation } from "../internal.js";
 import { invokeScriptEvent } from "mcbe-addon-ipc";
 import { NetworkLinkAddRequest, NetworkLinkDestroyRequest, NetworkLinkGetRequest, NetworkLinkGetResponse } from "./ipc_events.js";
@@ -36,7 +36,7 @@ export class NetworkLinkNode {
 
         const res = await invokeScriptEvent(
             "fluffyalien_energisticscore:ipc.network_link_get", 
-            initOptions!.namespace,
+            getInitNamespace(),
             payload
         ) as NetworkLinkGetResponse;
 
@@ -56,7 +56,7 @@ export class NetworkLinkNode {
 
         await invokeScriptEvent(
             "fluffyalien_energisticscore:ipc.network_link_add",
-            initOptions!.namespace,
+            getInitNamespace(),
             payload
         );
     }
@@ -74,7 +74,7 @@ export class NetworkLinkNode {
 
         await invokeScriptEvent(
             "fluffyalien_energisticscore:ipc.network_link_remove",
-            initOptions!.namespace,
+            getInitNamespace(),
             payload
         );
     }
@@ -90,7 +90,7 @@ export class NetworkLinkNode {
 
         await invokeScriptEvent(
             "fluffyalien_energisticscore:ipc.network_link_destroy",
-            initOptions!.namespace,
+            getInitNamespace(),
             payload
         );
     }

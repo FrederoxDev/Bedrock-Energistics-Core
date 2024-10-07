@@ -7,11 +7,6 @@
             "is_summonable": true,
             "is_experimental": false
         },
-        "component_groups": {
-            "fluffyalien_energisticscore:despawn": {
-                "minecraft:instant_despawn": {}
-            }
-        },
         "components": {
             "minecraft:physics": {
                 "has_collision": false,
@@ -30,13 +25,6 @@
                         "deals_damage": false
                     }
                 ]
-            }
-        },
-        "events": {
-            "fluffyalien_energisticscore:despawn": {
-                "add": {
-                    "component_groups": ["fluffyalien_energisticscore:despawn"]
-                }
             }
         }
     }

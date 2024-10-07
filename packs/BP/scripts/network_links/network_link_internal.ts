@@ -71,7 +71,7 @@ export class NetworkLinkNode {
             node.removeConnection(this._blockPos);
         }
 
-        this._entity.triggerEvent("fluffyalien_energisticscore:despawn");
+        this._entity.remove();
     }
 
     public isValid(): boolean {

@@ -18,6 +18,7 @@ import {
   getScore,
   getStorageScoreboardObjective,
   logInfo,
+  makeError,
   makeErrorString,
   makeSerializableDimensionLocation,
   MangledOnButtonPressedPayload,
@@ -123,7 +124,7 @@ export class RegisteredMachine {
   }
 }
 
-export let initOptions: InitOptions | undefined;
+let initOptions: InitOptions | undefined;
 
 /**
  * Initializes this package. Some APIs require this to be called.
@@ -137,10 +138,15 @@ export function init(options: InitOptions): void {
   initOptions = options;
 }
 
-function ensureInitialized(): void {
+function ensureInitialized(): void | never {
   if (!initOptions) {
-    throw new Error(makeErrorString("'init' has not been called"));
+    makeError(`Library not initialized: Ensure you call the 'init' function`);
   }
+}
+
+export function getInitNamespace(): string {
+  ensureInitialized();
+  return initOptions!.namespace;
 }
 
 /**

@@ -1,4 +1,4 @@
-import { BlockCustomComponent, world } from "@minecraft/server";
+import { BlockCustomComponent } from "@minecraft/server";
 import { getBlockIoCategories } from "../io";
 import { MachineNetwork } from "../network";
 import { registerScriptEventHandler } from "mcbe-addon-ipc";
@@ -26,7 +26,7 @@ export const networkLinkComponent: BlockCustomComponent = {
     },
 };
 
-function _getNetwork(self: SerializableDimensionLocation) {
+function _getNetwork(self: SerializableDimensionLocation): NetworkLinkNode {
     const location = deserializeDimensionLocation(self);
     const block = location.dimension.getBlock(location);
     if (!block) makeError(`_getNetwork failed to get block`);
@@ -38,19 +38,19 @@ registerScriptEventHandler<NetworkLinkGetRequest, NetworkLinkGetResponse>("fluff
     return { locations: link.getConnections() }; 
 }))
 
-registerScriptEventHandler<NetworkLinkAddRequest, void>("fluffyalien_energisticscore:ipc.network_link_add", (payload => {
+registerScriptEventHandler<NetworkLinkAddRequest, object>("fluffyalien_energisticscore:ipc.network_link_add", (payload => {
     const link = _getNetwork(payload.self);
     link.addConnection(payload.other);
     return {};
 }))
 
-registerScriptEventHandler<NetworkLinkRemoveRequest, void>("fluffyalien_energisticscore:ipc.network_link_remove", (payload => {
+registerScriptEventHandler<NetworkLinkRemoveRequest, object>("fluffyalien_energisticscore:ipc.network_link_remove", (payload => {
     const link = _getNetwork(payload.self);
     link.removeConnection(payload.other);
     return {};
 }))
 
-registerScriptEventHandler<NetworkLinkDestroyRequest, void>("fluffyalien_energisticscore:ipc.network_link_destroy", (payload => {
+registerScriptEventHandler<NetworkLinkDestroyRequest, object>("fluffyalien_energisticscore:ipc.network_link_destroy", (payload => {
     const link = _getNetwork(payload.self);
     link.destroyNode();
     return {};

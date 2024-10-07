@@ -12,8 +12,8 @@ import { NetworkLinkAddRequest, NetworkLinkDestroyRequest, NetworkLinkGetRequest
  * - To get an instance of a `NetworkLinkNode` use `NetworkLinks.getNetworkLink`
  */
 export class NetworkLinkNode {
-    private _entity: Entity;
-    private _blockPos: Vector3;
+    private readonly _entity: Entity;
+    private readonly _blockPos: Vector3;
 
     /**
      * Internal method, use NetworkLinks.getNetworkLink instead!
@@ -29,7 +29,7 @@ export class NetworkLinkNode {
      * @returns The block positions of each connection
      * @beta
      */
-    public async getConnections() {
+    public async getConnections(): Promise<Vector3[]> {
         const payload: NetworkLinkGetRequest = {
             self: makeSerializableDimensionLocation({ dimension: this._entity.dimension, ...this._blockPos })
         } 
@@ -48,7 +48,7 @@ export class NetworkLinkNode {
      * @param location The block location of the other node.
      * @beta
      */
-    public async addConnection(location: Vector3) {
+    public async addConnection(location: Vector3): Promise<void> {
         const payload: NetworkLinkAddRequest = {
             self: makeSerializableDimensionLocation({ dimension: this._entity.dimension, ...this._blockPos }),
             other: location
@@ -66,7 +66,7 @@ export class NetworkLinkNode {
      * @param location The block location of the other node.
      * @beta
      */
-    public async removeConnection(location: Vector3) {
+    public async removeConnection(location: Vector3): Promise<void> {
         const payload: NetworkLinkAddRequest = {
             self: makeSerializableDimensionLocation({ dimension: this._entity.dimension, ...this._blockPos }),
             other: location
@@ -83,7 +83,7 @@ export class NetworkLinkNode {
      * Sends a request to break all connections and clean-up the backend side.
      * @beta
      */
-    public async destroyNode() {
+    public async destroyNode(): Promise<void> {
         const payload: NetworkLinkDestroyRequest = {
             self: makeSerializableDimensionLocation({ dimension: this._entity.dimension, ...this._blockPos })
         };

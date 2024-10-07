@@ -2,7 +2,7 @@
  * @module API
  */
 
-import { Block, DimensionLocation, Entity, ItemTypes, system } from "@minecraft/server";
+import { Block, DimensionLocation, ItemTypes, system } from "@minecraft/server";
 import {
   MachineDefinition,
   StorageTypeDefinition,

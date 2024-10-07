@@ -9,17 +9,17 @@ import { Block, Dimension, Entity, Vector3 } from "@minecraft/server";
  * @brief Internal version of the `NetworkLinkNode` class
  */
 export class NetworkLinkNode {
-    private _entity: Entity;
-    private _blockPos: Vector3;
+    private readonly _entity: Entity;
+    private readonly _blockPos: Vector3;
 
     private constructor(entity: Entity, blockPos: Vector3) {
         this._entity = entity;
         this._blockPos = blockPos;
     }
 
-    public static fromBlock(block: Block) {
+    public static fromBlock(block: Block): NetworkLinkNode {
         let dataStorageEntity = block.dimension.getEntitiesAtBlockLocation(block.location)
-            .filter(e => e.typeId === NETWORK_LINK_ENTITY_ID)[0];
+            .find(e => e.typeId === NETWORK_LINK_ENTITY_ID);
 
         // Only verify the block tag when creating an entity, this is easier for after events when the network link block  
         // is destroyed, but we still need to get it to cleanup.
@@ -32,8 +32,8 @@ export class NetworkLinkNode {
     }
 
     public static tryGetAt(dimension: Dimension, location: Vector3): NetworkLinkNode | undefined {
-        let dataStorageEntity = dimension.getEntitiesAtBlockLocation(location)
-            .filter(e => e.typeId === NETWORK_LINK_ENTITY_ID)[0];
+        const dataStorageEntity = dimension.getEntitiesAtBlockLocation(location)
+            .find(e => e.typeId === NETWORK_LINK_ENTITY_ID);
 
         if (dataStorageEntity === undefined) return undefined;
         return new NetworkLinkNode(dataStorageEntity, location);
@@ -41,8 +41,8 @@ export class NetworkLinkNode {
 
     public getConnections(): Vector3[] {
         this._ensureValid();
-        const rawData = this._entity.getDynamicProperty(NETWORK_LINK_POSITIONS_KEY) as string ?? "[]";
-        return JSON.parse(rawData) as Vector3[];
+        const rawData = this._entity.getDynamicProperty(NETWORK_LINK_POSITIONS_KEY) as string | undefined;
+        return JSON.parse(rawData ?? "[]") as Vector3[];
     }
 
     public addConnection(location: Vector3): void {
@@ -61,7 +61,7 @@ export class NetworkLinkNode {
         this._removeConnection(other._blockPos);
     }
 
-    public destroyNode() {
+    public destroyNode(): void {
         const outboundConnections = this.getConnections();
 
         // links are two way, remove the inbound links to this block.
@@ -78,16 +78,16 @@ export class NetworkLinkNode {
         return this._entity.isValid();
     }
 
-    private _removeConnection(location: Vector3) {
+    private _removeConnection(location: Vector3): void {
         const filtered = this.getConnections().filter(outbound => !Vector3Utils.equals(outbound, location));
         this._serializeConnections(filtered);
     }
 
-    private _addConnection(location: Vector3) {
+    private _addConnection(location: Vector3): void {
         this._serializeConnections([...this.getConnections(), location]);
     }
 
-    private _serializeConnections(connections: Vector3[]) {
+    private _serializeConnections(connections: Vector3[]): void {
         this._ensureValid();
         this._entity.setDynamicProperty(NETWORK_LINK_POSITIONS_KEY, JSON.stringify(connections));
     }

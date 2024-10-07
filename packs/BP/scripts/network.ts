@@ -6,7 +6,7 @@ import {
   Vector3,
   system,
 } from "@minecraft/server";
-import { Vector3Builder, Vector3Utils } from "@minecraft/math";
+import { Vector3Utils } from "@minecraft/math";
 import { DestroyableObject } from "./utils/destroyable";
 import { logWarn, makeErrorString } from "./utils/log";
 import { getMachineStorage, setMachineStorage } from "./data";
@@ -31,7 +31,7 @@ interface NetworkConnections {
   networkLinks: Block[];
 }
 
-enum NetworkConnectionType {
+export enum NetworkConnectionType {
   Conduit = "conduit",
   Machine = "machine",
   NetworkLink = "network_link"

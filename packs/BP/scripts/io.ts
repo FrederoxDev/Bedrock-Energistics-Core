@@ -1,7 +1,5 @@
 import { Block } from "@minecraft/server";
 
-const blockIoCategoryCache: Record<string, string[] | "any"> = {};
-
 export function getBlockIoCategories(block: Block): string[] | "any" {
   if (block.hasTag("fluffyalien_energisticscore:io._any")) return "any";
 

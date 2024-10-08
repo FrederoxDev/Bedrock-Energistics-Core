@@ -9,6 +9,7 @@ import {
   UiElement,
   UpdateUiHandlerResponse,
 } from "./registry_types.js";
+
 import {
   deserializeDimensionLocation,
   getBlockUniqueId,
@@ -17,6 +18,7 @@ import {
   getScore,
   getStorageScoreboardObjective,
   logInfo,
+  makeError,
   makeErrorString,
   makeSerializableDimensionLocation,
   MangledOnButtonPressedPayload,
@@ -25,6 +27,7 @@ import {
   removeBlockFromScoreboards,
   SerializableDimensionLocation,
 } from "./internal.js";
+
 import {
   dispatchScriptEvent,
   invokeScriptEvent,
@@ -34,6 +37,7 @@ import {
 } from "mcbe-addon-ipc";
 
 export * from "./registry_types.js";
+export * from "./network_links/network_link_node.js";
 
 const UPDATE_UI_HANDLER_SUFFIX = "__h0";
 const RECIEVE_HANDLER_SUFFIX = "__h1";
@@ -133,10 +137,15 @@ export function init(options: InitOptions): void {
   initOptions = options;
 }
 
-function ensureInitialized(): void {
+function ensureInitialized(): void | never {
   if (!initOptions) {
-    throw new Error(makeErrorString("'init' has not been called"));
+    makeError(`Library not initialized: Ensure you call the 'init' function`);
   }
+}
+
+export function getInitNamespace(): string {
+  ensureInitialized();
+  return initOptions!.namespace;
 }
 
 /**
@@ -334,6 +343,7 @@ export function getMachineStorage(
   type: string,
 ): number {
   const objective = getStorageScoreboardObjective(type);
+
   if (!objective) {
     throw new Error(
       makeErrorString(

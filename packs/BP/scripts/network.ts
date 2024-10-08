@@ -16,6 +16,7 @@ import {
   StrDirection,
 } from "./utils/direction";
 import { InternalRegisteredMachine, machineRegistry } from "./registry";
+import { NetworkLinkNode } from "./network_links/network_link_internal";
 
 interface SendQueueItem {
   block: Block;
@@ -27,18 +28,25 @@ interface SendQueueItem {
 interface NetworkConnections {
   conduits: Block[];
   machines: Block[];
+  networkLinks: Block[];
 }
 
-type NetworkConnectionType = "conduit" | "machine";
+export enum NetworkConnectionType {
+  Conduit = "conduit",
+  Machine = "machine",
+  NetworkLink = "network_link",
+}
 
 export function getBlockNetworkConnectionType(
   block: Block | BlockPermutation,
 ): NetworkConnectionType | null {
-  return block.hasTag("fluffyalien_energisticscore:conduit")
-    ? "conduit"
-    : block.hasTag("fluffyalien_energisticscore:machine")
-      ? "machine"
-      : null;
+  if (block.hasTag("fluffyalien_energisticscore:conduit"))
+    return NetworkConnectionType.Conduit;
+  if (block.hasTag("fluffyalien_energisticscore:machine"))
+    return NetworkConnectionType.Machine;
+  if (block.hasTag("fluffyalien_energisticscore:network_link"))
+    return NetworkConnectionType.NetworkLink;
+  return null;
 }
 
 export class MachineNetwork extends DestroyableObject {
@@ -210,15 +218,17 @@ export class MachineNetwork extends DestroyableObject {
   ): boolean {
     this.ensureValidity();
 
-    if (location.dimension.id !== this.dimension.id) {
-      return false;
-    }
+    if (location.dimension.id !== this.dimension.id) return false;
 
     const condition = (other: Block): boolean =>
       Vector3Utils.equals(location, other.location);
 
-    if (type === "conduit") {
+    if (type === NetworkConnectionType.Conduit) {
       return this.connections.conduits.some(condition);
+    }
+
+    if (type === NetworkConnectionType.NetworkLink) {
+      return this.connections.networkLinks.some(condition);
     }
 
     return this.connections.machines.some(condition);
@@ -263,6 +273,7 @@ export class MachineNetwork extends DestroyableObject {
     const connections: NetworkConnections = {
       conduits: [],
       machines: [],
+      networkLinks: [],
     };
 
     const stack: Block[] = [];
@@ -277,32 +288,55 @@ export class MachineNetwork extends DestroyableObject {
         return;
       }
 
+      if (block.hasTag("fluffyalien_energisticscore:network_link")) {
+        connections.networkLinks.push(block);
+
+        const netLink = NetworkLinkNode.tryGetAt(
+          block.dimension,
+          block.location,
+        );
+        if (!netLink) return;
+
+        const linkedPositions = netLink.getConnections();
+
+        for (const pos of linkedPositions) {
+          const linkedBlock = block.dimension.getBlock(pos);
+          if (
+            linkedBlock === undefined ||
+            visitedLocations.some((v) => Vector3Utils.equals(v, pos))
+          )
+            continue;
+          handleBlock(linkedBlock);
+        }
+
+        return;
+      }
+
       connections.machines.push(block);
       return;
     }
 
     function next(currentBlock: Block, direction: StrDirection): void {
       const nextBlock = getBlockInDirection(currentBlock, direction);
-      if (!nextBlock) {
-        return;
-      }
+      if (!nextBlock) return;
 
-      if (
-        (nextBlock.hasTag(`fluffyalien_energisticscore:io.${category}`) ||
-          nextBlock.hasTag("fluffyalien_energisticscore:io._any")) &&
-        !visitedLocations.some((loc) =>
-          Vector3Utils.equals(loc, nextBlock.location),
-        )
-      ) {
-        handleBlock(nextBlock);
-      }
+      const isHandled = visitedLocations.some((l) =>
+        Vector3Utils.equals(l, nextBlock.location),
+      );
+      if (isHandled) return;
+
+      const isSameCategory = nextBlock.hasTag(
+        `fluffyalien_energisticscore:io.${category}`,
+      );
+      const allowsAny = nextBlock.hasTag("fluffyalien_energisticscore:io._any");
+
+      if (isSameCategory || allowsAny) handleBlock(nextBlock);
     }
 
     handleBlock(origin);
 
     while (stack.length) {
       const block = stack.pop()!;
-
       next(block, "north");
       next(block, "east");
       next(block, "south");

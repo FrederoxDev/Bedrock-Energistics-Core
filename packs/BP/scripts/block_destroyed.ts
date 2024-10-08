@@ -13,7 +13,11 @@ import {
 } from "@minecraft/server";
 import { removeBlockFromScoreboards } from "./data";
 import { InternalRegisteredMachine, machineRegistry } from "./registry";
-import { getBlockNetworkConnectionType, MachineNetwork } from "./network";
+import {
+  getBlockNetworkConnectionType,
+  MachineNetwork,
+  NetworkConnectionType,
+} from "./network";
 import { logWarn } from "./utils/log";
 import { getDirectionVector, reverseDirection } from "./utils/direction";
 import { Vector3Utils } from "@minecraft/math";
@@ -29,7 +33,7 @@ world.afterEvents.blockExplode.subscribe((e) => {
 
   MachineNetwork.updateWith(e.block, connectionType);
 
-  if (connectionType === "machine") {
+  if (connectionType === NetworkConnectionType.Machine) {
     removeBlockFromScoreboards(e.block);
   }
 });
@@ -98,7 +102,7 @@ world.afterEvents.pistonActivate.subscribe((e) => {
 
       MachineNetwork.updateWith(attachedBlockDimensionLocation, connectionType);
 
-      if (connectionType === "conduit") {
+      if (connectionType === NetworkConnectionType.Conduit) {
         continue;
       }
 

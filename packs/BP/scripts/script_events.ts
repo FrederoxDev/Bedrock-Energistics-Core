@@ -22,6 +22,14 @@ import {
   SerializableDimensionLocation,
 } from "@/public_api/src/internal";
 import { getBlockIoCategories } from "./io";
+import {
+  NetworkLinkGetRequest,
+  NetworkLinkGetResponse,
+  NetworkLinkAddRequest,
+  NetworkLinkRemoveRequest,
+  NetworkLinkDestroyRequest,
+} from "@/public_api/src/network_links/ipc_events";
+import { getNetworkLinkNode } from "./network_links/network_link_component";
 
 interface SetItemInMachineSlotPayload {
   loc: SerializableDimensionLocation;
@@ -116,4 +124,39 @@ registerScriptEventListener<SetItemInMachineSlotPayload>(
 registerScriptEventHandler<string, RegisteredMachine | null>(
   "fluffyalien_energisticscore:ipc.getRegisteredMachine",
   (machineId) => machineRegistry[machineId] ?? null,
+);
+
+registerScriptEventHandler<NetworkLinkGetRequest, NetworkLinkGetResponse>(
+  "fluffyalien_energisticscore:ipc.networkLinkGet",
+  (payload) => {
+    const link = getNetworkLinkNode(payload.self);
+    return { locations: link.getConnections() };
+  },
+);
+
+registerScriptEventHandler<NetworkLinkAddRequest, null>(
+  "fluffyalien_energisticscore:ipc.networkLinkAdd",
+  (payload) => {
+    const link = getNetworkLinkNode(payload.self);
+    link.addConnection(payload.other);
+    return null;
+  },
+);
+
+registerScriptEventHandler<NetworkLinkRemoveRequest, null>(
+  "fluffyalien_energisticscore:ipc.networkLinkRemove",
+  (payload) => {
+    const link = getNetworkLinkNode(payload.self);
+    link.removeConnection(payload.other);
+    return null;
+  },
+);
+
+registerScriptEventHandler<NetworkLinkDestroyRequest, null>(
+  "fluffyalien_energisticscore:ipc.networkLinkDestroy",
+  (payload) => {
+    const link = getNetworkLinkNode(payload.self);
+    link.destroyNode();
+    return null;
+  },
 );

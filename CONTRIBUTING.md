@@ -1,4 +1,6 @@
-# Contributing
+# Contributing Code
+
+Note: this is a guide for contributing code, not issues. Create an issue [here](https://github.com/Fluffyalien1422/bedrock-energistics-core/issues/new/choose).
 
 ## Preparing Your Environment
 
@@ -28,7 +30,7 @@ Markdown guides are also included. These guides can be found in `public_api/guid
 
 To add a new guide, add it to the `children` frontmatter property in `public_api/guides/index.md`.
 
-Before pushing your changes, run `npm run gen-docs` to generate the documentation.
+Note: do not generate the documentation, the documentation will be generated when a new version is released.
 
 ## Checking Your Code
 
@@ -48,7 +50,7 @@ To build your code, simply run `regolith run`.
 
 ## Before Pushing
 
-Before pushing new code, ensure that your code is formatted (`npm run fmt`) and checked (`npm run check`)
+Before pushing new code, ensure that your code is formatted (`npm run fmt`) and checked (`npm run check`).
 
 ## Before Submitting a PR
 
@@ -57,4 +59,3 @@ Before submitting a PR, follow this checklist:
 - Your code is formatted (`npm run fmt`) and checked (`npm run check`).
 - Your code adheres to the [coding guidelines](CODING_GUIDELINES.md).
 - You have tested your changes in Minecraft.
-- You have generated the new documentation if you changed the public API.

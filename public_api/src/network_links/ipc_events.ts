@@ -14,16 +14,20 @@ export const NETWORK_LINK_ENTITY_ID =
 export const NETWORK_LINK_POSITIONS_KEY =
   "fluffyalien_energisticscore:linked_positions";
 
-// These need to be strictly types and not interfaces like eslint is suggesting, no extra fields should be send via IPC.
-/* eslint-disable @typescript-eslint/consistent-type-definitions */
-export type NetworkLinkGetRequest = { self: SerializableDimensionLocation };
-export type NetworkLinkGetResponse = { locations: Vector3[] };
-export type NetworkLinkAddRequest = {
+export interface NetworkLinkGetRequest {
+  self: SerializableDimensionLocation;
+}
+export interface NetworkLinkGetResponse {
+  locations: Vector3[];
+}
+export interface NetworkLinkAddRequest {
   self: SerializableDimensionLocation;
   other: Vector3;
-};
-export type NetworkLinkRemoveRequest = {
+}
+export interface NetworkLinkRemoveRequest {
   self: SerializableDimensionLocation;
   other: Vector3;
-};
-export type NetworkLinkDestroyRequest = { self: SerializableDimensionLocation };
+}
+export interface NetworkLinkDestroyRequest {
+  self: SerializableDimensionLocation;
+}

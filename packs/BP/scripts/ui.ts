@@ -7,7 +7,7 @@ import {
   UiButtonElementUpdateOptions,
   UiItemSlotElement,
   UiProgressIndicatorElementType,
-  UiStorageBarUpdateOptions,
+  UiStorageBarElementUpdateOptions,
 } from "./registry";
 import {
   Container,
@@ -374,49 +374,25 @@ async function updateEntityUi(
 
   const progressIndicators = updateUiResult?.progressIndicators ?? {};
   const buttons = updateUiResult?.buttons ?? {};
-
-  const storageBarChanges: Record<string, UiStorageBarUpdateOptions> = {};
-  if (updateUiResult?.storageBars) {
-    for (const [element, changeOptions] of Object.entries(
-      updateUiResult.storageBars,
-    )) {
-      if (element in storageBarChanges) {
-        storageBarChanges[element].change += changeOptions.change;
-        continue;
-      }
-
-      storageBarChanges[element] = changeOptions;
-    }
-  }
+  const storageBars = updateUiResult?.storageBars ?? {};
 
   const inventory = entity.getComponent("inventory")!.container!;
 
   for (const [id, options] of Object.entries(definition.uiElements)) {
     switch (options.type) {
       case "storageBar": {
-        const changeOptions = storageBarChanges[id] as
-          | UiStorageBarUpdateOptions
+        const updateOptions = storageBars[id] as
+          | UiStorageBarElementUpdateOptions
           | undefined;
-
-        if (changeOptions) {
-          handleBarItems(
-            dimensionLocation,
-            inventory,
-            options.startIndex,
-            player,
-            changeOptions.max ?? definition.maxStorage,
-            changeOptions.type,
-            changeOptions.change,
-          );
-          break;
-        }
 
         handleBarItems(
           dimensionLocation,
           inventory,
           options.startIndex,
           player,
-          definition.maxStorage,
+          updateOptions?.max ?? options.defaults?.max ?? definition.maxStorage,
+          updateOptions?.type ?? options.defaults?.type,
+          updateOptions?.change ?? options.defaults?.change,
         );
         break;
       }

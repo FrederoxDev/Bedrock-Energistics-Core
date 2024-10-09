@@ -6,8 +6,7 @@ import {
   makeError,
   SerializableDimensionLocation,
 } from "@/public_api/src/internal";
-
-import { NetworkLinkNode } from "./network_link_internal";
+import { InternalNetworkLinkNode } from "./network_link_internal";
 
 export const networkLinkComponent: BlockCustomComponent = {
   onPlace(ev) {
@@ -19,7 +18,10 @@ export const networkLinkComponent: BlockCustomComponent = {
   },
 
   onPlayerDestroy(ev) {
-    const linkNode = NetworkLinkNode.tryGetAt(ev.dimension, ev.block.location);
+    const linkNode = InternalNetworkLinkNode.tryGetAt(
+      ev.dimension,
+      ev.block.location,
+    );
 
     // remove all incoming and outbound links to this node in the network
     if (linkNode) linkNode.destroyNode();
@@ -31,9 +33,9 @@ export const networkLinkComponent: BlockCustomComponent = {
 
 export function getNetworkLinkNode(
   self: SerializableDimensionLocation,
-): NetworkLinkNode {
+): InternalNetworkLinkNode {
   const location = deserializeDimensionLocation(self);
   const block = location.dimension.getBlock(location);
   if (!block) makeError(`_getNetwork failed to get block`);
-  return NetworkLinkNode.fromBlock(block);
+  return InternalNetworkLinkNode.fromBlock(block);
 }

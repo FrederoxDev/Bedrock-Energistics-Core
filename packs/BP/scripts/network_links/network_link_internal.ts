@@ -13,7 +13,7 @@ import { Block, Dimension, Entity, Vector3 } from "@minecraft/server";
  * There is a difference between the public api facing class since, all entity properties
  * have to be accessed and created from the core pack, since they get sandboxed.
  */
-export class NetworkLinkNode {
+export class InternalNetworkLinkNode {
   private readonly entity: Entity;
   private readonly blockPos: Vector3;
 
@@ -22,7 +22,7 @@ export class NetworkLinkNode {
     this.blockPos = blockPos;
   }
 
-  public static fromBlock(block: Block): NetworkLinkNode {
+  public static fromBlock(block: Block): InternalNetworkLinkNode {
     let dataStorageEntity = block.dimension
       .getEntitiesAtBlockLocation(block.location)
       .find((e) => e.typeId === NETWORK_LINK_ENTITY_ID);
@@ -39,19 +39,19 @@ export class NetworkLinkNode {
       NETWORK_LINK_ENTITY_ID,
       block.location,
     );
-    return new NetworkLinkNode(dataStorageEntity, block.location);
+    return new InternalNetworkLinkNode(dataStorageEntity, block.location);
   }
 
   public static tryGetAt(
     dimension: Dimension,
     location: Vector3,
-  ): NetworkLinkNode | undefined {
+  ): InternalNetworkLinkNode | undefined {
     const dataStorageEntity = dimension
       .getEntitiesAtBlockLocation(location)
       .find((e) => e.typeId === NETWORK_LINK_ENTITY_ID);
 
     if (dataStorageEntity === undefined) return undefined;
-    return new NetworkLinkNode(dataStorageEntity, location);
+    return new InternalNetworkLinkNode(dataStorageEntity, location);
   }
 
   public getConnections(): Vector3[] {
@@ -64,7 +64,7 @@ export class NetworkLinkNode {
 
   public addConnection(location: Vector3): void {
     const otherBlock = this.entity.dimension.getBlock(location)!;
-    const other = NetworkLinkNode.fromBlock(otherBlock);
+    const other = InternalNetworkLinkNode.fromBlock(otherBlock);
 
     other.selfAddConnection(this.blockPos);
     this.selfAddConnection(other.blockPos);
@@ -72,7 +72,7 @@ export class NetworkLinkNode {
 
   public removeConnection(location: Vector3): void {
     const otherBlock = this.entity.dimension.getBlock(location)!;
-    const other = NetworkLinkNode.fromBlock(otherBlock);
+    const other = InternalNetworkLinkNode.fromBlock(otherBlock);
 
     other.selfRemoveConnection(this.blockPos);
     this.selfRemoveConnection(other.blockPos);
@@ -84,7 +84,7 @@ export class NetworkLinkNode {
     // links are two way, remove the inbound links to this block.
     for (const connection of outboundConnections) {
       const block = this.entity.dimension.getBlock(connection)!;
-      const node = NetworkLinkNode.fromBlock(block);
+      const node = InternalNetworkLinkNode.fromBlock(block);
       node.removeConnection(this.blockPos);
     }
 

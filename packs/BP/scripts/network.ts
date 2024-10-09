@@ -16,7 +16,7 @@ import {
   StrDirection,
 } from "./utils/direction";
 import { InternalRegisteredMachine, machineRegistry } from "./registry";
-import { NetworkLinkNode } from "./network_links/network_link_internal";
+import { InternalNetworkLinkNode } from "./network_links/network_link_internal";
 
 interface SendQueueItem {
   block: Block;
@@ -291,7 +291,7 @@ export class MachineNetwork extends DestroyableObject {
       if (block.hasTag("fluffyalien_energisticscore:network_link")) {
         connections.networkLinks.push(block);
 
-        const netLink = NetworkLinkNode.tryGetAt(
+        const netLink = InternalNetworkLinkNode.tryGetAt(
           block.dimension,
           block.location,
         );

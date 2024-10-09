@@ -9,7 +9,6 @@ import {
   UiElement,
   UpdateUiHandlerResponse,
 } from "./registry_types.js";
-
 import {
   deserializeDimensionLocation,
   getBlockUniqueId,
@@ -18,7 +17,6 @@ import {
   getScore,
   getStorageScoreboardObjective,
   logInfo,
-  makeError,
   makeErrorString,
   makeSerializableDimensionLocation,
   MangledOnButtonPressedPayload,
@@ -27,7 +25,6 @@ import {
   removeBlockFromScoreboards,
   SerializableDimensionLocation,
 } from "./internal.js";
-
 import {
   dispatchScriptEvent,
   invokeScriptEvent,
@@ -35,7 +32,9 @@ import {
   registerScriptEventListener,
   streamScriptEvent,
 } from "mcbe-addon-ipc";
+import { ensureInitialized, getInitNamespace } from "./init.js";
 
+export { init, InitOptions } from "./init.js";
 export * from "./registry_types.js";
 export * from "./network_links/network_link_node.js";
 
@@ -57,14 +56,6 @@ export interface MachineItemStack {
    * The amount of this item.
    */
   count: number;
-}
-
-/**
- * Initialization options. Used as an argument for {@link init}.
- * @beta
- */
-export interface InitOptions {
-  namespace: string;
 }
 
 /**
@@ -121,31 +112,6 @@ export class RegisteredMachine {
   get uiElements(): Record<string, UiElement> | undefined {
     return this.internal.c;
   }
-}
-
-let initOptions: InitOptions | undefined;
-
-/**
- * Initializes this package. Some APIs require this to be called.
- * @beta
- */
-export function init(options: InitOptions): void {
-  if (initOptions) {
-    throw new Error(makeErrorString("'init' has already been called"));
-  }
-
-  initOptions = options;
-}
-
-function ensureInitialized(): void | never {
-  if (!initOptions) {
-    makeError(`Library not initialized: Ensure you call the 'init' function`);
-  }
-}
-
-export function getInitNamespace(): string {
-  ensureInitialized();
-  return initOptions!.namespace;
 }
 
 /**
@@ -258,7 +224,7 @@ export function registerMachine(
     system.runJob(
       streamScriptEvent(
         "fluffyalien_energisticscore:ipc.stream.registerMachine",
-        initOptions!.namespace,
+        getInitNamespace(),
         payload,
       ),
     );
@@ -518,7 +484,7 @@ export async function getRegisteredMachine(
 
   const mangled = (await invokeScriptEvent(
     "fluffyalien_energisticscore:ipc.getRegisteredMachine",
-    initOptions!.namespace,
+    getInitNamespace(),
     id,
   )) as MangledRegisteredMachine;
 

@@ -1,5 +1,4 @@
 import { Block, Dimension, Entity, Vector3 } from "@minecraft/server";
-import { getInitNamespace } from "../index.js";
 import { makeError, makeSerializableDimensionLocation } from "../internal.js";
 import { invokeScriptEvent } from "mcbe-addon-ipc";
 import {
@@ -10,6 +9,7 @@ import {
   NetworkLinkGetRequest,
   NetworkLinkGetResponse,
 } from "./ipc_events.js";
+import { getInitNamespace } from "../init.js";
 
 /**
  * A NetworkLinkNode represents a single node in the machine network
@@ -17,6 +17,7 @@ import {
  * - NetworkLinkNodes can be used to combine two seperate networks without any physcical connection between them.
  * - An example use case is to create wireless power transmission.
  * - To get an instance of a `NetworkLinkNode` use `NetworkLinks.getNetworkLink`
+ * @beta
  */
 export class NetworkLinkNode {
   private readonly entity: Entity;
@@ -116,6 +117,7 @@ export class NetworkLinkNode {
    * @param block Expected to have the `fluffyalien_energisticscore:network_link` block tag
    * @returns The `NetworkLinkNode` at the block location
    * @throws When the `NetworkLinkNode` does not exist yet, and the block at this location does not have the correct tags
+   * @beta
    */
   static get(block: Block): NetworkLinkNode {
     let dataStorageEntity = block.dimension
@@ -142,6 +144,7 @@ export class NetworkLinkNode {
    * @param dimension The dimension the block is in
    * @param location The location of the block
    * @returns The associated `NetworkLinkNode` or `undefined` if it does not exist
+   * @beta
    */
   static tryGetAt(
     dimension: Dimension,

@@ -16,6 +16,6 @@ world.beforeEvents.worldInitialize.subscribe((e) => {
 
   e.blockComponentRegistry.registerCustomComponent(
     "fluffyalien_energisticscore:network_link",
-    networkLinkComponent
-  )
+    networkLinkComponent,
+  );
 });

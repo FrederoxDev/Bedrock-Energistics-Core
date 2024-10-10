@@ -8,6 +8,26 @@ import { DimensionLocation } from "@minecraft/server";
 export type UiProgressIndicatorElementType = "arrow" | "flame";
 
 /**
+ * @beta
+ */
+export interface UiStorageBarElementUpdateOptions {
+  /**
+   * The type of this storage bar. Set to "_disabled" to disable the storage bar.
+   * @default "_disabled"
+   */
+  type?: string;
+  /**
+   * The amount that this storage type is changing per tick. This can be any integer.
+   * @default 0
+   */
+  change?: number;
+  /**
+   * The max amount to display on this on storage bar. Defaults to {@link MachineDefinitionDescription.maxStorage}
+   */
+  max?: number;
+}
+
+/**
  * Options for defining a storage bar UI element.
  * @remarks
  * A storage bar element takes up 4 slots in an inventory,
@@ -17,6 +37,7 @@ export type UiProgressIndicatorElementType = "arrow" | "flame";
 export interface UiStorageBarElement {
   type: "storageBar";
   startIndex: number;
+  defaults?: UiStorageBarElementUpdateOptions;
 }
 
 /**
@@ -173,21 +194,6 @@ export interface MachineDefinitionEvents {
 /**
  * @beta
  */
-export interface UiStorageBarUpdateOptions {
-  /**
-   * The type of this storage bar. Set to "_disabled" to disable the storage bar.
-   */
-  type: string;
-  change: number;
-  /**
-   * The max amount to display on this on storage bar. Defaults to the {@link MachineDefinitionDescription.maxStorage}
-   */
-  max?: number;
-}
-
-/**
- * @beta
- */
 export interface MachineRecieveHandlerArg extends MachineCallbackArg {
   receiveType: string;
   receiveAmount: number;
@@ -197,7 +203,7 @@ export interface MachineRecieveHandlerArg extends MachineCallbackArg {
  * @beta
  */
 export interface UpdateUiHandlerResponse {
-  storageBars?: Record<string, UiStorageBarUpdateOptions>;
+  storageBars?: Record<string, UiStorageBarElementUpdateOptions>;
   progressIndicators?: Record<string, number>;
   buttons?: Record<string, UiButtonElementUpdateOptions>;
 }

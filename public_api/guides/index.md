@@ -6,6 +6,7 @@ children:
   - ./machine-block-tags.md
   - ./machine-ui.md
   - ./persistent-entities.md
+  - ./pistons.md
   - ./storage-types.md
   - ./versioning.md
 ---

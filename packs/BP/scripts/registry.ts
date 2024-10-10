@@ -1,4 +1,4 @@
-import { DimensionLocation, world } from "@minecraft/server";
+import { Block, DimensionLocation, world } from "@minecraft/server";
 import { logInfo, makeErrorString } from "./utils/log";
 import {
   RegisteredMachine,
@@ -145,4 +145,22 @@ export function registerStorageTypeScriptEventListener(
   if (!world.scoreboard.getObjective(objectiveId)) {
     world.scoreboard.addObjective(objectiveId);
   }
+}
+
+/**
+ * 
+ * @throws If its registered as a machine, but not found in the registry
+ */
+export function getMachineRegistration(block: Block): InternalRegisteredMachine {
+  const registered = machineRegistry[block.typeId];
+
+  if (registered === undefined) {
+    throw new Error(`expected block '${block.typeId}' to be in the machine registry, but it was not found!`);
+  }
+
+  return registered;
+}
+
+export function getMaxStorage(block: Block) {
+  return getMachineRegistration(block).maxStorage;
 }

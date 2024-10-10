@@ -15,7 +15,7 @@ import {
   getBlockInDirection,
   StrDirection,
 } from "./utils/direction";
-import { InternalRegisteredMachine, machineRegistry } from "./registry";
+import { getMachineRegistration, getMaxStorage, InternalRegisteredMachine, MachineDefinition, machineRegistry } from "./registry";
 import { InternalNetworkLinkNode } from "./network_links/network_link_internal";
 
 interface SendQueueItem {
@@ -89,123 +89,121 @@ export class MachineNetwork extends DestroyableObject {
    * automatically sets each generator's storage to the amount it sent that was not received.
    * returns automatically if the object is not valid.
    */
-  private *send(): Generator<void, void, void> {
+  private *send() {
     if (!this.isValid) return;
 
-    interface Target {
-      block: Block;
-      amount: number;
-      definition: InternalRegisteredMachine;
-    }
+    // Calculate the amount of each type that is avaliable to send around.
+    const distribution: Record<string, number> = {};
 
-    const targets: Record<string, Target[]> = {};
+    this.sendQueue.forEach(send => {
+      const newValue = distribution[send.type] ?? 0;
+      distribution[send.type] = newValue + send.amount;
+    });
 
-    while (this.sendQueue.length) {
-      const queuedSend = this.sendQueue.pop()!;
-      if (!(queuedSend.type in targets)) {
-        const targetsArr: Target[] = [];
+    // Clear queue for next time.
+    this.sendQueue.splice(0, this.sendQueue.length);
+    const typesToDistribute = Object.keys(distribution);
 
-        for (const block of this.connections.machines) {
-          if (
-            !block.hasTag(
-              `fluffyalien_energisticscore:consumer.${queuedSend.type}`,
-            ) &&
-            !block.hasTag("fluffyalien_energisticscore:consumer._any")
-          ) {
-            yield;
-            continue;
+    type Consumer = { normalPriority: Block[], lowPriority: Block[] };
+
+    // initialize consumers keys. 
+    const consumers: Record<string, Consumer> = typesToDistribute.reduce((acc, key) => {
+      acc[key] = { lowPriority: [], normalPriority: [] };
+      return acc;
+    }, {} as Record<string, Consumer>)
+
+    // find and filter connections into their consumer groups.
+    this.connections.machines.forEach(machine => {
+      const machineTags = machine.getTags();
+      const isLowPriority = machineTags.includes("fluffyalien_energisticscore:low_priority_consumer");
+      const allowsAny = machineTags.includes("fluffyalien_energisticscore:consumer._any");
+
+      // Check machine tags and sort into appropriate groups.
+      Object.keys(consumers).forEach(consumerType => {
+        const allowsType = allowsAny || machineTags.includes(`fluffyalien_energisticscore:consumer.${consumerType}`);
+        if (!allowsType) return;
+        
+        if (isLowPriority) consumers[consumerType].lowPriority.push(machine);
+        else consumers[consumerType].normalPriority.push(machine);
+      });
+    });
+
+    // send each machine its share of the pool.
+    for (const type of typesToDistribute) {
+      const machines = consumers[type];
+      const numMachines = machines.lowPriority.length + machines.normalPriority.length;
+      if (numMachines === 0) continue;
+
+      let budget = distribution[type];
+
+      // Give each machine in the normal priority an equal split of the budget
+      // Machines can consume less than they're offered in which case the savings are given to further machines.
+      for (let i = 0; i < machines.normalPriority.length; i++) {
+        const machine = machines.normalPriority[i];
+        const budgetAllocation = budget / (machines.normalPriority.length - i);
+        const currentStored = getMachineStorage(machine, type);
+        const machineDef = getMachineRegistration(machine);
+        
+        let amountToAllocate: number = Math.min(budgetAllocation, machineDef.maxStorage - currentStored);
+
+        for (let result of this.sendMachineAllocation(machine, machineDef, type, amountToAllocate)) {
+          amountToAllocate = result ?? amountToAllocate;
+        }
+        
+        // finally give the machine its allocated share
+        budget -= amountToAllocate;
+        setMachineStorage(machine, type, currentStored + amountToAllocate);
+        yield;
+      }
+
+      // Give each machine in the low priority a split of the leftover budget (if applicable)
+      if (budget >= 0) {
+        for (let i = 0; i < machines.lowPriority.length; i++) {
+          const machine = machines.lowPriority[i];
+          const budgetAllocation = budget / (machines.lowPriority.length - i);
+          const currentStored = getMachineStorage(machine, type);
+          const machineDef = getMachineRegistration(machine);
+          
+          let amountToAllocate: number = Math.min(budgetAllocation, machineDef.maxStorage - currentStored);
+  
+          for (let result of this.sendMachineAllocation(machine, machineDef, type, amountToAllocate)) {
+            amountToAllocate = result ?? amountToAllocate;
           }
-
-          const definition = machineRegistry[block.typeId] as
-            | InternalRegisteredMachine
-            | undefined;
-
-          if (!definition) {
-            logWarn(
-              `can't send '${queuedSend.type}' to machine '${block.typeId}': this block is configured as a machine but it couldn't be found in the machine registry`,
-            );
-            yield;
-            continue;
-          }
-
-          const amount = getMachineStorage(block, queuedSend.type);
-
-          if (amount >= definition.maxStorage) {
-            yield;
-            continue;
-          }
-
-          targetsArr.push({
-            block,
-            amount,
-            definition,
-          });
-
+          
+          // finally give the machine its allocated share
+          budget -= amountToAllocate;
+          setMachineStorage(machine, type, currentStored + amountToAllocate);
           yield;
         }
-
-        targetsArr.sort((a, b) => (a.amount > b.amount ? 1 : -1));
-
-        targets[queuedSend.type] = targetsArr;
-
-        yield;
       }
 
-      let unsentAmount = queuedSend.amount;
-
-      for (const target of targets[queuedSend.type]) {
-        // we cannot use target.amount because it may be outdated since this is a job
-        // so get the actual current amount
-        const currentAmount = getMachineStorage(target.block, queuedSend.type);
-
-        let sendAmount = Math.min(
-          target.definition.maxStorage - currentAmount,
-          unsentAmount,
-        );
-
-        if (target.definition.recieveHandlerEvent) {
-          let result: number | undefined;
-
-          target.definition
-            .invokeRecieveHandler(target.block, queuedSend.type, sendAmount)
-            .then((value) => {
-              result = value;
-            })
-            .catch((err: unknown) => {
-              logWarn(
-                `failed to call the 'recieve' handler (ID: '${target.definition.recieveHandlerEvent!}') for machine '${target.definition.id}': ${err instanceof Error || typeof err === "string" ? err.toString() : "unknown error"}. this may cause significant delays when sending storage types`,
-              );
-              result = sendAmount;
-            });
-
-          while (result === undefined) {
-            yield;
-          }
-
-          sendAmount = result;
-        }
-
-        setMachineStorage(
-          target.block,
-          queuedSend.type,
-          currentAmount + sendAmount,
-        );
-
-        unsentAmount -= sendAmount;
-
-        yield;
-      }
-
-      setMachineStorage(
-        queuedSend.block,
-        queuedSend.type,
-        Math.min(unsentAmount, queuedSend.definition.maxStorage),
-      );
-
-      yield;
+      console.log("unspent budget", type, budget);
     }
 
     this.sendJobRunning = false;
+  }
+
+  private *sendMachineAllocation(machine: Block, machineDef: InternalRegisteredMachine, type: string, amount: number) {
+    let result = amount;
+
+    if (machineDef.recieveHandlerEvent !== undefined) {
+      let completed = false;
+
+      machineDef.invokeRecieveHandler(machine, type, amount)
+        .then((v) => {
+          completed = true;
+          result = v;
+        })
+        .catch(e => {
+          logWarn(`failed to call the 'recieve' handler (ID: '${machineDef.recieveHandlerEvent!}') for machine '${machineDef.id}', skipping machine in allocation!`);
+          result = 0;
+        })
+
+      // no async generators in job system, copying what this code did originally to get around that :')
+      while(!completed) yield;
+    }
+
+    return result;
   }
 
   /**

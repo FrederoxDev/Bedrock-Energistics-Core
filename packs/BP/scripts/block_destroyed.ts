@@ -61,12 +61,12 @@ world.afterEvents.pistonActivate.subscribe((e) => {
     location: e.block.location,
     maxDistance: 15,
   })) {
-    const originalLocation = entity.getDynamicProperty(
-      "fluffyalien_energisticscore:block_location",
-    ) as Vector3 | undefined;
+    const originalLocation = entity.getDynamicProperty("block_location") as
+      | Vector3
+      | undefined;
     if (!originalLocation) {
       logWarn(
-        `can't get network link entity moved by piston: '${entity.typeId}' does not have the 'fluffyalien_energisticscore:block_location' dynamic property. skipping`,
+        `can't get network link entity moved by piston: '${entity.typeId}' does not have the 'block_location' dynamic property. skipping`,
       );
       continue;
     }
@@ -80,12 +80,12 @@ world.afterEvents.pistonActivate.subscribe((e) => {
     location: e.block.location,
     maxDistance: 15,
   })) {
-    const originalLocation = entity.getDynamicProperty(
-      "fluffyalien_energisticscore:block_location",
-    ) as Vector3 | undefined;
+    const originalLocation = entity.getDynamicProperty("block_location") as
+      | Vector3
+      | undefined;
     if (!originalLocation) {
       logWarn(
-        `can't get machine entity moved by piston: '${entity.typeId}' does not have the 'fluffyalien_energisticscore:block_location' dynamic property. skipping`,
+        `can't get machine entity moved by piston: '${entity.typeId}' does not have the 'block_location' dynamic property. skipping`,
       );
       continue;
     }
@@ -143,9 +143,7 @@ world.afterEvents.pistonActivate.subscribe((e) => {
             entity.typeId === NETWORK_LINK_ENTITY_ID &&
             Vector3Utils.equals(
               attachedBlockLocation,
-              entity.getDynamicProperty(
-                "fluffyalien_energisticscore:block_location",
-              ) as Vector3,
+              entity.getDynamicProperty("block_location") as Vector3,
             ),
         );
 
@@ -173,9 +171,7 @@ world.afterEvents.pistonActivate.subscribe((e) => {
           entity.typeId === definition.entityId &&
           Vector3Utils.equals(
             attachedBlockLocation,
-            entity.getDynamicProperty(
-              "fluffyalien_energisticscore:block_location",
-            ) as Vector3,
+            entity.getDynamicProperty("block_location") as Vector3,
           ),
       );
 

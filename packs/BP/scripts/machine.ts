@@ -43,10 +43,7 @@ export const machineComponent: BlockCustomComponent = {
 
       entity.nameTag = e.block.typeId;
 
-      entity.setDynamicProperty(
-        "fluffyalien_energisticscore:block_location",
-        e.block.location,
-      );
+      entity.setDynamicProperty("block_location", e.block.location);
     }
   },
   onPlayerInteract(e) {
@@ -71,10 +68,7 @@ export const machineComponent: BlockCustomComponent = {
 
     entity.nameTag = e.block.typeId;
 
-    entity.setDynamicProperty(
-      "fluffyalien_energisticscore:block_location",
-      e.block.location,
-    );
+    entity.setDynamicProperty("block_location", e.block.location);
   },
 };
 

@@ -6,7 +6,7 @@ import {
 } from "@minecraft/server";
 import { UiElement } from "./registry_types.js";
 
-const VERSION = "0.1.0";
+const VERSION = "0.2.0";
 
 export interface SerializableDimensionLocation extends Vector3 {
   dimension: string;

@@ -15,7 +15,7 @@ import {
   getBlockInDirection,
   StrDirection,
 } from "./utils/direction";
-import { getMachineRegistration, getMaxStorage, InternalRegisteredMachine, MachineDefinition, machineRegistry } from "./registry";
+import { getMachineRegistration, InternalRegisteredMachine, machineRegistry } from "./registry";
 import { InternalNetworkLinkNode } from "./network_links/network_link_internal";
 
 interface SendQueueItem {
@@ -89,7 +89,7 @@ export class MachineNetwork extends DestroyableObject {
    * automatically sets each generator's storage to the amount it sent that was not received.
    * returns automatically if the object is not valid.
    */
-  private *send() {
+  private *send(): Generator<undefined, void, unknown> {
     if (!this.isValid) return;
 
     // Calculate the amount of each type that is avaliable to send around.
@@ -104,13 +104,13 @@ export class MachineNetwork extends DestroyableObject {
     this.sendQueue.splice(0, this.sendQueue.length);
     const typesToDistribute = Object.keys(distribution);
 
-    type Consumer = { normalPriority: Block[], lowPriority: Block[] };
+    interface Consumer { normalPriority: Block[], lowPriority: Block[] };
 
     // initialize consumers keys. 
-    const consumers: Record<string, Consumer> = typesToDistribute.reduce((acc, key) => {
+    const consumers = typesToDistribute.reduce<Record<string, Consumer>>((acc, key) => {
       acc[key] = { lowPriority: [], normalPriority: [] };
       return acc;
-    }, {} as Record<string, Consumer>)
+    }, {});
 
     // find and filter connections into their consumer groups.
     this.connections.machines.forEach(machine => {
@@ -146,7 +146,7 @@ export class MachineNetwork extends DestroyableObject {
         
         let amountToAllocate: number = Math.min(budgetAllocation, machineDef.maxStorage - currentStored);
 
-        for (let result of this.sendMachineAllocation(machine, machineDef, type, amountToAllocate)) {
+        for (const result of this.sendMachineAllocation(machine, machineDef, type, amountToAllocate)) {
           amountToAllocate = result ?? amountToAllocate;
         }
         
@@ -166,7 +166,7 @@ export class MachineNetwork extends DestroyableObject {
           
           let amountToAllocate: number = Math.min(budgetAllocation, machineDef.maxStorage - currentStored);
   
-          for (let result of this.sendMachineAllocation(machine, machineDef, type, amountToAllocate)) {
+          for (const result of this.sendMachineAllocation(machine, machineDef, type, amountToAllocate)) {
             amountToAllocate = result ?? amountToAllocate;
           }
           
@@ -181,10 +181,10 @@ export class MachineNetwork extends DestroyableObject {
     this.sendJobRunning = false;
   }
 
-  private *sendMachineAllocation(machine: Block, machineDef: InternalRegisteredMachine, type: string, amount: number) {
+  private *sendMachineAllocation(machine: Block, machineDef: InternalRegisteredMachine, type: string, amount: number): Generator<undefined | number, number, unknown> {
     let result = amount;
 
-    if (machineDef.recieveHandlerEvent !== undefined) {
+    if (machineDef.recieveHandlerEvent) {
       let completed = false;
 
       machineDef.invokeRecieveHandler(machine, type, amount)
@@ -192,13 +192,16 @@ export class MachineNetwork extends DestroyableObject {
           completed = true;
           result = v;
         })
-        .catch(e => {
+        .catch(() => {
           logWarn(`failed to call the 'recieve' handler (ID: '${machineDef.recieveHandlerEvent!}') for machine '${machineDef.id}', skipping machine in allocation!`);
           result = 0;
         })
 
       // no async generators in job system, copying what this code did originally to get around that :')
-      while(!completed) yield;
+      //ES-Lint weirdness, completed is not always truthy...
+      while(!completed as boolean) {
+        yield;
+      }
     }
 
     return result;

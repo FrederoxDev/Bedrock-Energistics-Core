@@ -1,14 +1,14 @@
 // nicer console.log utility
 const consoleLog = console.log;
 
-console.log = function (...args) {
-    const newArgs = args.map((arg) => {
+console.log = function (...args): void {
+    const newArgs: unknown[] = args.map((arg) => {
         // Print objects like Vector3 as their actual values instead of just [object]
         if (typeof arg === 'object' && arg !== null) {
             return JSON.stringify(arg);
         }
 
-        return arg;
+        return arg as unknown;
     });
 
     consoleLog.apply(console, newArgs);

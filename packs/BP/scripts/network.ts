@@ -176,8 +176,6 @@ export class MachineNetwork extends DestroyableObject {
           yield;
         }
       }
-
-      console.log("unspent budget", type, budget);
     }
 
     this.sendJobRunning = false;

@@ -22,6 +22,10 @@ export class InternalNetworkLinkNode {
     this.blockPos = blockPos;
   }
 
+  public static fromEntity(entity: Entity): InternalNetworkLinkNode {
+    return new InternalNetworkLinkNode(entity, entity.location);
+  }
+
   public static fromBlock(block: Block): InternalNetworkLinkNode {
     let dataStorageEntity = block.dimension
       .getEntitiesAtBlockLocation(block.location)

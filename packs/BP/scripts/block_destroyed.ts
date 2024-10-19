@@ -22,6 +22,8 @@ import { logWarn } from "./utils/log";
 import { getDirectionVector, reverseDirection } from "./utils/direction";
 import { Vector3Utils } from "@minecraft/math";
 import { dropItemsStoredInMachine } from "./machine";
+import { InternalNetworkLinkNode } from "./network_links/network_link_internal";
+import { NETWORK_LINK_ENTITY_ID } from "@/public_api/src/network_links/ipc_events";
 
 world.afterEvents.blockExplode.subscribe((e) => {
   const connectionType = getBlockNetworkConnectionType(
@@ -35,6 +37,15 @@ world.afterEvents.blockExplode.subscribe((e) => {
 
   if (connectionType === NetworkConnectionType.Machine) {
     removeBlockFromScoreboards(e.block);
+  } else if (connectionType === NetworkConnectionType.NetworkLink) {
+    const link = InternalNetworkLinkNode.tryGetAt(e.dimension, e.block);
+    if (!link) {
+      logWarn(
+        "blockExplode after event - couldn't get InternalNetworkLinkNode",
+      );
+      return;
+    }
+    link.destroyNode();
   }
 });
 
@@ -43,18 +54,38 @@ world.afterEvents.pistonActivate.subscribe((e) => {
   if (!attachedBlockLocations.length) return;
 
   const movedMachineEntities: Entity[] = [];
+  const movedNetworkLinkEntities: Entity[] = [];
+
+  for (const entity of e.dimension.getEntities({
+    type: "fluffyalien_energisticscore:network_link",
+    location: e.block.location,
+    maxDistance: 15,
+  })) {
+    const originalLocation = entity.getDynamicProperty("block_location") as
+      | Vector3
+      | undefined;
+    if (!originalLocation) {
+      logWarn(
+        `can't get network link entity moved by piston: '${entity.typeId}' does not have the 'block_location' dynamic property. skipping`,
+      );
+      continue;
+    }
+
+    entity.teleport(originalLocation);
+    movedNetworkLinkEntities.push(entity);
+  }
 
   for (const entity of e.dimension.getEntities({
     families: ["fluffyalien_energisticscore:machine_entity"],
     location: e.block.location,
     maxDistance: 15,
   })) {
-    const originalLocation = entity.getDynamicProperty(
-      "fluffyalien_energisticscore:block_location",
-    ) as Vector3 | undefined;
+    const originalLocation = entity.getDynamicProperty("block_location") as
+      | Vector3
+      | undefined;
     if (!originalLocation) {
       logWarn(
-        `can't get machine entity moved by piston: '${entity.typeId}' does not have the 'fluffyalien_energisticscore:block_location' dynamic property. skipping`,
+        `can't get machine entity moved by piston: '${entity.typeId}' does not have the 'block_location' dynamic property. skipping`,
       );
       continue;
     }
@@ -106,6 +137,25 @@ world.afterEvents.pistonActivate.subscribe((e) => {
         continue;
       }
 
+      if (connectionType === NetworkConnectionType.NetworkLink) {
+        const entityIndex = movedNetworkLinkEntities.findIndex(
+          (entity) =>
+            entity.typeId === NETWORK_LINK_ENTITY_ID &&
+            Vector3Utils.equals(
+              attachedBlockLocation,
+              entity.getDynamicProperty("block_location") as Vector3,
+            ),
+        );
+
+        if (entityIndex !== -1) {
+          const networkLinkEntity = movedNetworkLinkEntities[entityIndex];
+          movedNetworkLinkEntities.splice(entityIndex, 1);
+          InternalNetworkLinkNode.fromEntity(networkLinkEntity).destroyNode();
+        }
+
+        continue;
+      }
+
       const definition = machineRegistry[block.typeId] as
         | InternalRegisteredMachine
         | undefined;
@@ -121,9 +171,7 @@ world.afterEvents.pistonActivate.subscribe((e) => {
           entity.typeId === definition.entityId &&
           Vector3Utils.equals(
             attachedBlockLocation,
-            entity.getDynamicProperty(
-              "fluffyalien_energisticscore:block_location",
-            ) as Vector3,
+            entity.getDynamicProperty("block_location") as Vector3,
           ),
       );
 

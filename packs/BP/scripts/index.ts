@@ -1,4 +1,4 @@
-// nicer console.log
+// nicer console.log utility
 const consoleLog = console.log;
 
 console.log = function (...args) {
@@ -14,6 +14,7 @@ console.log = function (...args) {
     consoleLog.apply(console, newArgs);
 };
 
+import "./network_links/network_link_entity";
 import "./block_destroyed";
 import "./custom_components";
 import "./script_events";

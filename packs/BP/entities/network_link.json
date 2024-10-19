@@ -8,23 +8,28 @@
       "is_experimental": false
     },
     "components": {
-      "minecraft:physics": {
-        "has_collision": false,
-        "has_gravity": false
+      "minecraft:breathable": {
+        "breathes_water": true
       },
-      // needs a collider to get found at a block location(I think?)
-      // so add one with 0, 0 size so it'll never block interactions
-      "minecraft:collision_box": {
-        "height": 0,
-        "width": 0
+      "minecraft:physics": {
+        "has_gravity": false,
+        "has_collision": false
       },
       "minecraft:damage_sensor": {
-        "triggers": [
-          {
-            "cause": "all",
-            "deals_damage": false
-          }
-        ]
+        "triggers": {
+          "deals_damage": false
+        }
+      },
+      "minecraft:pushable": {
+        "is_pushable": false,
+        "is_pushable_by_piston": false
+      },
+      "minecraft:knockback_resistance": {
+        "value": 1
+      },
+      "minecraft:collision_box": {
+        "width": 0,
+        "height": 0
       }
     }
   }

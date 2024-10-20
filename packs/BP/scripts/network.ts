@@ -8,7 +8,7 @@ import {
 } from "@minecraft/server";
 import { Vector3Utils } from "@minecraft/math";
 import { DestroyableObject } from "./utils/destroyable";
-import { logWarn, makeErrorString } from "./utils/log";
+import { makeErrorString } from "./utils/log";
 import { getMachineStorage, setMachineStorage } from "./data";
 import {
   DIRECTION_VECTORS,
@@ -165,14 +165,18 @@ export class MachineNetwork extends DestroyableObject {
           machineDef.maxStorage - currentStored,
         );
 
-        for (const result of this.sendMachineAllocation(
-          machine,
-          machineDef,
-          type,
-          amountToAllocate,
-        )) {
-          amountToAllocate = result ?? amountToAllocate;
-        }
+        let waiting = true;
+
+        this.sendMachineAllocation(machine, machineDef, type, amountToAllocate)
+          .then((v) => {
+            amountToAllocate = v;
+            waiting = false;
+          })
+          .catch((e: unknown) => {
+            throw e;
+          });
+
+        while (waiting as boolean) yield;
 
         // finally give the machine its allocated share
         budget -= amountToAllocate;
@@ -193,14 +197,23 @@ export class MachineNetwork extends DestroyableObject {
             machineDef.maxStorage - currentStored,
           );
 
-          for (const result of this.sendMachineAllocation(
+          let waiting = true;
+
+          this.sendMachineAllocation(
             machine,
             machineDef,
             type,
             amountToAllocate,
-          )) {
-            amountToAllocate = result ?? amountToAllocate;
-          }
+          )
+            .then((v) => {
+              amountToAllocate = v;
+              waiting = false;
+            })
+            .catch((e: unknown) => {
+              throw e;
+            });
+
+          while (waiting as boolean) yield;
 
           // finally give the machine its allocated share
           budget -= amountToAllocate;
@@ -213,38 +226,19 @@ export class MachineNetwork extends DestroyableObject {
     this.sendJobRunning = false;
   }
 
-  private *sendMachineAllocation(
+  private async sendMachineAllocation(
     machine: Block,
     machineDef: InternalRegisteredMachine,
     type: string,
     amount: number,
-  ): Generator<undefined | number, number, unknown> {
-    let result = amount;
-
+  ): Promise<number> {
+    // Allow the machine to change how much of its allocation it chooses to take
     if (machineDef.recieveHandlerEvent) {
-      let completed = false;
-
-      machineDef
-        .invokeRecieveHandler(machine, type, amount)
-        .then((v) => {
-          completed = true;
-          result = v;
-        })
-        .catch(() => {
-          logWarn(
-            `failed to call the 'recieve' handler (ID: '${machineDef.recieveHandlerEvent!}') for machine '${machineDef.id}', skipping machine in allocation!`,
-          );
-          result = 0;
-        });
-
-      // no async generators in job system, copying what this code did originally to get around that :')
-      //ES-Lint weirdness, completed is not always truthy...
-      while (!completed as boolean) {
-        yield;
-      }
+      return await machineDef.invokeRecieveHandler(machine, type, amount);
     }
 
-    return result;
+    // if no handler, give it everything in its allocation
+    return amount;
   }
 
   /**

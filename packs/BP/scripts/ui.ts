@@ -377,7 +377,7 @@ async function updateEntityUi(
   const buttons = updateUiResult?.buttons ?? {};
   const storageBars = updateUiResult?.storageBars ?? {};
 
-  const inventory = getEntityComponent(player, "inventory")!.container!;
+  const inventory = getEntityComponent(entity, "inventory")!.container!;
 
   for (const [id, options] of Object.entries(definition.uiElements)) {
     switch (options.type) {

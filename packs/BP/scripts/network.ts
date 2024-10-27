@@ -41,6 +41,9 @@ interface NetworkConnections {
 let totalNetworkCount = 0; // used to create a unique id
 const networks = new Map<number, MachineNetwork>();
 
+/**
+ * A network of machines with a certain I/O category.
+ */
 export class MachineNetwork extends DestroyableObject {
   private sendJobRunning = false;
   private sendQueue: SendQueueItem[] = [];
@@ -383,6 +386,9 @@ export class MachineNetwork extends DestroyableObject {
     return connections;
   }
 
+  /**
+   * Establish a new network at `location`.
+   */
   static establish(category: string, block: Block): MachineNetwork | undefined {
     const connections = MachineNetwork.discoverConnections(block, category);
     if (!connections.machines.length) {
@@ -397,8 +403,8 @@ export class MachineNetwork extends DestroyableObject {
   }
 
   /**
-   * Get the {@link MachineNetwork} that contains a block that match the arguments
-   * @param category the category of the network
+   * Get the {@link MachineNetwork} that contains a machine that matches the arguments.
+   * @param category the category of the network.
    */
   static getWith(
     category: string,
@@ -413,19 +419,19 @@ export class MachineNetwork extends DestroyableObject {
   }
 
   /**
-   * Get the {@link MachineNetwork} that contains a block
+   * Get the {@link MachineNetwork} that contains a block.
    */
-  static getBlockNetwork(
+  static getWithBlock(
     category: string,
     block: Block,
   ): MachineNetwork | undefined {
     const type = getBlockNetworkConnectionType(block);
     if (!type) return;
-    return this.getWith(category, block, type);
+    return MachineNetwork.getWith(category, block, type);
   }
 
   /**
-   * Get all {@link MachineNetwork}s that contain a block that match the arguments
+   * Get all {@link MachineNetwork}s that contain a machine that matches the arguments.
    */
   static getAllWith(
     location: DimensionLocation,
@@ -437,26 +443,31 @@ export class MachineNetwork extends DestroyableObject {
   }
 
   /**
-   * Get all {@link MachineNetwork}s that contain a block
+   * Get all {@link MachineNetwork}s that contain a block.
    */
-  static getAllBlockNetworks(block: Block): MachineNetwork[] {
+  static getAllWithBlock(block: Block): MachineNetwork[] {
     const type = getBlockNetworkConnectionType(block);
     if (!type) return [];
-    return this.getAllWith(block, type);
+    return MachineNetwork.getAllWith(block, type);
   }
 
+  /**
+   * Get the {@link MachineNetwork} that contains a block if it exists,
+   * otherwise establish a network using the block as the origin if it doesn't exist.
+   * @see {@link MachineNetwork.getWithBlock}, {@link MachineNetwork.establish}
+   */
   static getOrEstablish(
     category: string,
     block: Block,
   ): MachineNetwork | undefined {
     return (
-      MachineNetwork.getBlockNetwork(category, block) ??
+      MachineNetwork.getWithBlock(category, block) ??
       MachineNetwork.establish(category, block)
     );
   }
 
   /**
-   * Update all {@link MachineNetwork}s adjacent to a location
+   * Update all {@link MachineNetwork}s adjacent to a location.
    */
   static updateAdjacent(
     location: DimensionLocation,
@@ -472,21 +483,19 @@ export class MachineNetwork extends DestroyableObject {
 
       if (categories) {
         for (const category of categories) {
-          MachineNetwork.getBlockNetwork(category, blockInDirection)?.destroy();
+          MachineNetwork.getWithBlock(category, blockInDirection)?.destroy();
         }
         continue;
       }
 
-      for (const network of MachineNetwork.getAllBlockNetworks(
-        blockInDirection,
-      )) {
+      for (const network of MachineNetwork.getAllWithBlock(blockInDirection)) {
         network.destroy();
       }
     }
   }
 
   /**
-   * Update all {@link MachineNetwork}s that contain a block that matches the arguments
+   * Update all {@link MachineNetwork}s that contain a machine that matches the arguments.
    */
   static updateWith(
     location: DimensionLocation,
@@ -498,10 +507,10 @@ export class MachineNetwork extends DestroyableObject {
   }
 
   /**
-   * Update all {@link MachineNetwork}s that contain a block
+   * Update all {@link MachineNetwork}s that contain a block.
    */
   static updateWithBlock(block: Block): void {
-    for (const network of MachineNetwork.getAllBlockNetworks(block)) {
+    for (const network of MachineNetwork.getAllWithBlock(block)) {
       network.destroy();
     }
   }

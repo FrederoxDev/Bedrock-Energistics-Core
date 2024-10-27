@@ -5,11 +5,29 @@ import {
   world,
 } from "@minecraft/server";
 import { UiElement } from "./registry_types.js";
+import {
+  VECTOR3_EAST,
+  VECTOR3_WEST,
+  VECTOR3_UP,
+  VECTOR3_DOWN,
+} from "@minecraft/math";
 
 const VERSION = "0.2.0";
 
+export const DIRECTION_VECTORS: Vector3[] = [
+  { x: 0, y: 0, z: -1 },
+  VECTOR3_EAST,
+  { x: 0, y: 0, z: 1 },
+  VECTOR3_WEST,
+  VECTOR3_UP,
+  VECTOR3_DOWN,
+];
+
 export interface SerializableDimensionLocation extends Vector3 {
-  dimension: string;
+  /**
+   * dimension id
+   */
+  d: string;
 }
 
 export interface MangledRegisteredMachine {
@@ -85,7 +103,7 @@ export function makeSerializableDimensionLocation(
   loc: DimensionLocation,
 ): SerializableDimensionLocation {
   return {
-    dimension: loc.dimension.id,
+    d: loc.dimension.id,
     x: loc.x,
     y: loc.y,
     z: loc.z,
@@ -96,7 +114,7 @@ export function deserializeDimensionLocation(
   loc: SerializableDimensionLocation,
 ): DimensionLocation {
   return {
-    dimension: world.getDimension(loc.dimension),
+    dimension: world.getDimension(loc.d),
     x: loc.x,
     y: loc.y,
     z: loc.z,

@@ -26,3 +26,14 @@ export interface MangledNetworkGetWithPayload {
    */
   c: NetworkConnectionType;
 }
+
+export interface MangledNetworkGetAllWithPayload {
+  /**
+   * location
+   */
+  a: SerializableDimensionLocation;
+  /**
+   * type
+   */
+  b: NetworkConnectionType;
+}

@@ -2,12 +2,12 @@ import { makeErrorString } from "./log";
 
 export interface Destroyable {
   /**
-   * `true` if this object is valid (has not been destroyed), otherwise `false`
+   * `true` if this object is valid (has not been destroyed), otherwise `false`.
    */
   readonly isValid: boolean;
 
   /**
-   * Destroy this object
+   * Destroy this object.
    * @see {@link Destroyable.isValid}
    */
   destroy(): void;

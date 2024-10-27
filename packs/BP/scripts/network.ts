@@ -1,6 +1,5 @@
 import {
   Block,
-  BlockPermutation,
   Dimension,
   DimensionLocation,
   Vector3,
@@ -21,6 +20,10 @@ import {
   machineRegistry,
 } from "./registry";
 import { InternalNetworkLinkNode } from "./network_links/network_link_internal";
+import {
+  getBlockNetworkConnectionType,
+  NetworkConnectionType,
+} from "@/public_api/src";
 
 interface SendQueueItem {
   block: Block;
@@ -35,39 +38,35 @@ interface NetworkConnections {
   networkLinks: Block[];
 }
 
-export enum NetworkConnectionType {
-  Conduit = "conduit",
-  Machine = "machine",
-  NetworkLink = "network_link",
-}
-
-export function getBlockNetworkConnectionType(
-  block: Block | BlockPermutation,
-): NetworkConnectionType | null {
-  if (block.hasTag("fluffyalien_energisticscore:conduit"))
-    return NetworkConnectionType.Conduit;
-  if (block.hasTag("fluffyalien_energisticscore:machine"))
-    return NetworkConnectionType.Machine;
-  if (block.hasTag("fluffyalien_energisticscore:network_link"))
-    return NetworkConnectionType.NetworkLink;
-  return null;
-}
+let totalNetworkCount = 0; // used to create a unique id
+const networks = new Map<number, MachineNetwork>();
 
 export class MachineNetwork extends DestroyableObject {
-  private static readonly networks: MachineNetwork[] = [];
-
   private sendJobRunning = false;
   private sendQueue: SendQueueItem[] = [];
   private readonly intervalId: number;
 
+  /**
+   * Unique ID for this network.
+   */
+  readonly id: number;
+
   constructor(
+    /**
+     * The I/O category of this network.
+     */
     readonly category: string,
+    /**
+     * This network's dimension.
+     */
     readonly dimension: Dimension,
     private readonly connections: NetworkConnections,
   ) {
     super();
 
-    MachineNetwork.networks.push(this);
+    this.id = totalNetworkCount;
+    networks.set(this.id, this);
+    totalNetworkCount++;
 
     this.intervalId = system.runInterval(() => {
       if (this.sendJobRunning || !this.sendQueue.length) return;
@@ -78,13 +77,8 @@ export class MachineNetwork extends DestroyableObject {
 
   destroy(): void {
     super.destroy();
-
     system.clearRun(this.intervalId);
-
-    const i = MachineNetwork.networks.indexOf(this);
-    if (i === -1) return;
-
-    MachineNetwork.networks.splice(i, 1);
+    networks.delete(this.id);
   }
 
   /**
@@ -398,16 +392,20 @@ export class MachineNetwork extends DestroyableObject {
     return new MachineNetwork(category, block.dimension, connections);
   }
 
+  static getFromId(id: number): MachineNetwork | undefined {
+    return networks.get(id);
+  }
+
   /**
    * Get the {@link MachineNetwork} that contains a block that match the arguments
    * @param category the category of the network
    */
-  static get(
+  static getWith(
     category: string,
     location: DimensionLocation,
     type: NetworkConnectionType,
   ): MachineNetwork | undefined {
-    return MachineNetwork.networks.find(
+    return [...networks.values()].find(
       (network) =>
         network.category === category &&
         network.isPartOfNetwork(location, type),
@@ -423,17 +421,17 @@ export class MachineNetwork extends DestroyableObject {
   ): MachineNetwork | undefined {
     const type = getBlockNetworkConnectionType(block);
     if (!type) return;
-    return this.get(category, block, type);
+    return this.getWith(category, block, type);
   }
 
   /**
    * Get all {@link MachineNetwork}s that contain a block that match the arguments
    */
-  static getAll(
+  static getAllWith(
     location: DimensionLocation,
     type: NetworkConnectionType,
   ): MachineNetwork[] {
-    return MachineNetwork.networks.filter((network) =>
+    return [...networks.values()].filter((network) =>
       network.isPartOfNetwork(location, type),
     );
   }
@@ -444,7 +442,7 @@ export class MachineNetwork extends DestroyableObject {
   static getAllBlockNetworks(block: Block): MachineNetwork[] {
     const type = getBlockNetworkConnectionType(block);
     if (!type) return [];
-    return this.getAll(block, type);
+    return this.getAllWith(block, type);
   }
 
   static getOrEstablish(
@@ -494,7 +492,7 @@ export class MachineNetwork extends DestroyableObject {
     location: DimensionLocation,
     type: NetworkConnectionType,
   ): void {
-    for (const network of MachineNetwork.getAll(location, type)) {
+    for (const network of MachineNetwork.getAllWith(location, type)) {
       network.destroy();
     }
   }

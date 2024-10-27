@@ -30,6 +30,7 @@ import {
   NetworkLinkDestroyRequest,
 } from "@/public_api/src/network_links/ipc_events";
 import { getNetworkLinkNode } from "./network_links/network_link_component";
+import { networkEstablishHandler, networkGetWithHandler } from "./network_ipc";
 
 interface SetItemInMachineSlotPayload {
   loc: SerializableDimensionLocation;
@@ -119,6 +120,16 @@ registerScriptEventListener<SetItemInMachineSlotPayload>(
       payload.item,
     );
   },
+);
+
+registerScriptEventHandler(
+  "fluffyalien_energisticscore:ipc.networkEstablish",
+  networkEstablishHandler,
+);
+
+registerScriptEventHandler(
+  "fluffyalien_energisticscore:ipc.networkGetWith",
+  networkGetWithHandler,
 );
 
 registerScriptEventHandler<string, RegisteredMachine | null>(

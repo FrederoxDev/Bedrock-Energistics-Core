@@ -1,5 +1,5 @@
 import { BlockCustomComponent } from "@minecraft/server";
-import { getBlockIoCategories } from "../io";
+import { getBlockIoCategories } from "@/public_api/src";
 import { MachineNetwork } from "../network";
 import {
   deserializeDimensionLocation,

@@ -9,6 +9,7 @@ import {
   MachineItemStack,
   RegisteredMachine,
   StorageTypeDefinition,
+  getBlockIoCategories,
 } from "@/public_api/src";
 import { setMachineSlotItem } from "./data";
 import {
@@ -21,7 +22,6 @@ import {
   MangledRegisteredMachine,
   SerializableDimensionLocation,
 } from "@/public_api/src/internal";
-import { getBlockIoCategories } from "./io";
 import {
   NetworkLinkGetRequest,
   NetworkLinkGetResponse,
@@ -31,10 +31,13 @@ import {
 } from "@/public_api/src/network_links/ipc_events";
 import { getNetworkLinkNode } from "./network_links/network_link_component";
 import {
+  networkDestroyListener,
   networkEstablishHandler,
   networkGetAllWithHandler,
   networkGetOrEstablishHandler,
   networkGetWithHandler,
+  networkIsPartOfNetworkHandler,
+  networkQueueSendListener,
 } from "./network_ipc";
 
 interface SetItemInMachineSlotPayload {
@@ -127,6 +130,16 @@ registerScriptEventListener<SetItemInMachineSlotPayload>(
   },
 );
 
+registerScriptEventListener(
+  "fluffyalien_energisticscore:ipc.networkDestroy",
+  networkDestroyListener,
+);
+
+registerScriptEventListener(
+  "fluffyalien_energisticscore:ipc.networkQueueSend",
+  networkQueueSendListener,
+);
+
 registerScriptEventHandler(
   "fluffyalien_energisticscore:ipc.networkEstablish",
   networkEstablishHandler,
@@ -145,6 +158,11 @@ registerScriptEventHandler(
 registerScriptEventHandler(
   "fluffyalien_energisticscore:ipc.networkGetOrEstablish",
   networkGetOrEstablishHandler,
+);
+
+registerScriptEventHandler(
+  "fluffyalien_energisticscore:ipc.networkIsPartOfNetwork",
+  networkIsPartOfNetworkHandler,
 );
 
 registerScriptEventHandler<string, RegisteredMachine | null>(

@@ -78,6 +78,12 @@ export class MachineNetwork extends DestroyableObject {
     }, 2);
   }
 
+  /**
+   * Destroy this object.
+   * This will force a new network to be established if any of the machines inside it still exist.
+   * Use this function to force network updates.
+   * @see {@link MachineNetwork.updateAdjacent}, {@link MachineNetwork.updateWith}, {@link MachineNetwork.updateWithBlock}
+   */
   destroy(): void {
     super.destroy();
     system.clearRun(this.intervalId);
@@ -247,7 +253,7 @@ export class MachineNetwork extends DestroyableObject {
   }
 
   /**
-   * Tests if a block matching the arguments is inside of this network
+   * Tests if a machine matching the arguments is inside of this network.
    * @throws if this object is not valid
    */
   isPartOfNetwork(

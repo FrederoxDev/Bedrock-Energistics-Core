@@ -1,10 +1,13 @@
 import { Block, BlockPermutation, DimensionLocation } from "@minecraft/server";
-import { invokeScriptEvent } from "mcbe-addon-ipc";
+import { dispatchScriptEvent, invokeScriptEvent } from "mcbe-addon-ipc";
 import { getInitNamespace } from "./init.js";
 import {
   MangledNetworkEstablishPayload,
   MangledNetworkGetAllWithPayload,
   MangledNetworkGetWithPayload,
+  MangledNetworkInstanceMethodPayload,
+  MangledNetworkIsPartOfNetworkPayload,
+  MangledNetworkQueueSendPayload,
 } from "./network_internal.js";
 import {
   DIRECTION_VECTORS,
@@ -48,11 +51,80 @@ export class MachineNetwork {
 
   /**
    * Destroy this object.
+   * This will force a new network to be established if any of the machines inside it still exist.
+   * Use this function to force network updates.
+   * @see {@link MachineNetwork.updateAdjacent}, {@link MachineNetwork.updateWith}, {@link MachineNetwork.updateWithBlock}
    * @beta
    */
   destroy(): void {
-    // TODO
-    throw new Error("unimplemented");
+    const payload: MangledNetworkInstanceMethodPayload = {
+      a: this.id,
+    };
+
+    dispatchScriptEvent(
+      "fluffyalien_energisisticscore:ipc.networkDestroy",
+      payload,
+    );
+  }
+
+  /**
+   * Tests if a machine matching the arguments is inside of this network.
+   * @beta
+   */
+  isPartOfNetwork(
+    location: DimensionLocation,
+    type: NetworkConnectionType,
+  ): Promise<boolean> {
+    const payload: MangledNetworkIsPartOfNetworkPayload = {
+      a: this.id,
+      b: makeSerializableDimensionLocation(location),
+      c: type,
+    };
+
+    return invokeScriptEvent(
+      "fluffyalien_energisticscore:ipc.networkIsPartOfNetwork",
+      getInitNamespace(),
+      payload,
+    ) as Promise<boolean>;
+  }
+
+  /**
+   * Tests if a block is inside of this network.
+   * @beta
+   */
+  async isBlockPartOfNetwork(block: Block): Promise<boolean> {
+    const type = getBlockNetworkConnectionType(block);
+    if (!type) return false;
+    return this.isPartOfNetwork(block, type);
+  }
+
+  /**
+   * Queue sending a storage type over this machine network.
+   * @beta
+   * @remarks
+   * - Note: in most cases, prefer {@link generate} over this function.
+   * - Automatically sets the machine's reserve storage to the amount that was not received.
+   * @param blockLocation The location of the machine that is sending the storage type.
+   * @param type The storage type to send.
+   * @param amount The amount to send. Must be greater than zero.
+   * @see {@link generate}
+   */
+  queueSend(
+    blockLocation: DimensionLocation,
+    type: string,
+    amount: number,
+  ): void {
+    const payload: MangledNetworkQueueSendPayload = {
+      a: this.id,
+      b: makeSerializableDimensionLocation(blockLocation),
+      c: type,
+      d: amount,
+    };
+
+    dispatchScriptEvent(
+      "fluffyalien_energisisticscore:ipc.networkQueueSend",
+      payload,
+    );
   }
 
   /**

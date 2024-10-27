@@ -3,8 +3,32 @@ import {
   MangledNetworkEstablishPayload,
   MangledNetworkGetAllWithPayload,
   MangledNetworkGetWithPayload,
+  MangledNetworkInstanceMethodPayload,
+  MangledNetworkIsPartOfNetworkPayload,
+  MangledNetworkQueueSendPayload,
 } from "@/public_api/src/network_internal";
 import { MachineNetwork } from "./network";
+
+export function networkDestroyListener(
+  payload: MangledNetworkInstanceMethodPayload,
+): void {
+  const networkId = payload.a;
+  MachineNetwork.getFromId(networkId)?.destroy();
+}
+
+export function networkQueueSendListener(
+  payload: MangledNetworkQueueSendPayload,
+): void {
+  const networkId = payload.a;
+  const location = deserializeDimensionLocation(payload.b);
+  const type = payload.c;
+  const amount = payload.d;
+
+  const block = location.dimension.getBlock(location);
+  if (!block) return;
+
+  MachineNetwork.getFromId(networkId)?.queueSend(block, type, amount);
+}
 
 export function networkEstablishHandler(
   payload: MangledNetworkEstablishPayload,
@@ -51,5 +75,18 @@ export function networkGetOrEstablishHandler(
       MachineNetwork.getWithBlock(category, block) ??
       MachineNetwork.establish(category, block)
     )?.id ?? null
+  );
+}
+
+export function networkIsPartOfNetworkHandler(
+  payload: MangledNetworkIsPartOfNetworkPayload,
+): boolean {
+  const networkId = payload.a;
+  const location = deserializeDimensionLocation(payload.b);
+  const type = payload.c;
+
+  return (
+    MachineNetwork.getFromId(networkId)?.isPartOfNetwork(location, type) ??
+    false
   );
 }

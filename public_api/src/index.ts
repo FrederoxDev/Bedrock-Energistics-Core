@@ -38,6 +38,7 @@ export { init, InitOptions } from "./init.js";
 export * from "./registry_types.js";
 export * from "./network_links/network_link_node.js";
 export * from "./network.js";
+export * from "./io.js";
 
 const UPDATE_UI_HANDLER_SUFFIX = "__h0";
 const RECIEVE_HANDLER_SUFFIX = "__h1";

@@ -1,6 +1,6 @@
 import { BlockCustomComponent, world } from "@minecraft/server";
 import { MachineNetwork } from "./network";
-import { getBlockIoCategories } from "./io";
+import { getBlockIoCategories } from "@/public_api/src";
 
 export const conduitComponent: BlockCustomComponent = {
   onPlace(e) {

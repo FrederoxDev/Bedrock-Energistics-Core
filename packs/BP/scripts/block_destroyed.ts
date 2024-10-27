@@ -13,17 +13,17 @@ import {
 } from "@minecraft/server";
 import { removeBlockFromScoreboards } from "./data";
 import { InternalRegisteredMachine, machineRegistry } from "./registry";
-import {
-  getBlockNetworkConnectionType,
-  MachineNetwork,
-  NetworkConnectionType,
-} from "./network";
+import { MachineNetwork } from "./network";
 import { logWarn } from "./utils/log";
 import { getDirectionVector, reverseDirection } from "./utils/direction";
 import { Vector3Utils } from "@minecraft/math";
 import { dropItemsStoredInMachine } from "./machine";
 import { InternalNetworkLinkNode } from "./network_links/network_link_internal";
 import { NETWORK_LINK_ENTITY_ID } from "@/public_api/src/network_links/ipc_events";
+import {
+  getBlockNetworkConnectionType,
+  NetworkConnectionType,
+} from "@/public_api/src";
 
 world.afterEvents.blockExplode.subscribe((e) => {
   const connectionType = getBlockNetworkConnectionType(

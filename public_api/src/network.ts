@@ -8,9 +8,9 @@ import {
 import { makeSerializableDimensionLocation } from "./internal.js";
 
 export enum NetworkConnectionType {
-  Conduit,
-  Machine,
-  NetworkLink,
+  Conduit = "Conduit",
+  Machine = "Machine",
+  NetworkLink = "NetworkLink",
 }
 
 export function getBlockNetworkConnectionType(

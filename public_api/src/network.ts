@@ -1,4 +1,4 @@
-import { Block, BlockPermutation, DimensionLocation } from "@minecraft/server";
+import { Block, DimensionLocation } from "@minecraft/server";
 import { dispatchScriptEvent, invokeScriptEvent } from "mcbe-addon-ipc";
 import { getInitNamespace } from "./init.js";
 import {
@@ -14,24 +14,11 @@ import {
   makeSerializableDimensionLocation,
 } from "./internal.js";
 import { Vector3Utils } from "@minecraft/math";
-
-export enum NetworkConnectionType {
-  Conduit = "Conduit",
-  Machine = "Machine",
-  NetworkLink = "NetworkLink",
-}
-
-export function getBlockNetworkConnectionType(
-  block: Block | BlockPermutation,
-): NetworkConnectionType | null {
-  if (block.hasTag("fluffyalien_energisticscore:conduit"))
-    return NetworkConnectionType.Conduit;
-  if (block.hasTag("fluffyalien_energisticscore:machine"))
-    return NetworkConnectionType.Machine;
-  if (block.hasTag("fluffyalien_energisticscore:network_link"))
-    return NetworkConnectionType.NetworkLink;
-  return null;
-}
+import {
+  getBlockNetworkConnectionType,
+  NetworkConnectionType,
+} from "./network_utils.js";
+import { getBlockIoCategories } from "./io.js";
 
 /**
  * A network of machines with a certain I/O category.
@@ -254,6 +241,7 @@ export class MachineNetwork {
 
   /**
    * Update all {@link MachineNetwork}s adjacent to a location.
+   * @param categories Only update networks of these I/O categories. If this is `undefined` then all adjacent networks will be updated.
    * @beta
    */
   static async updateAdjacent(
@@ -283,6 +271,21 @@ export class MachineNetwork {
         network.destroy();
       }
     }
+  }
+
+  /**
+   * Update all {@link MachineNetwork}s that can connect to a machine.
+   * @remarks
+   * "Connectable" means that the network is adjacent to the machine and shares an I/O category.
+   * @beta
+   */
+  static async updateConnectable(block: Block): Promise<void> {
+    const ioCategories = getBlockIoCategories(block);
+
+    return MachineNetwork.updateAdjacent(
+      block,
+      ioCategories === "any" ? undefined : ioCategories,
+    );
   }
 
   /**

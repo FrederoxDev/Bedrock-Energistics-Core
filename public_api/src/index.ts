@@ -33,12 +33,14 @@ import {
   streamScriptEvent,
 } from "mcbe-addon-ipc";
 import { ensureInitialized, getInitNamespace } from "./init.js";
+import { MachineNetwork } from "./network.js";
 
 export { init, InitOptions } from "./init.js";
 export * from "./registry_types.js";
 export * from "./network_links/network_link_node.js";
 export * from "./network.js";
 export * from "./io.js";
+export * from "./network_utils.js";
 
 const UPDATE_UI_HANDLER_SUFFIX = "__h0";
 const RECIEVE_HANDLER_SUFFIX = "__h1";
@@ -263,43 +265,6 @@ export function registerStorageType(definition: StorageTypeDefinition): void {
 }
 
 /**
- * Updates the networks that a machine belongs to, if it has any.
- * @beta
- */
-export function updateMachineNetworks(blockLocation: DimensionLocation): void {
-  dispatchScriptEvent(
-    "fluffyalien_energisticscore:ipc.updateMachineNetworks",
-    makeSerializableDimensionLocation(blockLocation),
-  );
-}
-
-/**
- * Updates the networks adjacent to a machine that the machine can connect to.
- * @beta
- */
-export function updateMachineConnectableNetworks(
-  blockLocation: DimensionLocation,
-): void {
-  dispatchScriptEvent(
-    "fluffyalien_energisticscore:ipc.updateMachineConnectableNetworks",
-    makeSerializableDimensionLocation(blockLocation),
-  );
-}
-
-/**
- * Updates the networks adjacent to a block.
- * @beta
- */
-export function updateMachineAdjacentNetworks(
-  blockLocation: DimensionLocation,
-): void {
-  dispatchScriptEvent(
-    "fluffyalien_energisticscore:ipc.updateMachineAdjacentNetworks",
-    makeSerializableDimensionLocation(blockLocation),
-  );
-}
-
-/**
  * Gets the storage of a specific type in a machine.
  * @beta
  * @param loc The location of the machine.
@@ -421,58 +386,6 @@ export function setMachineSlotItem(
 }
 
 /**
- * Queue sending a storage type over a machine network.
- * @beta
- * @remarks
- * Note: in most cases, prefer {@link generate} over this function.
- * Automatically sets the machine's reserve storage to the amount that was not received.
- * @param blockLocation The location of the machine that is sending the storage type.
- * @param type The storage type to send.
- * @param amount The amount to send.
- * @throws if `amount` is <= 0.
- * @see {@link generate}
- */
-export function queueSend(
-  blockLocation: DimensionLocation,
-  type: string,
-  amount: number,
-): void {
-  dispatchScriptEvent("fluffyalien_energisticscore:ipc.queueSend", {
-    loc: makeSerializableDimensionLocation(blockLocation),
-    type,
-    amount,
-  });
-}
-
-/**
- * Sends a storage type over a machine network. Includes reserve storage as well.
- * @beta
- * @remarks
- * This function should be called every block tick for generators even if the generation is `0` because it sends reserve storage.
- * Automatically sets the machine's reserve storage to the amount that was not received.
- * This function is a wrapper around {@link queueSend}.
- * Unlike `queueSend`, this function does not throw if `amount` <= 0.
- * @param blockLocation The location of the machine that is generating.
- * @param type The storage type to generate.
- * @param amount The amount to generate.
- * @see {@link queueSend}
- */
-export function generate(
-  blockLocation: DimensionLocation,
-  type: string,
-  amount: number,
-): void {
-  const stored = getMachineStorage(blockLocation, type);
-
-  const sendAmount = stored + amount;
-  if (sendAmount <= 0) {
-    return;
-  }
-
-  queueSend(blockLocation, type, sendAmount);
-}
-
-/**
  * Gets a registered machine.
  * @beta
  * @param id The ID of the machine.
@@ -499,11 +412,11 @@ export async function getRegisteredMachine(
  * @remarks
  * This is automatically done by Bedrock Energistics Core when a machine is destroyed by a player.
  * If you destroy a machine from script, call this function before the block is removed.
- * @param blockLocation The location of the machine.
+ * @param block The machine block.
  */
-export function removeMachine(blockLocation: DimensionLocation): void {
-  updateMachineNetworks(blockLocation);
+export async function removeMachine(block: Block): Promise<void> {
+  await MachineNetwork.updateWithBlock(block);
   system.run(() => {
-    removeBlockFromScoreboards(blockLocation);
+    removeBlockFromScoreboards(block);
   });
 }

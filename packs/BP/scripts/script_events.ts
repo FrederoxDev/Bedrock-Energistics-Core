@@ -2,7 +2,6 @@ import {
   machineRegistry,
   registerMachineScriptEventListener,
   registerStorageTypeScriptEventListener,
-  storageTypeRegistry,
 } from "./registry";
 import { MachineNetwork } from "./network";
 import {
@@ -31,6 +30,7 @@ import {
 } from "@/public_api/src/network_links/ipc_events";
 import { getNetworkLinkNode } from "./network_links/network_link_component";
 import {
+  generateListener,
   networkDestroyListener,
   networkEstablishHandler,
   networkGetAllWithHandler,
@@ -44,12 +44,6 @@ interface SetItemInMachineSlotPayload {
   loc: SerializableDimensionLocation;
   slot: number;
   item?: MachineItemStack;
-}
-
-interface QueueSendPayload {
-  loc: SerializableDimensionLocation;
-  type: string;
-  amount: number;
 }
 
 registerScriptEventListener<MangledRegisteredMachine>(
@@ -68,17 +62,6 @@ registerScriptEventListener<StorageTypeDefinition>(
 );
 
 registerScriptEventListener<SerializableDimensionLocation>(
-  "fluffyalien_energisticscore:ipc.updateMachineNetworks",
-  (payload) => {
-    const loc = deserializeDimensionLocation(payload);
-    const block = loc.dimension.getBlock(loc);
-    if (!block) return;
-
-    MachineNetwork.updateWithBlock(block);
-  },
-);
-
-registerScriptEventListener<SerializableDimensionLocation>(
   "fluffyalien_energisticscore:ipc.updateMachineConnectableNetworks",
   (payload) => {
     const loc = deserializeDimensionLocation(payload);
@@ -90,31 +73,6 @@ registerScriptEventListener<SerializableDimensionLocation>(
     MachineNetwork.updateAdjacent(
       block,
       ioCategories === "any" ? undefined : ioCategories,
-    );
-  },
-);
-
-registerScriptEventListener<SerializableDimensionLocation>(
-  "fluffyalien_energisticscore:ipc.updateMachineAdjacentNetworks",
-  (payload) => {
-    const loc = deserializeDimensionLocation(payload);
-    MachineNetwork.updateAdjacent(loc);
-  },
-);
-
-registerScriptEventListener<QueueSendPayload>(
-  "fluffyalien_energisticscore:ipc.queueSend",
-  (payload) => {
-    const loc = deserializeDimensionLocation(payload.loc);
-    const block = loc.dimension.getBlock(loc);
-    if (!block) return;
-
-    const storageType = storageTypeRegistry[payload.type];
-
-    MachineNetwork.getOrEstablish(storageType.category, block)?.queueSend(
-      block,
-      payload.type,
-      payload.amount,
     );
   },
 );
@@ -138,6 +96,11 @@ registerScriptEventListener(
 registerScriptEventListener(
   "fluffyalien_energisticscore:ipc.networkQueueSend",
   networkQueueSendListener,
+);
+
+registerScriptEventListener(
+  "fluffyalien_energisticscore:ipc.generate",
+  generateListener,
 );
 
 registerScriptEventHandler(

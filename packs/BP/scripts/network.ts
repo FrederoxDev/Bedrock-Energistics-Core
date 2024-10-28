@@ -474,6 +474,7 @@ export class MachineNetwork extends DestroyableObject {
 
   /**
    * Update all {@link MachineNetwork}s adjacent to a location.
+   * @param categories Only update networks of these I/O categories. If this is `undefined` then all adjacent networks will be updated.
    */
   static updateAdjacent(
     location: DimensionLocation,

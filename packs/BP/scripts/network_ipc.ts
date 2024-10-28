@@ -1,5 +1,6 @@
 import { deserializeDimensionLocation } from "@/public_api/src/internal";
 import {
+  MangledGeneratePayload,
   MangledNetworkEstablishPayload,
   MangledNetworkGetAllWithPayload,
   MangledNetworkGetWithPayload,
@@ -8,6 +9,8 @@ import {
   MangledNetworkQueueSendPayload,
 } from "@/public_api/src/network_internal";
 import { MachineNetwork } from "./network";
+import { storageTypeRegistry } from "./registry";
+import { getMachineStorage } from "./data";
 
 export function networkDestroyListener(
   payload: MangledNetworkInstanceMethodPayload,
@@ -88,5 +91,25 @@ export function networkIsPartOfNetworkHandler(
   return (
     MachineNetwork.getFromId(networkId)?.isPartOfNetwork(location, type) ??
     false
+  );
+}
+
+export function generateListener(payload: MangledGeneratePayload): void {
+  const location = deserializeDimensionLocation(payload.a);
+  const type = payload.b;
+  const amount = payload.c;
+
+  const block = location.dimension.getBlock(location);
+  if (!block) return;
+
+  const fullAmount = amount + getMachineStorage(location, type);
+  if (!fullAmount) return;
+
+  const storageType = storageTypeRegistry[type];
+
+  MachineNetwork.getOrEstablish(storageType.category, block)?.queueSend(
+    block,
+    type,
+    fullAmount,
   );
 }

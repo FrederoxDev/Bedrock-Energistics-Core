@@ -3,10 +3,10 @@ import { getBlockIoCategories } from "@/public_api/src";
 import { MachineNetwork } from "../network";
 import {
   deserializeDimensionLocation,
-  makeError,
   SerializableDimensionLocation,
-} from "@/public_api/src/internal";
+} from "@/public_api/src/serialize_utils";
 import { InternalNetworkLinkNode } from "./network_link_internal";
+import { raise } from "../utils/log";
 
 export const networkLinkComponent: BlockCustomComponent = {
   onPlace(ev) {
@@ -36,6 +36,6 @@ export function getNetworkLinkNode(
 ): InternalNetworkLinkNode {
   const location = deserializeDimensionLocation(self);
   const block = location.dimension.getBlock(location);
-  if (!block) makeError(`_getNetwork failed to get block`);
+  if (!block) raise(`_getNetwork failed to get block`);
   return InternalNetworkLinkNode.fromBlock(block);
 }

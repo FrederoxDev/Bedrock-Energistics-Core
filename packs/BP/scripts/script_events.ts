@@ -18,9 +18,8 @@ import {
 } from "mcbe-addon-ipc";
 import {
   deserializeDimensionLocation,
-  MangledRegisteredMachine,
   SerializableDimensionLocation,
-} from "@/public_api/src/internal";
+} from "@/public_api/src/serialize_utils";
 import {
   NetworkLinkGetRequest,
   NetworkLinkGetResponse,
@@ -39,6 +38,7 @@ import {
   networkIsPartOfNetworkHandler,
   networkQueueSendListener,
 } from "./network_ipc";
+import { MangledRegisteredMachine } from "@/public_api/src/internal";
 
 interface SetItemInMachineSlotPayload {
   loc: SerializableDimensionLocation;

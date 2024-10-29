@@ -1,4 +1,3 @@
-import { makeError } from "@/public_api/src/internal";
 import {
   NETWORK_LINK_BLOCK_TAG,
   NETWORK_LINK_ENTITY_ID,
@@ -6,6 +5,7 @@ import {
 } from "@/public_api/src/network_links/ipc_events";
 import { Vector3Utils } from "@minecraft/math";
 import { Block, Dimension, Entity, Vector3 } from "@minecraft/server";
+import { raise } from "../utils/log";
 
 /**
  * Internal version of the `NetworkLinkNode` class
@@ -34,7 +34,7 @@ export class InternalNetworkLinkNode {
     // Only verify the block tag when creating an entity, this is easier for after events when the network link block
     // is destroyed, but we still need to get it to cleanup.
     if (!dataStorageEntity && !block.hasTag(NETWORK_LINK_BLOCK_TAG))
-      makeError(
+      raise(
         `NetworkLinks::getNetworkLink expected block of id: '${block.typeId}' to have the '${NETWORK_LINK_BLOCK_TAG}' tag before creating a network link storage entity at this location`,
       );
 
@@ -119,7 +119,6 @@ export class InternalNetworkLinkNode {
   }
 
   private ensureValid(): void {
-    if (!this.entity.isValid())
-      makeError(`NetworkLinkNode instance is not valid.`);
+    if (!this.entity.isValid()) raise(`NetworkLinkNode instance is not valid.`);
   }
 }

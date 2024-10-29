@@ -1,4 +1,7 @@
 {
+  "//": [
+    "NOTE: remember to update the VERSION constant in the api as well"
+  ],
   "name": "bedrock-energistics-core-api",
   "description": "Bedrock Energistics Core public API",
   "version": "0.3.0",

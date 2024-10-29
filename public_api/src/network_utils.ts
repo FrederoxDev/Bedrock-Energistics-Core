@@ -1,7 +1,7 @@
 import { Block, BlockPermutation, DimensionLocation } from "@minecraft/server";
 import { MangledGeneratePayload } from "./network_internal.js";
-import { makeSerializableDimensionLocation } from "./internal.js";
 import { dispatchScriptEvent } from "mcbe-addon-ipc";
+import { makeSerializableDimensionLocation } from "./serialize_utils.js";
 
 export enum NetworkConnectionType {
   Conduit = "Conduit",

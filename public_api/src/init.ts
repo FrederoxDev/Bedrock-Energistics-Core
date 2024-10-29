@@ -1,4 +1,4 @@
-import { makeError, makeErrorString } from "./internal.js";
+import { raise } from "./log.js";
 
 /**
  * Initialization options. Used as an argument for {@link init}.
@@ -16,18 +16,24 @@ let initOptions: InitOptions | undefined;
  */
 export function init(options: InitOptions): void {
   if (initOptions) {
-    throw new Error(makeErrorString("'init' has already been called"));
+    raise("'init' has already been called");
   }
 
   initOptions = options;
 }
 
+/**
+ * @internal
+ */
 export function ensureInitialized(): void | never {
   if (!initOptions) {
-    makeError(`Library not initialized: Ensure you call the 'init' function`);
+    raise(`Library not initialized: Ensure you call the 'init' function`);
   }
 }
 
+/**
+ * @internal
+ */
 export function getInitNamespace(): string {
   ensureInitialized();
   return initOptions!.namespace;

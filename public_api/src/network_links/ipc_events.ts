@@ -5,7 +5,7 @@
 /////////////////////////////////////////////////
 
 import { Vector3 } from "@minecraft/server";
-import { SerializableDimensionLocation } from "../internal.js";
+import { SerializableDimensionLocation } from "../serialize_utils.js";
 
 export const NETWORK_LINK_BLOCK_TAG =
   "fluffyalien_energisticscore:network_link";

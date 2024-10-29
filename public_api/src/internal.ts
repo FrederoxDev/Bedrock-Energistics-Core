@@ -1,9 +1,4 @@
-import {
-  DimensionLocation,
-  ScoreboardObjective,
-  Vector3,
-  world,
-} from "@minecraft/server";
+import { Vector3 } from "@minecraft/server";
 import { UiElement } from "./registry_types.js";
 import {
   VECTOR3_EAST,
@@ -11,8 +6,7 @@ import {
   VECTOR3_UP,
   VECTOR3_DOWN,
 } from "@minecraft/math";
-
-const VERSION = "0.2.0";
+import { SerializableDimensionLocation } from "./serialize_utils.js";
 
 export const DIRECTION_VECTORS: Vector3[] = [
   { x: 0, y: 0, z: -1 },
@@ -22,13 +16,6 @@ export const DIRECTION_VECTORS: Vector3[] = [
   VECTOR3_UP,
   VECTOR3_DOWN,
 ];
-
-export interface SerializableDimensionLocation extends Vector3 {
-  /**
-   * dimension id
-   */
-  d: string;
-}
 
 export interface MangledRegisteredMachine {
   /**
@@ -97,91 +84,4 @@ export interface MangledOnButtonPressedPayload {
    * elementId
    */
   d: string;
-}
-
-export function makeSerializableDimensionLocation(
-  loc: DimensionLocation,
-): SerializableDimensionLocation {
-  return {
-    d: loc.dimension.id,
-    x: loc.x,
-    y: loc.y,
-    z: loc.z,
-  };
-}
-
-export function deserializeDimensionLocation(
-  loc: SerializableDimensionLocation,
-): DimensionLocation {
-  return {
-    dimension: world.getDimension(loc.d),
-    x: loc.x,
-    y: loc.y,
-    z: loc.z,
-  };
-}
-
-export function getBlockUniqueId(loc: DimensionLocation): string {
-  return (
-    loc.dimension.id +
-    Math.floor(loc.x).toString() +
-    Math.floor(loc.y).toString() +
-    Math.floor(loc.z).toString()
-  );
-}
-
-export function getStorageScoreboardObjective(
-  type: string,
-): ScoreboardObjective | undefined {
-  const id = `fluffyalien_energisticscore:storage${type}`;
-  return world.scoreboard.getObjective(id);
-}
-
-export function getItemTypeScoreboardObjective(
-  slot: number,
-): ScoreboardObjective {
-  const id = `fluffyalien_energisticscore:itemtype${slot.toString()}`;
-  return world.scoreboard.getObjective(id) ?? world.scoreboard.addObjective(id);
-}
-
-export function getItemCountScoreboardObjective(
-  slot: number,
-): ScoreboardObjective {
-  const id = `fluffyalien_energisticscore:itemcount${slot.toString()}`;
-  return world.scoreboard.getObjective(id) ?? world.scoreboard.addObjective(id);
-}
-
-export function getScore(
-  objective: ScoreboardObjective,
-  participant: string,
-): number | undefined {
-  if (!objective.hasParticipant(participant)) {
-    return;
-  }
-
-  return objective.getScore(participant);
-}
-
-export function removeBlockFromScoreboards(loc: DimensionLocation): void {
-  const participantId = getBlockUniqueId(loc);
-
-  for (const objective of world.scoreboard.getObjectives()) {
-    objective.removeParticipant(participantId);
-  }
-}
-
-function makeLogString(logLevel: string, message: string): string {
-  return `[Bedrock Energistics Core API v${VERSION}] ${logLevel} ${message}`;
-}
-
-export function makeErrorString(message: string): string {
-  return makeLogString("ERROR", message);
-}
-
-export function logInfo(message: string): void {
-  console.info(makeLogString("INFO", message));
-}
-
-export function makeError(message: string): never {
-  throw new Error(makeErrorString(message));
 }

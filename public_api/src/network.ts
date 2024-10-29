@@ -9,16 +9,14 @@ import {
   MangledNetworkIsPartOfNetworkPayload,
   MangledNetworkQueueSendPayload,
 } from "./network_internal.js";
-import {
-  DIRECTION_VECTORS,
-  makeSerializableDimensionLocation,
-} from "./internal.js";
+import { DIRECTION_VECTORS } from "./internal.js";
 import { Vector3Utils } from "@minecraft/math";
 import {
   getBlockNetworkConnectionType,
   NetworkConnectionType,
 } from "./network_utils.js";
 import { getBlockIoCategories } from "./io.js";
+import { makeSerializableDimensionLocation } from "./serialize_utils.js";
 
 /**
  * A network of machines with a certain I/O category.

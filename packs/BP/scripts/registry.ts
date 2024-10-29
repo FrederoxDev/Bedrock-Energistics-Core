@@ -7,11 +7,11 @@ import {
 } from "@/public_api/src";
 import { dispatchScriptEvent, invokeScriptEvent } from "mcbe-addon-ipc";
 import {
-  makeSerializableDimensionLocation,
   MangledOnButtonPressedPayload,
   MangledRecieveHandlerPayload,
   MangledRegisteredMachine,
 } from "@/public_api/src/internal";
+import { makeSerializableDimensionLocation } from "@/public_api/src/serialize_utils";
 
 export * from "@/public_api/src/registry_types";
 

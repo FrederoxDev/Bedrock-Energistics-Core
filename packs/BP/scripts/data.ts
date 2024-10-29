@@ -12,7 +12,7 @@ import {
   getItemTypeScoreboardObjective,
   getItemCountScoreboardObjective,
   removeBlockFromScoreboards,
-} from "@/public_api/src/internal";
+} from "@/public_api/src/machine_data_internal";
 
 export {
   getBlockUniqueId,

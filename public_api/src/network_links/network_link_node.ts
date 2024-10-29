@@ -1,5 +1,4 @@
 import { Block, Dimension, Entity, Vector3 } from "@minecraft/server";
-import { makeError, makeSerializableDimensionLocation } from "../internal.js";
 import { invokeScriptEvent } from "mcbe-addon-ipc";
 import {
   NETWORK_LINK_BLOCK_TAG,
@@ -10,6 +9,8 @@ import {
   NetworkLinkGetResponse,
 } from "./ipc_events.js";
 import { getInitNamespace } from "../init.js";
+import { makeSerializableDimensionLocation } from "../serialize_utils.js";
+import { raise } from "../log.js";
 
 /**
  * A NetworkLinkNode represents a single node in the machine network
@@ -127,7 +128,7 @@ export class NetworkLinkNode {
     // Only verify the block tag when creating an entity, this is easier for after events when the network link block
     // is destroyed, but we still need to get it to cleanup.
     if (!dataStorageEntity && !block.hasTag(NETWORK_LINK_BLOCK_TAG))
-      makeError(
+      raise(
         `NetworkLinkNode.get expected block of id: '${block.typeId}' to have the '${NETWORK_LINK_BLOCK_TAG}' tag before creating a network link storage entity at this location`,
       );
 

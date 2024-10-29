@@ -1,4 +1,4 @@
-import { deserializeDimensionLocation } from "@/public_api/src/internal";
+import { deserializeDimensionLocation } from "@/public_api/src/serialize_utils";
 import {
   MangledGeneratePayload,
   MangledNetworkEstablishPayload,

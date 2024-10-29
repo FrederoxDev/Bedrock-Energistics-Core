@@ -1,6 +1,9 @@
-import { SerializableDimensionLocation } from "./internal.js";
 import { NetworkConnectionType } from "./network_utils.js";
+import { SerializableDimensionLocation } from "./serialize_utils.js";
 
+/**
+ * @internal
+ */
 export interface MangledNetworkInstanceMethodPayload {
   /**
    * networkId
@@ -8,6 +11,9 @@ export interface MangledNetworkInstanceMethodPayload {
   a: number;
 }
 
+/**
+ * @internal
+ */
 export interface MangledNetworkQueueSendPayload
   extends MangledNetworkInstanceMethodPayload {
   /**
@@ -24,6 +30,9 @@ export interface MangledNetworkQueueSendPayload
   d: number;
 }
 
+/**
+ * @internal
+ */
 export interface MangledNetworkEstablishPayload {
   /**
    * category
@@ -35,6 +44,9 @@ export interface MangledNetworkEstablishPayload {
   b: SerializableDimensionLocation;
 }
 
+/**
+ * @internal
+ */
 export interface MangledNetworkGetWithPayload {
   /**
    * category
@@ -50,6 +62,9 @@ export interface MangledNetworkGetWithPayload {
   c: NetworkConnectionType;
 }
 
+/**
+ * @internal
+ */
 export interface MangledNetworkGetAllWithPayload {
   /**
    * location
@@ -61,6 +76,9 @@ export interface MangledNetworkGetAllWithPayload {
   b: NetworkConnectionType;
 }
 
+/**
+ * @internal
+ */
 export interface MangledNetworkIsPartOfNetworkPayload
   extends MangledNetworkInstanceMethodPayload {
   /**
@@ -73,6 +91,9 @@ export interface MangledNetworkIsPartOfNetworkPayload
   c: NetworkConnectionType;
 }
 
+/**
+ * @internal
+ */
 export interface MangledGeneratePayload {
   /**
    * location

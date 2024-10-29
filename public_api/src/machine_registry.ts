@@ -15,7 +15,7 @@ import {
   MangledOnButtonPressedPayload,
   MangledRecieveHandlerPayload,
   MangledRegisteredMachine,
-} from "./internal.js";
+} from "./machine_registry_internal.js";
 import { system } from "@minecraft/server";
 import {
   deserializeDimensionLocation,

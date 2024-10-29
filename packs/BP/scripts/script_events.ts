@@ -38,7 +38,7 @@ import {
   networkIsPartOfNetworkHandler,
   networkQueueSendListener,
 } from "./network_ipc";
-import { MangledRegisteredMachine } from "@/public_api/src/internal";
+import { MangledRegisteredMachine } from "@/public_api/src/machine_registry_internal";
 
 interface SetItemInMachineSlotPayload {
   loc: SerializableDimensionLocation;

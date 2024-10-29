@@ -10,7 +10,7 @@ import {
   MangledOnButtonPressedPayload,
   MangledRecieveHandlerPayload,
   MangledRegisteredMachine,
-} from "@/public_api/src/internal";
+} from "@/public_api/src/machine_registry_internal";
 import { makeSerializableDimensionLocation } from "@/public_api/src/serialize_utils";
 
 export * from "@/public_api/src/registry_types";

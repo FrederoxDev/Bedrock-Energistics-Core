@@ -6,7 +6,7 @@ import {
 } from "@minecraft/math";
 import { Block, Direction, Vector3 } from "@minecraft/server";
 
-export { DIRECTION_VECTORS } from "@/public_api/src/internal";
+export { DIRECTION_VECTORS } from "@/public_api/src/misc_internal";
 
 export const STR_CARDINAL_DIRECTIONS = [
   "north",

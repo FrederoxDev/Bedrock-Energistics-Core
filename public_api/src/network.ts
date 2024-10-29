@@ -9,7 +9,7 @@ import {
   MangledNetworkIsPartOfNetworkPayload,
   MangledNetworkQueueSendPayload,
 } from "./network_internal.js";
-import { DIRECTION_VECTORS } from "./internal.js";
+import { DIRECTION_VECTORS } from "./misc_internal.js";
 import { Vector3Utils } from "@minecraft/math";
 import {
   getBlockNetworkConnectionType,

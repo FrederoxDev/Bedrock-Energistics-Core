@@ -151,7 +151,7 @@ export class RegisteredMachine {
     /**
      * @internal
      */
-    protected readonly internal: MangledRegisteredMachine,
+    readonly internal: MangledRegisteredMachine,
   ) {}
 
   /**
@@ -195,19 +195,25 @@ export class RegisteredMachine {
 
   /**
    * Gets a registered machine.
+   * @privateRemarks
+   * This is a public API method.
+   * DO NOT USE IN THE ADD-ON!
+   * Use `getInternal` instead.
    * @beta
    * @param id The ID of the machine.
    * @returns The {@link RegisteredMachine} with the specified `id` or `null` if it doesn't exist.
    * @throws if Bedrock Energistics Core takes too long to respond.
    */
-  static async get(id: string): Promise<RegisteredMachine | null> {
+  static async get(id: string): Promise<RegisteredMachine | undefined> {
     ensureInitialized();
 
     const mangled = (await invokeScriptEvent(
       "fluffyalien_energisticscore:ipc.getRegisteredMachine",
       getInitNamespace(),
       id,
-    )) as MangledRegisteredMachine;
+    )) as MangledRegisteredMachine | null;
+
+    if (!mangled) return;
 
     return new RegisteredMachine(mangled);
   }

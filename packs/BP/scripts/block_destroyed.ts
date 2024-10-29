@@ -12,7 +12,6 @@ import {
   world,
 } from "@minecraft/server";
 import { removeBlockFromScoreboards } from "./data";
-import { InternalRegisteredMachine, machineRegistry } from "./registry";
 import { MachineNetwork } from "./network";
 import { logWarn } from "./utils/log";
 import { getDirectionVector, reverseDirection } from "./utils/direction";
@@ -24,6 +23,7 @@ import {
   getBlockNetworkConnectionType,
   NetworkConnectionType,
 } from "@/public_api/src";
+import { InternalRegisteredMachine } from "./machine_registry";
 
 world.afterEvents.blockExplode.subscribe((e) => {
   const connectionType = getBlockNetworkConnectionType(
@@ -156,9 +156,7 @@ world.afterEvents.pistonActivate.subscribe((e) => {
         continue;
       }
 
-      const definition = machineRegistry[block.typeId] as
-        | InternalRegisteredMachine
-        | undefined;
+      const definition = InternalRegisteredMachine.getInternal(block.typeId);
       if (!definition) {
         logWarn(
           `can't process pistonActivate event for block '${block.typeId}': this block uses the 'fluffyalien_energisticscore:machine' tag but it could not be found in the machine registry. skipping`,

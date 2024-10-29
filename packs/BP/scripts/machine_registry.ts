@@ -1,10 +1,6 @@
-import { Block, DimensionLocation, world } from "@minecraft/server";
-import { logInfo, makeErrorString } from "./utils/log";
-import {
-  RegisteredMachine,
-  StorageTypeDefinition,
-  UpdateUiHandlerResponse,
-} from "@/public_api/src";
+import { DimensionLocation } from "@minecraft/server";
+import { logInfo, makeErrorString, raise } from "./utils/log";
+import { RegisteredMachine, UpdateUiHandlerResponse } from "@/public_api/src";
 import { dispatchScriptEvent, invokeScriptEvent } from "mcbe-addon-ipc";
 import {
   MangledOnButtonPressedPayload,
@@ -13,11 +9,8 @@ import {
 } from "@/public_api/src/machine_registry_internal";
 import { makeSerializableDimensionLocation } from "@/public_api/src/serialize_utils";
 
-export * from "@/public_api/src/registry_types";
-
 export const machineRegistry: Record<string, InternalRegisteredMachine> = {};
 export const machineEntityToBlockIdMap: Record<string, string> = {};
-export const storageTypeRegistry: Record<string, StorageTypeDefinition> = {};
 
 export class InternalRegisteredMachine extends RegisteredMachine {
   get updateUiEvent(): string | undefined {
@@ -99,19 +92,35 @@ export class InternalRegisteredMachine extends RegisteredMachine {
 
     dispatchScriptEvent(this.onButtonPressedEvent, payload);
   }
+
+  /**
+   * @returns the `InternalRegisteredMachine` if it exists, otherwise `undefined`.
+   */
+  static getInternal(id: string): InternalRegisteredMachine | undefined {
+    return machineRegistry[id];
+  }
+
+  /**
+   *
+   * @param id
+   * @returns
+   */
+  static forceGetInternal(id: string): InternalRegisteredMachine {
+    const registered = InternalRegisteredMachine.getInternal(id);
+    if (!registered) {
+      raise(
+        `Expected '${id}' to be registered as a machine, but it could not be found in the machine registry.`,
+      );
+    }
+    return registered;
+  }
 }
 
-// register energy by default
-registerStorageTypeScriptEventListener({
-  id: "energy",
-  category: "energy",
-  color: "yellow",
-  name: "energy",
-});
+export function getMachineIdFromEntityId(entityId: string): string | undefined {
+  return machineEntityToBlockIdMap[entityId];
+}
 
-export function registerMachineScriptEventListener(
-  mData: MangledRegisteredMachine,
-): void {
+export function registerMachineListener(mData: MangledRegisteredMachine): void {
   const data = new InternalRegisteredMachine(mData);
 
   const entityExistingAttachment = machineEntityToBlockIdMap[data.entityId];
@@ -129,40 +138,4 @@ export function registerMachineScriptEventListener(
 
   machineRegistry[data.id] = data;
   machineEntityToBlockIdMap[data.entityId] = data.id;
-}
-
-export function registerStorageTypeScriptEventListener(
-  data: StorageTypeDefinition,
-): void {
-  if (data.id in storageTypeRegistry) {
-    logInfo(`overrode storage type '${data.id}'`);
-  }
-
-  storageTypeRegistry[data.id] = data;
-
-  const objectiveId = `fluffyalien_energisticscore:storage${data.id}`;
-
-  if (!world.scoreboard.getObjective(objectiveId)) {
-    world.scoreboard.addObjective(objectiveId);
-  }
-}
-
-/**
- *
- * @throws If its registered as a machine, but not found in the registry
- */
-export function getMachineRegistration(
-  block: Block,
-): InternalRegisteredMachine {
-  const registered = machineRegistry[block.typeId] as
-    | InternalRegisteredMachine
-    | undefined;
-
-  if (!registered) {
-    throw new Error(
-      `expected block '${block.typeId}' to be in the machine registry, but it was not found!`,
-    );
-  }
-
-  return registered;
 }

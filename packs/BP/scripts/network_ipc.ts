@@ -9,8 +9,8 @@ import {
   MangledNetworkQueueSendPayload,
 } from "@/public_api/src/network_internal";
 import { MachineNetwork } from "./network";
-import { storageTypeRegistry } from "./registry";
 import { getMachineStorage } from "./data";
+import { forceGetRegisteredStorageType } from "./storage_type_registry";
 
 export function networkDestroyListener(
   payload: MangledNetworkInstanceMethodPayload,
@@ -105,7 +105,7 @@ export function generateListener(payload: MangledGeneratePayload): void {
   const fullAmount = amount + getMachineStorage(location, type);
   if (!fullAmount) return;
 
-  const storageType = storageTypeRegistry[type];
+  const storageType = forceGetRegisteredStorageType(type);
 
   MachineNetwork.getOrEstablish(storageType.category, block)?.queueSend(
     block,

@@ -1,11 +1,11 @@
 import { DimensionLocation, ItemStack } from "@minecraft/server";
-import { UiItemSlotElement } from "./registry";
 import { machineChangedItemSlots } from "./ui";
 import {
   getMachineStorage,
   setMachineStorage,
   MachineItemStack,
   getMachineSlotItem,
+  UiItemSlotElement,
 } from "@/public_api/src";
 import {
   getBlockUniqueId,

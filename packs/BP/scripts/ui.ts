@@ -1,14 +1,10 @@
 import {
-  InternalRegisteredMachine,
-  machineEntityToBlockIdMap,
-  machineRegistry,
   StorageTypeColor,
-  storageTypeRegistry,
   UiButtonElementUpdateOptions,
   UiItemSlotElement,
   UiProgressIndicatorElementType,
   UiStorageBarElementUpdateOptions,
-} from "./registry";
+} from "@/public_api/src/registry_types";
 import {
   Container,
   DimensionLocation,
@@ -25,9 +21,14 @@ import {
   machineItemStackToItemStack,
   setMachineSlotItem,
 } from "./data";
-import { stringifyDimensionLocation, truncateNumber } from "./utils/string";
+import { truncateNumber } from "./utils/string";
 import { logWarn, makeErrorString } from "./utils/log";
 import { getEntityComponent } from "./polyfills/component_type_map";
+import { forceGetRegisteredStorageType } from "./storage_type_registry";
+import {
+  getMachineIdFromEntityId,
+  InternalRegisteredMachine,
+} from "./machine_registry";
 
 export const PROGRESS_INDICATOR_MAX_VALUES: Record<
   UiProgressIndicatorElementType,
@@ -157,15 +158,7 @@ function handleBarItems(
     return;
   }
 
-  if (!(type in storageTypeRegistry)) {
-    throw new Error(
-      makeErrorString(
-        `can't update UI for block at ${stringifyDimensionLocation(location)}: storage type '${type}' does not exist`,
-      ),
-    );
-  }
-
-  const storageTypeOptions = storageTypeRegistry[type];
+  const storageTypeOptions = forceGetRegisteredStorageType(type);
 
   fillUiBar(
     `fluffyalien_energisticscore:ui_storage_bar_segment_${storageTypeOptions.color}`,
@@ -450,9 +443,7 @@ world.afterEvents.playerInteractWithEntity.subscribe((e) => {
     return;
   }
 
-  const machineId = machineEntityToBlockIdMap[e.target.typeId] as
-    | string
-    | undefined;
+  const machineId = getMachineIdFromEntityId(e.target.typeId);
   if (!machineId) {
     throw new Error(
       makeErrorString(
@@ -462,7 +453,7 @@ world.afterEvents.playerInteractWithEntity.subscribe((e) => {
   }
 
   playersInUi.set(e.target, e.player);
-  const definition = machineRegistry[machineId];
+  const definition = InternalRegisteredMachine.forceGetInternal(machineId);
   void updateEntityUi(definition, e.target, e.player, true);
 });
 
@@ -483,7 +474,9 @@ system.runInterval(() => {
       continue;
     }
 
-    const definition = machineRegistry[entity.typeId];
+    const machineId = getMachineIdFromEntityId(entity.typeId)!;
+    const definition = InternalRegisteredMachine.forceGetInternal(machineId);
+
     if (definition.persistentEntity) {
       const players = entity.dimension.getPlayers({
         location: entity.location,

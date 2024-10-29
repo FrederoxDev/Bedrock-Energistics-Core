@@ -6,6 +6,9 @@ import {
   VECTOR3_DOWN,
 } from "@minecraft/math";
 
+/**
+ * @internal
+ */
 export const DIRECTION_VECTORS: Vector3[] = [
   { x: 0, y: 0, z: -1 },
   VECTOR3_EAST,

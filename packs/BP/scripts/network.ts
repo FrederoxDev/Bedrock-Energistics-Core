@@ -14,16 +14,12 @@ import {
   getBlockInDirection,
   StrDirection,
 } from "./utils/direction";
-import {
-  getMachineRegistration,
-  InternalRegisteredMachine,
-  machineRegistry,
-} from "./registry";
 import { InternalNetworkLinkNode } from "./network_links/network_link_internal";
 import {
   getBlockNetworkConnectionType,
   NetworkConnectionType,
 } from "@/public_api/src";
+import { InternalRegisteredMachine } from "./machine_registry";
 
 interface SendQueueItem {
   block: Block;
@@ -161,7 +157,9 @@ export class MachineNetwork extends DestroyableObject {
         const machine = machines.normalPriority[i];
         const budgetAllocation = budget / (machines.normalPriority.length - i);
         const currentStored = getMachineStorage(machine, type);
-        const machineDef = getMachineRegistration(machine);
+        const machineDef = InternalRegisteredMachine.forceGetInternal(
+          machine.typeId,
+        );
 
         let amountToAllocate: number = Math.min(
           budgetAllocation,
@@ -197,7 +195,9 @@ export class MachineNetwork extends DestroyableObject {
           const machine = machines.lowPriority[i];
           const budgetAllocation = budget / (machines.lowPriority.length - i);
           const currentStored = getMachineStorage(machine, type);
-          const machineDef = getMachineRegistration(machine);
+          const machineDef = InternalRegisteredMachine.forceGetInternal(
+            machine.typeId,
+          );
 
           let amountToAllocate: number = Math.min(
             budgetAllocation,
@@ -295,9 +295,7 @@ export class MachineNetwork extends DestroyableObject {
       );
     }
 
-    const definition = machineRegistry[block.typeId] as
-      | InternalRegisteredMachine
-      | undefined;
+    const definition = InternalRegisteredMachine.getInternal(block.typeId);
 
     if (!definition) {
       throw new Error(

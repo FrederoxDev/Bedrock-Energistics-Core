@@ -1,15 +1,4 @@
-import {
-  machineRegistry,
-  registerMachineScriptEventListener,
-  registerStorageTypeScriptEventListener,
-} from "./registry";
-import { MachineNetwork } from "./network";
-import {
-  MachineItemStack,
-  RegisteredMachine,
-  StorageTypeDefinition,
-  getBlockIoCategories,
-} from "@/public_api/src";
+import { MachineItemStack } from "@/public_api/src";
 import { setMachineSlotItem } from "./data";
 import {
   registerScriptEventHandler,
@@ -39,6 +28,11 @@ import {
   networkQueueSendListener,
 } from "./network_ipc";
 import { MangledRegisteredMachine } from "@/public_api/src/machine_registry_internal";
+import {
+  InternalRegisteredMachine,
+  registerMachineListener,
+} from "./machine_registry";
+import { registerStorageTypeListener } from "./storage_type_registry";
 
 interface SetItemInMachineSlotPayload {
   loc: SerializableDimensionLocation;
@@ -48,33 +42,17 @@ interface SetItemInMachineSlotPayload {
 
 registerScriptEventListener<MangledRegisteredMachine>(
   "fluffyalien_energisticscore:ipc.registerMachine",
-  registerMachineScriptEventListener,
+  registerMachineListener,
 );
 
 registerScriptEventStreamListener<MangledRegisteredMachine>(
   "fluffyalien_energisticscore:ipc.stream.registerMachine",
-  registerMachineScriptEventListener,
+  registerMachineListener,
 );
 
-registerScriptEventListener<StorageTypeDefinition>(
+registerScriptEventListener(
   "fluffyalien_energisticscore:ipc.registerStorageType",
-  registerStorageTypeScriptEventListener,
-);
-
-registerScriptEventListener<SerializableDimensionLocation>(
-  "fluffyalien_energisticscore:ipc.updateMachineConnectableNetworks",
-  (payload) => {
-    const loc = deserializeDimensionLocation(payload);
-    const block = loc.dimension.getBlock(loc);
-    if (!block) return;
-
-    const ioCategories = getBlockIoCategories(block);
-
-    MachineNetwork.updateAdjacent(
-      block,
-      ioCategories === "any" ? undefined : ioCategories,
-    );
-  },
+  registerStorageTypeListener,
 );
 
 registerScriptEventListener<SetItemInMachineSlotPayload>(
@@ -128,9 +106,13 @@ registerScriptEventHandler(
   networkIsPartOfNetworkHandler,
 );
 
-registerScriptEventHandler<string, RegisteredMachine | null>(
+registerScriptEventHandler<string, MangledRegisteredMachine | null>(
   "fluffyalien_energisticscore:ipc.getRegisteredMachine",
-  (machineId) => machineRegistry[machineId] ?? null,
+  (machineId) =>
+    //TODO: this needs to use streaming since machine definitions can be streamed
+    // so they must be streamed back as well
+    // there is no handler response streaming in mcbe-addon-ipc yet
+    InternalRegisteredMachine.getInternal(machineId)?.internal ?? null,
 );
 
 registerScriptEventHandler<NetworkLinkGetRequest, NetworkLinkGetResponse>(

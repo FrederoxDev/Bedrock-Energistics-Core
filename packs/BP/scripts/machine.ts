@@ -9,25 +9,22 @@ import {
   machineItemStackToItemStack,
   removeBlockFromScoreboards,
 } from "./data";
-import {
-  InternalRegisteredMachine,
-  machineEntityToBlockIdMap,
-  machineRegistry,
-} from "./registry";
 import { MachineNetwork } from "./network";
 import { makeErrorString } from "./utils/log";
 import { Vector3Utils } from "@minecraft/math";
 import { RegisteredMachine } from "@/public_api/src";
 import { getEntityComponent } from "./polyfills/component_type_map";
+import {
+  getMachineIdFromEntityId,
+  InternalRegisteredMachine,
+} from "./machine_registry";
 
 export const machineComponent: BlockCustomComponent = {
   onPlace(e) {
     if (e.block.typeId === e.previousBlock.type.id) return;
     MachineNetwork.updateAdjacent(e.block);
 
-    const definition = machineRegistry[e.block.typeId] as
-      | InternalRegisteredMachine
-      | undefined;
+    const definition = InternalRegisteredMachine.getInternal(e.block.typeId);
     if (!definition) {
       throw new Error(
         makeErrorString(
@@ -48,9 +45,7 @@ export const machineComponent: BlockCustomComponent = {
     }
   },
   onPlayerInteract(e) {
-    const definition = machineRegistry[e.block.typeId] as
-      | InternalRegisteredMachine
-      | undefined;
+    const definition = InternalRegisteredMachine.getInternal(e.block.typeId);
     if (!definition) {
       throw new Error(
         makeErrorString(
@@ -99,9 +94,7 @@ world.beforeEvents.playerBreakBlock.subscribe((e) => {
     return;
   }
 
-  const definition = machineRegistry[e.block.typeId] as
-    | InternalRegisteredMachine
-    | undefined;
+  const definition = InternalRegisteredMachine.getInternal(e.block.typeId);
   if (!definition) {
     throw new Error(
       makeErrorString(
@@ -132,9 +125,7 @@ world.afterEvents.entityHitEntity.subscribe((e) => {
     return;
   }
 
-  const machineId = machineEntityToBlockIdMap[e.hitEntity.typeId] as
-    | string
-    | undefined;
+  const machineId = getMachineIdFromEntityId(e.hitEntity.typeId);
   if (!machineId) {
     throw new Error(
       makeErrorString(
@@ -143,7 +134,7 @@ world.afterEvents.entityHitEntity.subscribe((e) => {
     );
   }
 
-  const definition = machineRegistry[machineId];
+  const definition = InternalRegisteredMachine.forceGetInternal(machineId);
   if (definition.persistentEntity) {
     return;
   }

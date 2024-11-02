@@ -1,3 +1,4 @@
+import * as ipc from "mcbe-addon-ipc";
 import { world } from "@minecraft/server";
 import { logInfo, raise } from "./utils/log";
 import { StorageTypeDefinition } from "@/public_api/src";
@@ -46,8 +47,9 @@ function registerStorageType(data: StorageTypeDefinition): void {
 }
 
 export function registerStorageTypeListener(
-  mData: MangledStorageTypeDefinition,
-): void {
+  payload: ipc.SerializableValue,
+): null {
+  const mData = payload as unknown as MangledStorageTypeDefinition;
   const data: StorageTypeDefinition = {
     id: mData.a,
     category: mData.b,
@@ -56,4 +58,6 @@ export function registerStorageTypeListener(
   };
 
   registerStorageType(data);
+
+  return null;
 }

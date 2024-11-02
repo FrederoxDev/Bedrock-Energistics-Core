@@ -1,6 +1,5 @@
+import * as ipc from "mcbe-addon-ipc";
 import { Block, DimensionLocation } from "@minecraft/server";
-import { dispatchScriptEvent, invokeScriptEvent } from "mcbe-addon-ipc";
-import { getInitNamespace } from "./init.js";
 import {
   MangledNetworkEstablishPayload,
   MangledNetworkGetAllWithPayload,
@@ -46,7 +45,7 @@ export class MachineNetwork {
       a: this.id,
     };
 
-    dispatchScriptEvent(
+    void ipc.sendAuto(
       "fluffyalien_energisisticscore:ipc.networkDestroy",
       payload,
     );
@@ -66,9 +65,8 @@ export class MachineNetwork {
       c: type,
     };
 
-    return invokeScriptEvent(
+    return ipc.invokeAuto(
       "fluffyalien_energisticscore:ipc.networkIsPartOfNetwork",
-      getInitNamespace(),
       payload,
     ) as Promise<boolean>;
   }
@@ -106,7 +104,7 @@ export class MachineNetwork {
       d: amount,
     };
 
-    dispatchScriptEvent(
+    void ipc.sendAuto(
       "fluffyalien_energisisticscore:ipc.networkQueueSend",
       payload,
     );
@@ -125,9 +123,8 @@ export class MachineNetwork {
       b: makeSerializableDimensionLocation(location),
     };
 
-    const id = (await invokeScriptEvent(
+    const id = (await ipc.invokeAuto(
       "fluffyalien_energisticscore:ipc.networkEstablish",
-      getInitNamespace(),
       payload,
     )) as number | null;
 
@@ -152,9 +149,8 @@ export class MachineNetwork {
       c: type,
     };
 
-    const id = (await invokeScriptEvent(
+    const id = (await ipc.invokeAuto(
       "fluffyalien_energisticscore:ipc.networkGetWith",
-      getInitNamespace(),
       payload,
     )) as number | null;
 
@@ -189,9 +185,8 @@ export class MachineNetwork {
       b: type,
     };
 
-    const ids = (await invokeScriptEvent(
+    const ids = (await ipc.invokeAuto(
       "fluffyalien_energisticscore:ipc.networkGetAllWith",
-      getInitNamespace(),
       payload,
     )) as number[];
 
@@ -226,9 +221,8 @@ export class MachineNetwork {
       b: makeSerializableDimensionLocation(location),
     };
 
-    const id = (await invokeScriptEvent(
+    const id = (await ipc.invokeAuto(
       "fluffyalien_energisticscore:ipc.networkGetOrEstablish",
-      getInitNamespace(),
       payload,
     )) as number | null;
 

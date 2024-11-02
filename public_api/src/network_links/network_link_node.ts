@@ -1,5 +1,5 @@
+import * as ipc from "mcbe-addon-ipc";
 import { Block, Dimension, Entity, Vector3 } from "@minecraft/server";
-import { invokeScriptEvent } from "mcbe-addon-ipc";
 import {
   NETWORK_LINK_BLOCK_TAG,
   NETWORK_LINK_ENTITY_ID,
@@ -8,7 +8,6 @@ import {
   NetworkLinkGetRequest,
   NetworkLinkGetResponse,
 } from "./ipc_events.js";
-import { getInitNamespace } from "../init.js";
 import { makeSerializableDimensionLocation } from "../serialize_utils.js";
 import { raise } from "../log.js";
 
@@ -42,9 +41,8 @@ export class NetworkLinkNode {
       }),
     };
 
-    const res = (await invokeScriptEvent(
+    const res = (await ipc.invokeAuto(
       "fluffyalien_energisticscore:ipc.networkLinkGet",
-      getInitNamespace(),
       payload,
     )) as NetworkLinkGetResponse;
 
@@ -65,9 +63,8 @@ export class NetworkLinkNode {
       other: location,
     };
 
-    await invokeScriptEvent(
+    await ipc.invokeAuto(
       "fluffyalien_energisticscore:ipc.networkLinkAdd",
-      getInitNamespace(),
       payload,
     );
   }
@@ -86,9 +83,8 @@ export class NetworkLinkNode {
       other: location,
     };
 
-    await invokeScriptEvent(
+    await ipc.invokeAuto(
       "fluffyalien_energisticscore:ipc.networkLinkRemove",
-      getInitNamespace(),
       payload,
     );
   }
@@ -105,9 +101,8 @@ export class NetworkLinkNode {
       }),
     };
 
-    await invokeScriptEvent(
+    await ipc.invokeAuto(
       "fluffyalien_energisticscore:ipc.networkLinkDestroy",
-      getInitNamespace(),
       payload,
     );
   }

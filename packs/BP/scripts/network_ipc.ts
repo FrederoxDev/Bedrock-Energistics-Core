@@ -1,3 +1,4 @@
+import * as ipc from "mcbe-addon-ipc";
 import { deserializeDimensionLocation } from "@/public_api/src/serialize_utils";
 import {
   MangledGeneratePayload,
@@ -12,32 +13,34 @@ import { MachineNetwork } from "./network";
 import { getMachineStorage } from "./data";
 import { forceGetRegisteredStorageType } from "./storage_type_registry";
 
-export function networkDestroyListener(
-  payload: MangledNetworkInstanceMethodPayload,
-): void {
-  const networkId = payload.a;
+export function networkDestroyListener(payload: ipc.SerializableValue): null {
+  const data = payload as unknown as MangledNetworkInstanceMethodPayload;
+  const networkId = data.a;
   MachineNetwork.getFromId(networkId)?.destroy();
+  return null;
 }
 
-export function networkQueueSendListener(
-  payload: MangledNetworkQueueSendPayload,
-): void {
-  const networkId = payload.a;
-  const location = deserializeDimensionLocation(payload.b);
-  const type = payload.c;
-  const amount = payload.d;
+export function networkQueueSendListener(payload: ipc.SerializableValue): null {
+  const data = payload as unknown as MangledNetworkQueueSendPayload;
+  const networkId = data.a;
+  const location = deserializeDimensionLocation(data.b);
+  const type = data.c;
+  const amount = data.d;
 
   const block = location.dimension.getBlock(location);
-  if (!block) return;
+  if (!block) return null;
 
   MachineNetwork.getFromId(networkId)?.queueSend(block, type, amount);
+
+  return null;
 }
 
 export function networkEstablishHandler(
-  payload: MangledNetworkEstablishPayload,
+  payload: ipc.SerializableValue,
 ): number | null {
-  const category = payload.a;
-  const blockLocation = deserializeDimensionLocation(payload.b);
+  const data = payload as unknown as MangledNetworkEstablishPayload;
+  const category = data.a;
+  const blockLocation = deserializeDimensionLocation(data.b);
 
   const block = blockLocation.dimension.getBlock(blockLocation);
   if (!block) return null;
@@ -46,29 +49,32 @@ export function networkEstablishHandler(
 }
 
 export function networkGetWithHandler(
-  payload: MangledNetworkGetWithPayload,
+  payload: ipc.SerializableValue,
 ): number | null {
-  const category = payload.a;
-  const location = deserializeDimensionLocation(payload.b);
-  const type = payload.c;
+  const data = payload as unknown as MangledNetworkGetWithPayload;
+  const category = data.a;
+  const location = deserializeDimensionLocation(data.b);
+  const type = data.c;
 
   return MachineNetwork.getWith(category, location, type)?.id ?? null;
 }
 
 export function networkGetAllWithHandler(
-  payload: MangledNetworkGetAllWithPayload,
+  payload: ipc.SerializableValue,
 ): number[] {
-  const location = deserializeDimensionLocation(payload.a);
-  const type = payload.b;
+  const data = payload as unknown as MangledNetworkGetAllWithPayload;
+  const location = deserializeDimensionLocation(data.a);
+  const type = data.b;
 
   return MachineNetwork.getAllWith(location, type).map((network) => network.id);
 }
 
 export function networkGetOrEstablishHandler(
-  payload: MangledNetworkEstablishPayload,
+  payload: ipc.SerializableValue,
 ): number | null {
-  const category = payload.a;
-  const blockLocation = deserializeDimensionLocation(payload.b);
+  const data = payload as unknown as MangledNetworkEstablishPayload;
+  const category = data.a;
+  const blockLocation = deserializeDimensionLocation(data.b);
 
   const block = blockLocation.dimension.getBlock(blockLocation);
   if (!block) return null;
@@ -82,11 +88,12 @@ export function networkGetOrEstablishHandler(
 }
 
 export function networkIsPartOfNetworkHandler(
-  payload: MangledNetworkIsPartOfNetworkPayload,
+  payload: ipc.SerializableValue,
 ): boolean {
-  const networkId = payload.a;
-  const location = deserializeDimensionLocation(payload.b);
-  const type = payload.c;
+  const data = payload as unknown as MangledNetworkIsPartOfNetworkPayload;
+  const networkId = data.a;
+  const location = deserializeDimensionLocation(data.b);
+  const type = data.c;
 
   return (
     MachineNetwork.getFromId(networkId)?.isPartOfNetwork(location, type) ??
@@ -94,16 +101,17 @@ export function networkIsPartOfNetworkHandler(
   );
 }
 
-export function generateListener(payload: MangledGeneratePayload): void {
-  const location = deserializeDimensionLocation(payload.a);
-  const type = payload.b;
-  const amount = payload.c;
+export function generateListener(payload: ipc.SerializableValue): null {
+  const data = payload as unknown as MangledGeneratePayload;
+  const location = deserializeDimensionLocation(data.a);
+  const type = data.b;
+  const amount = data.c;
 
   const block = location.dimension.getBlock(location);
-  if (!block) return;
+  if (!block) return null;
 
   const fullAmount = amount + getMachineStorage(location, type);
-  if (!fullAmount) return;
+  if (!fullAmount) return null;
 
   const storageType = forceGetRegisteredStorageType(type);
 
@@ -112,4 +120,6 @@ export function generateListener(payload: MangledGeneratePayload): void {
     type,
     fullAmount,
   );
+
+  return null;
 }

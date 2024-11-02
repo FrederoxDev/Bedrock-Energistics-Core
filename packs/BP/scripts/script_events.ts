@@ -1,10 +1,6 @@
+import * as ipc from "mcbe-addon-ipc";
 import { MachineItemStack } from "@/public_api/src";
 import { setMachineSlotItem } from "./data";
-import {
-  registerScriptEventHandler,
-  registerScriptEventListener,
-  registerScriptEventStreamListener,
-} from "mcbe-addon-ipc";
 import {
   deserializeDimensionLocation,
   SerializableDimensionLocation,
@@ -27,7 +23,6 @@ import {
   networkIsPartOfNetworkHandler,
   networkQueueSendListener,
 } from "./network_ipc";
-import { MangledRegisteredMachine } from "@/public_api/src/machine_registry_internal";
 import {
   InternalRegisteredMachine,
   registerMachineListener,
@@ -40,111 +35,114 @@ interface SetItemInMachineSlotPayload {
   item?: MachineItemStack;
 }
 
-registerScriptEventListener<MangledRegisteredMachine>(
+ipc.registerListener(
   "fluffyalien_energisticscore:ipc.registerMachine",
   registerMachineListener,
 );
 
-registerScriptEventStreamListener<MangledRegisteredMachine>(
-  "fluffyalien_energisticscore:ipc.stream.registerMachine",
-  registerMachineListener,
-);
-
-registerScriptEventListener(
+ipc.registerListener(
   "fluffyalien_energisticscore:ipc.registerStorageType",
   registerStorageTypeListener,
 );
 
-registerScriptEventListener<SetItemInMachineSlotPayload>(
+ipc.registerListener(
   "fluffyalien_energisticscore:ipc.setMachineSlot",
-  (payload) => {
+  (payload_) => {
+    const payload = payload_ as unknown as SetItemInMachineSlotPayload;
     setMachineSlotItem(
       deserializeDimensionLocation(payload.loc),
       payload.slot,
       payload.item,
     );
+    return null;
   },
 );
 
-registerScriptEventListener(
+ipc.registerListener(
   "fluffyalien_energisticscore:ipc.networkDestroy",
   networkDestroyListener,
 );
 
-registerScriptEventListener(
+ipc.registerListener(
   "fluffyalien_energisticscore:ipc.networkQueueSend",
   networkQueueSendListener,
 );
 
-registerScriptEventListener(
+ipc.registerListener(
   "fluffyalien_energisticscore:ipc.generate",
   generateListener,
 );
 
-registerScriptEventHandler(
+ipc.registerListener(
   "fluffyalien_energisticscore:ipc.networkEstablish",
   networkEstablishHandler,
 );
 
-registerScriptEventHandler(
+ipc.registerListener(
   "fluffyalien_energisticscore:ipc.networkGetWith",
   networkGetWithHandler,
 );
 
-registerScriptEventHandler(
+ipc.registerListener(
   "fluffyalien_energisticscore:ipc.networkGetAllWith",
   networkGetAllWithHandler,
 );
 
-registerScriptEventHandler(
+ipc.registerListener(
   "fluffyalien_energisticscore:ipc.networkGetOrEstablish",
   networkGetOrEstablishHandler,
 );
 
-registerScriptEventHandler(
+ipc.registerListener(
   "fluffyalien_energisticscore:ipc.networkIsPartOfNetwork",
   networkIsPartOfNetworkHandler,
 );
 
-registerScriptEventHandler<string, MangledRegisteredMachine | null>(
+ipc.registerListener(
   "fluffyalien_energisticscore:ipc.getRegisteredMachine",
   (machineId) =>
     //TODO: this needs to use streaming since machine definitions can be streamed
     // so they must be streamed back as well
     // there is no handler response streaming in mcbe-addon-ipc yet
-    InternalRegisteredMachine.getInternal(machineId)?.internal ?? null,
+    InternalRegisteredMachine.getInternal(machineId as string)?.internal ??
+    null,
 );
 
-registerScriptEventHandler<NetworkLinkGetRequest, NetworkLinkGetResponse>(
+ipc.registerListener(
   "fluffyalien_energisticscore:ipc.networkLinkGet",
   (payload) => {
-    const link = getNetworkLinkNode(payload.self);
-    return { locations: link.getConnections() };
+    const data = payload as unknown as NetworkLinkGetRequest;
+    const link = getNetworkLinkNode(data.self);
+    const result: NetworkLinkGetResponse = { locations: link.getConnections() };
+    return result;
   },
 );
 
-registerScriptEventHandler<NetworkLinkAddRequest, null>(
+ipc.registerListener(
   "fluffyalien_energisticscore:ipc.networkLinkAdd",
   (payload) => {
-    const link = getNetworkLinkNode(payload.self);
-    link.addConnection(payload.other);
+    const data = payload as unknown as NetworkLinkAddRequest;
+    const link = getNetworkLinkNode(data.self);
+    link.addConnection(data.other);
     return null;
   },
 );
 
-registerScriptEventHandler<NetworkLinkRemoveRequest, null>(
+ipc.registerListener(
   "fluffyalien_energisticscore:ipc.networkLinkRemove",
   (payload) => {
-    const link = getNetworkLinkNode(payload.self);
-    link.removeConnection(payload.other);
+    const data = payload as unknown as NetworkLinkRemoveRequest;
+    const link = getNetworkLinkNode(data.self);
+    link.removeConnection(data.other);
     return null;
   },
 );
 
-registerScriptEventHandler<NetworkLinkDestroyRequest, null>(
+ipc.registerListener(
   "fluffyalien_energisticscore:ipc.networkLinkDestroy",
   (payload) => {
-    const link = getNetworkLinkNode(payload.self);
+    const data = payload as unknown as NetworkLinkDestroyRequest;
+    const link = getNetworkLinkNode(data.self);
     link.destroyNode();
     return null;
   },

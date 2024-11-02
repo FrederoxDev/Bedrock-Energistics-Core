@@ -1,7 +1,7 @@
+import * as ipc from "mcbe-addon-ipc";
 import { DimensionLocation } from "@minecraft/server";
 import { logInfo, makeErrorString, raise } from "./utils/log";
 import { RegisteredMachine, UpdateUiHandlerResponse } from "@/public_api/src";
-import { dispatchScriptEvent, invokeScriptEvent } from "mcbe-addon-ipc";
 import {
   MangledOnButtonPressedPayload,
   MangledRecieveHandlerPayload,
@@ -36,9 +36,8 @@ export class InternalRegisteredMachine extends RegisteredMachine {
       );
     }
 
-    return invokeScriptEvent(
+    return ipc.invokeAuto(
       this.updateUiEvent,
-      "fluffyalien_energisticscore",
       makeSerializableDimensionLocation(dimensionLocation),
     ) as Promise<UpdateUiHandlerResponse>;
   }
@@ -62,11 +61,7 @@ export class InternalRegisteredMachine extends RegisteredMachine {
       c: recieveAmount,
     };
 
-    return invokeScriptEvent(
-      this.recieveHandlerEvent,
-      "fluffyalien_energisticscore",
-      payload,
-    ) as Promise<number>;
+    return ipc.invokeAuto(this.recieveHandlerEvent, payload) as Promise<number>;
   }
 
   callOnButtonPressedEvent(
@@ -90,7 +85,7 @@ export class InternalRegisteredMachine extends RegisteredMachine {
       d: buttonElementId,
     };
 
-    dispatchScriptEvent(this.onButtonPressedEvent, payload);
+    void ipc.sendAuto(this.onButtonPressedEvent, payload);
   }
 
   /**
@@ -120,7 +115,8 @@ export function getMachineIdFromEntityId(entityId: string): string | undefined {
   return machineEntityToBlockIdMap[entityId];
 }
 
-export function registerMachineListener(mData: MangledRegisteredMachine): void {
+export function registerMachineListener(payload: ipc.SerializableValue): null {
+  const mData = payload as unknown as MangledRegisteredMachine;
   const data = new InternalRegisteredMachine(mData);
 
   const entityExistingAttachment = machineEntityToBlockIdMap[data.entityId];
@@ -138,4 +134,6 @@ export function registerMachineListener(mData: MangledRegisteredMachine): void {
 
   machineRegistry[data.id] = data;
   machineEntityToBlockIdMap[data.entityId] = data.id;
+
+  return null;
 }

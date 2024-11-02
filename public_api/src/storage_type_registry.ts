@@ -1,5 +1,4 @@
-import { dispatchScriptEvent } from "mcbe-addon-ipc";
-import { ensureInitialized } from "./init.js";
+import * as ipc from "mcbe-addon-ipc";
 import { StorageTypeDefinition } from "./registry_types.js";
 
 /**
@@ -7,8 +6,6 @@ import { StorageTypeDefinition } from "./registry_types.js";
  * @beta
  */
 export function registerStorageType(definition: StorageTypeDefinition): void {
-  ensureInitialized();
-
   if (definition.id.startsWith("_") || definition.category.startsWith("_")) {
     throw new Error(
       `can't register storage type '${definition.id}' (category: '${definition.category}'): storage type IDs and categories cannot start with '_'`,
@@ -23,7 +20,7 @@ export function registerStorageType(definition: StorageTypeDefinition): void {
     name: definition.name,
   };
 
-  dispatchScriptEvent(
+  void ipc.sendAuto(
     "fluffyalien_energisticscore:ipc.registerStorageType",
     payload,
   );

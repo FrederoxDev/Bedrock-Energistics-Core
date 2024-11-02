@@ -27,7 +27,10 @@ import {
   InternalRegisteredMachine,
   registerMachineListener,
 } from "./machine_registry";
-import { registerStorageTypeListener } from "./storage_type_registry";
+import {
+  getRegisteredStorageType,
+  registerStorageTypeListener,
+} from "./storage_type_registry";
 
 interface SetItemInMachineSlotPayload {
   loc: SerializableDimensionLocation;
@@ -48,7 +51,7 @@ ipc.registerListener(
 ipc.registerListener(
   "fluffyalien_energisticscore:ipc.setMachineSlot",
   (payload_) => {
-    const payload = payload_ as unknown as SetItemInMachineSlotPayload;
+    const payload = payload_ as SetItemInMachineSlotPayload;
     setMachineSlotItem(
       deserializeDimensionLocation(payload.loc),
       payload.slot,
@@ -100,15 +103,19 @@ ipc.registerListener(
 
 ipc.registerListener(
   "fluffyalien_energisticscore:ipc.registeredMachineGet",
-  (machineId) =>
-    InternalRegisteredMachine.getInternal(machineId as string)?.internal ??
-    null,
+  (payload) =>
+    InternalRegisteredMachine.getInternal(payload as string)?.internal ?? null,
+);
+
+ipc.registerListener(
+  "fluffyalien_energisticscore:ipc.registeredStorageTypeGet",
+  (payload) => getRegisteredStorageType(payload as string)?.internal ?? null,
 );
 
 ipc.registerListener(
   "fluffyalien_energisticscore:ipc.networkLinkGet",
   (payload) => {
-    const data = payload as unknown as NetworkLinkGetRequest;
+    const data = payload as NetworkLinkGetRequest;
     const link = getNetworkLinkNode(data.self);
     const result: NetworkLinkGetResponse = { locations: link.getConnections() };
     return result;
@@ -118,7 +125,7 @@ ipc.registerListener(
 ipc.registerListener(
   "fluffyalien_energisticscore:ipc.networkLinkAdd",
   (payload) => {
-    const data = payload as unknown as NetworkLinkAddRequest;
+    const data = payload as NetworkLinkAddRequest;
     const link = getNetworkLinkNode(data.self);
     link.addConnection(data.other);
     return null;
@@ -128,7 +135,7 @@ ipc.registerListener(
 ipc.registerListener(
   "fluffyalien_energisticscore:ipc.networkLinkRemove",
   (payload) => {
-    const data = payload as unknown as NetworkLinkRemoveRequest;
+    const data = payload as NetworkLinkRemoveRequest;
     const link = getNetworkLinkNode(data.self);
     link.removeConnection(data.other);
     return null;
@@ -138,7 +145,7 @@ ipc.registerListener(
 ipc.registerListener(
   "fluffyalien_energisticscore:ipc.networkLinkDestroy",
   (payload) => {
-    const data = payload as unknown as NetworkLinkDestroyRequest;
+    const data = payload as NetworkLinkDestroyRequest;
     const link = getNetworkLinkNode(data.self);
     link.destroyNode();
     return null;

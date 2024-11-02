@@ -14,14 +14,14 @@ import { getMachineStorage } from "./data";
 import { forceGetRegisteredStorageType } from "./storage_type_registry";
 
 export function networkDestroyListener(payload: ipc.SerializableValue): null {
-  const data = payload as unknown as MangledNetworkInstanceMethodPayload;
+  const data = payload as MangledNetworkInstanceMethodPayload;
   const networkId = data.a;
   MachineNetwork.getFromId(networkId)?.destroy();
   return null;
 }
 
 export function networkQueueSendListener(payload: ipc.SerializableValue): null {
-  const data = payload as unknown as MangledNetworkQueueSendPayload;
+  const data = payload as MangledNetworkQueueSendPayload;
   const networkId = data.a;
   const location = deserializeDimensionLocation(data.b);
   const type = data.c;
@@ -38,7 +38,7 @@ export function networkQueueSendListener(payload: ipc.SerializableValue): null {
 export function networkEstablishHandler(
   payload: ipc.SerializableValue,
 ): number | null {
-  const data = payload as unknown as MangledNetworkEstablishPayload;
+  const data = payload as MangledNetworkEstablishPayload;
   const category = data.a;
   const blockLocation = deserializeDimensionLocation(data.b);
 
@@ -51,7 +51,7 @@ export function networkEstablishHandler(
 export function networkGetWithHandler(
   payload: ipc.SerializableValue,
 ): number | null {
-  const data = payload as unknown as MangledNetworkGetWithPayload;
+  const data = payload as MangledNetworkGetWithPayload;
   const category = data.a;
   const location = deserializeDimensionLocation(data.b);
   const type = data.c;
@@ -62,7 +62,7 @@ export function networkGetWithHandler(
 export function networkGetAllWithHandler(
   payload: ipc.SerializableValue,
 ): number[] {
-  const data = payload as unknown as MangledNetworkGetAllWithPayload;
+  const data = payload as MangledNetworkGetAllWithPayload;
   const location = deserializeDimensionLocation(data.a);
   const type = data.b;
 
@@ -72,7 +72,7 @@ export function networkGetAllWithHandler(
 export function networkGetOrEstablishHandler(
   payload: ipc.SerializableValue,
 ): number | null {
-  const data = payload as unknown as MangledNetworkEstablishPayload;
+  const data = payload as MangledNetworkEstablishPayload;
   const category = data.a;
   const blockLocation = deserializeDimensionLocation(data.b);
 
@@ -90,7 +90,7 @@ export function networkGetOrEstablishHandler(
 export function networkIsPartOfNetworkHandler(
   payload: ipc.SerializableValue,
 ): boolean {
-  const data = payload as unknown as MangledNetworkIsPartOfNetworkPayload;
+  const data = payload as MangledNetworkIsPartOfNetworkPayload;
   const networkId = data.a;
   const location = deserializeDimensionLocation(data.b);
   const type = data.c;
@@ -102,7 +102,7 @@ export function networkIsPartOfNetworkHandler(
 }
 
 export function generateListener(payload: ipc.SerializableValue): null {
-  const data = payload as unknown as MangledGeneratePayload;
+  const data = payload as MangledGeneratePayload;
   const location = deserializeDimensionLocation(data.a);
   const type = data.b;
   const amount = data.c;

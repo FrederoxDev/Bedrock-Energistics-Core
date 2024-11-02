@@ -116,7 +116,7 @@ export function getMachineIdFromEntityId(entityId: string): string | undefined {
 }
 
 export function registerMachineListener(payload: ipc.SerializableValue): null {
-  const mData = payload as unknown as MangledRegisteredMachine;
+  const mData = payload as MangledRegisteredMachine;
   const data = new InternalRegisteredMachine(mData);
 
   const entityExistingAttachment = machineEntityToBlockIdMap[data.entityId];

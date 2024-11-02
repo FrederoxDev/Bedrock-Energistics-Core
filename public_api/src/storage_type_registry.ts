@@ -1,6 +1,73 @@
 import * as ipc from "mcbe-addon-ipc";
-import { StorageTypeDefinition } from "./registry_types.js";
+import { StorageTypeColor, StorageTypeDefinition } from "./registry_types.js";
 import { MangledStorageTypeDefinition } from "./storage_type_registry_internal.js";
+
+/**
+ * Representation of a storage type definition that has been registered.
+ * @beta
+ * @see {@link StorageTypeDefinition}, {@link registerStorageType}
+ */
+export class RegisteredStorageType {
+  /**
+   * @internal
+   */
+  constructor(
+    /**
+     * @internal
+     */
+    readonly internal: MangledStorageTypeDefinition,
+  ) {}
+
+  /**
+   * @returns The ID of this storage type.
+   * @beta
+   */
+  get id(): string {
+    return this.internal.a;
+  }
+
+  /**
+   * @returns The category of this storage type.
+   * @beta
+   */
+  get category(): string {
+    return this.internal.b;
+  }
+
+  /**
+   * @returns The {@link StorageTypeColor} of this storage type.
+   * @beta
+   */
+  get color(): StorageTypeColor {
+    return this.internal.c;
+  }
+
+  /**
+   * @returns The name of this storage type.
+   * @beta
+   */
+  get name(): string {
+    return this.internal.d;
+  }
+
+  /**
+   * Gets a registered storage type.
+   * @beta
+   * @param id The ID of the storage type.
+   * @returns The {@link RegisteredStorageType} with the specified `id` or `null` if it doesn't exist.
+   * @throws if Bedrock Energistics Core takes too long to respond.
+   */
+  static async get(id: string): Promise<RegisteredStorageType | undefined> {
+    const mangled = (await ipc.invokeAuto(
+      "fluffyalien_energisticscore:ipc.registeredStorageTypeGet",
+      id,
+    )) as MangledStorageTypeDefinition | null;
+
+    if (!mangled) return;
+
+    return new RegisteredStorageType(mangled);
+  }
+}
 
 /**
  * Registers a storage type. This function should be called in the `worldInitialize` after event.

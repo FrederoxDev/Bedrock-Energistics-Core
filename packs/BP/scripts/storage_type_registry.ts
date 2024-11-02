@@ -1,20 +1,20 @@
 import * as ipc from "mcbe-addon-ipc";
 import { world } from "@minecraft/server";
 import { logInfo, raise } from "./utils/log";
-import { StorageTypeDefinition } from "@/public_api/src";
+import { RegisteredStorageType, StorageTypeDefinition } from "@/public_api/src";
 import { MangledStorageTypeDefinition } from "@/public_api/src/storage_type_registry_internal";
 
-const storageTypeRegistry: Record<string, StorageTypeDefinition> = {};
+const storageTypeRegistry: Record<string, RegisteredStorageType> = {};
 
 export function getRegisteredStorageType(
   id: string,
-): StorageTypeDefinition | undefined {
+): RegisteredStorageType | undefined {
   return storageTypeRegistry[id];
 }
 
 export function forceGetRegisteredStorageType(
   id: string,
-): StorageTypeDefinition {
+): RegisteredStorageType {
   const registered = getRegisteredStorageType(id);
   if (!registered) {
     raise(
@@ -25,14 +25,27 @@ export function forceGetRegisteredStorageType(
 }
 
 // register energy by default
-registerStorageType({
-  id: "energy",
-  category: "energy",
-  color: "yellow",
-  name: "energy",
-});
+registerStorageType(
+  makeRegisteredStorageTypeFromDefinition({
+    id: "energy",
+    category: "energy",
+    color: "yellow",
+    name: "energy",
+  }),
+);
 
-function registerStorageType(data: StorageTypeDefinition): void {
+function makeRegisteredStorageTypeFromDefinition(
+  def: StorageTypeDefinition,
+): RegisteredStorageType {
+  return new RegisteredStorageType({
+    a: def.id,
+    b: def.category,
+    c: def.color,
+    d: def.name,
+  });
+}
+
+function registerStorageType(data: RegisteredStorageType): void {
   if (data.id in storageTypeRegistry) {
     logInfo(`overrode storage type '${data.id}'`);
   }
@@ -49,15 +62,8 @@ function registerStorageType(data: StorageTypeDefinition): void {
 export function registerStorageTypeListener(
   payload: ipc.SerializableValue,
 ): null {
-  const mData = payload as unknown as MangledStorageTypeDefinition;
-  const data: StorageTypeDefinition = {
-    id: mData.a,
-    category: mData.b,
-    color: mData.c,
-    name: mData.d,
-  };
-
+  const mData = payload as MangledStorageTypeDefinition;
+  const data = new RegisteredStorageType(mData);
   registerStorageType(data);
-
   return null;
 }

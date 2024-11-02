@@ -99,14 +99,12 @@ export function registerMachine(
 export class RegisteredMachine {
   /**
    * @internal
-   * @privateRemarks
-   * This is not marked as private because it is extended by `InternalRegisteredMachine`.
    */
   constructor(
     /**
      * @internal
      */
-    readonly internal: MangledRegisteredMachine,
+    protected readonly internal: MangledRegisteredMachine,
   ) {}
 
   /**
@@ -150,10 +148,6 @@ export class RegisteredMachine {
 
   /**
    * Gets a registered machine.
-   * @privateRemarks
-   * This is a public API method.
-   * DO NOT USE IN THE ADD-ON!
-   * Use `getInternal` instead.
    * @beta
    * @param id The ID of the machine.
    * @returns The {@link RegisteredMachine} with the specified `id` or `null` if it doesn't exist.

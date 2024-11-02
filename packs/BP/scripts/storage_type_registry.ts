@@ -4,25 +4,27 @@ import { logInfo, raise } from "./utils/log";
 import { RegisteredStorageType, StorageTypeDefinition } from "@/public_api/src";
 import { MangledStorageTypeDefinition } from "@/public_api/src/storage_type_registry_internal";
 
-const storageTypeRegistry: Record<string, RegisteredStorageType> = {};
-
-export function getRegisteredStorageType(
-  id: string,
-): RegisteredStorageType | undefined {
-  return storageTypeRegistry[id];
-}
-
-export function forceGetRegisteredStorageType(
-  id: string,
-): RegisteredStorageType {
-  const registered = getRegisteredStorageType(id);
-  if (!registered) {
-    raise(
-      `Expected '${id}' to be registered as a storage type, but it could not be found in the storage type registry.`,
-    );
+export class InternalRegisteredStorageType extends RegisteredStorageType {
+  get mangled(): MangledStorageTypeDefinition {
+    return this.internal;
   }
-  return registered;
+
+  static getInternal(id: string): InternalRegisteredStorageType | undefined {
+    return storageTypeRegistry[id];
+  }
+
+  static forceGetInternal(id: string): InternalRegisteredStorageType {
+    const registered = InternalRegisteredStorageType.getInternal(id);
+    if (!registered) {
+      raise(
+        `Expected '${id}' to be registered as a storage type, but it could not be found in the storage type registry.`,
+      );
+    }
+    return registered;
+  }
 }
+
+const storageTypeRegistry: Record<string, InternalRegisteredStorageType> = {};
 
 // register energy by default
 registerStorageType(
@@ -36,8 +38,8 @@ registerStorageType(
 
 function makeRegisteredStorageTypeFromDefinition(
   def: StorageTypeDefinition,
-): RegisteredStorageType {
-  return new RegisteredStorageType({
+): InternalRegisteredStorageType {
+  return new InternalRegisteredStorageType({
     a: def.id,
     b: def.category,
     c: def.color,
@@ -45,7 +47,7 @@ function makeRegisteredStorageTypeFromDefinition(
   });
 }
 
-function registerStorageType(data: RegisteredStorageType): void {
+function registerStorageType(data: InternalRegisteredStorageType): void {
   if (data.id in storageTypeRegistry) {
     logInfo(`overrode storage type '${data.id}'`);
   }
@@ -63,7 +65,7 @@ export function registerStorageTypeListener(
   payload: ipc.SerializableValue,
 ): null {
   const mData = payload as MangledStorageTypeDefinition;
-  const data = new RegisteredStorageType(mData);
+  const data = new InternalRegisteredStorageType(mData);
   registerStorageType(data);
   return null;
 }

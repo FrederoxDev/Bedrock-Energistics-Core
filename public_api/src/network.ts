@@ -20,9 +20,6 @@ import { makeSerializableDimensionLocation } from "./serialize_utils.js";
 /**
  * A network of machines with a certain I/O category.
  * @beta
- * @privateRemarks
- * This class routes method calls to Bedrock Energistics Core via IPC.
- * - DO NOT USE THIS CLASS IN THE ADD-ON
  */
 export class MachineNetwork {
   private constructor(

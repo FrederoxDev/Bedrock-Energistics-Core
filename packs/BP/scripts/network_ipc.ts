@@ -11,7 +11,7 @@ import {
 } from "@/public_api/src/network_internal";
 import { MachineNetwork } from "./network";
 import { getMachineStorage } from "./data";
-import { forceGetRegisteredStorageType } from "./storage_type_registry";
+import { InternalRegisteredStorageType } from "./storage_type_registry";
 
 export function networkDestroyListener(payload: ipc.SerializableValue): null {
   const data = payload as MangledNetworkInstanceMethodPayload;
@@ -113,7 +113,7 @@ export function generateListener(payload: ipc.SerializableValue): null {
   const fullAmount = amount + getMachineStorage(location, type);
   if (!fullAmount) return null;
 
-  const storageType = forceGetRegisteredStorageType(type);
+  const storageType = InternalRegisteredStorageType.forceGetInternal(type);
 
   MachineNetwork.getOrEstablish(storageType.category, block)?.queueSend(
     block,

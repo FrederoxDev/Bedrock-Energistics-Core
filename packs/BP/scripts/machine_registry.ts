@@ -13,6 +13,10 @@ export const machineRegistry: Record<string, InternalRegisteredMachine> = {};
 export const machineEntityToBlockIdMap: Record<string, string> = {};
 
 export class InternalRegisteredMachine extends RegisteredMachine {
+  get mangled(): MangledRegisteredMachine {
+    return this.internal;
+  }
+
   get updateUiEvent(): string | undefined {
     return this.internal.d;
   }

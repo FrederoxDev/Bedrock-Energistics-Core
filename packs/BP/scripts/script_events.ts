@@ -28,7 +28,7 @@ import {
   registerMachineListener,
 } from "./machine_registry";
 import {
-  getRegisteredStorageType,
+  InternalRegisteredStorageType,
   registerStorageTypeListener,
 } from "./storage_type_registry";
 
@@ -104,12 +104,14 @@ ipc.registerListener(
 ipc.registerListener(
   "fluffyalien_energisticscore:ipc.registeredMachineGet",
   (payload) =>
-    InternalRegisteredMachine.getInternal(payload as string)?.internal ?? null,
+    InternalRegisteredMachine.getInternal(payload as string)?.mangled ?? null,
 );
 
 ipc.registerListener(
   "fluffyalien_energisticscore:ipc.registeredStorageTypeGet",
-  (payload) => getRegisteredStorageType(payload as string)?.internal ?? null,
+  (payload) =>
+    InternalRegisteredStorageType.getInternal(payload as string)?.mangled ??
+    null,
 );
 
 ipc.registerListener(

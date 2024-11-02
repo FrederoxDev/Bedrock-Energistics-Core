@@ -15,7 +15,7 @@ export class RegisteredStorageType {
     /**
      * @internal
      */
-    readonly internal: MangledStorageTypeDefinition,
+    protected readonly internal: MangledStorageTypeDefinition,
   ) {}
 
   /**

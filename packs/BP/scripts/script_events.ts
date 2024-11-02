@@ -99,11 +99,8 @@ ipc.registerListener(
 );
 
 ipc.registerListener(
-  "fluffyalien_energisticscore:ipc.getRegisteredMachine",
+  "fluffyalien_energisticscore:ipc.registeredMachineGet",
   (machineId) =>
-    //TODO: this needs to use streaming since machine definitions can be streamed
-    // so they must be streamed back as well
-    // there is no handler response streaming in mcbe-addon-ipc yet
     InternalRegisteredMachine.getInternal(machineId as string)?.internal ??
     null,
 );

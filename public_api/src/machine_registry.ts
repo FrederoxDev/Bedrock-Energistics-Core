@@ -161,7 +161,7 @@ export class RegisteredMachine {
    */
   static async get(id: string): Promise<RegisteredMachine | undefined> {
     const mangled = (await ipc.invokeAuto(
-      "fluffyalien_energisticscore:ipc.getRegisteredMachine",
+      "fluffyalien_energisticscore:ipc.registeredMachineGet",
       id,
     )) as MangledRegisteredMachine | null;
 

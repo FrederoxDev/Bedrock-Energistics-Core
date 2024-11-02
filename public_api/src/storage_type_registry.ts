@@ -1,5 +1,6 @@
 import * as ipc from "mcbe-addon-ipc";
 import { StorageTypeDefinition } from "./registry_types.js";
+import { MangledStorageTypeDefinition } from "./storage_type_registry_internal.js";
 
 /**
  * Registers a storage type. This function should be called in the `worldInitialize` after event.
@@ -13,11 +14,11 @@ export function registerStorageType(definition: StorageTypeDefinition): void {
   }
 
   // reconstruct the definition in case the passed `definition` contains unnecessary keys
-  const payload: StorageTypeDefinition = {
-    id: definition.id,
-    category: definition.category,
-    color: definition.color,
-    name: definition.name,
+  const payload: MangledStorageTypeDefinition = {
+    a: definition.id,
+    b: definition.category,
+    c: definition.color,
+    d: definition.name,
   };
 
   void ipc.sendAuto(

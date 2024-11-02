@@ -1,4 +1,3 @@
-import * as ipc from "mcbe-addon-ipc";
 import { Block, DimensionLocation } from "@minecraft/server";
 import {
   getBlockUniqueId,
@@ -9,6 +8,7 @@ import {
 } from "./machine_data_internal.js";
 import { makeErrorString } from "./log.js";
 import { makeSerializableDimensionLocation } from "./serialize_utils.js";
+import { ipcSend } from "./ipc_wrapper.js";
 
 /**
  * Representation of an item stack stored in a machine inventory.
@@ -140,7 +140,7 @@ export function setMachineSlotItem(
   slotId: number,
   newItemStack?: MachineItemStack,
 ): void {
-  void ipc.sendAuto("fluffyalien_energisticscore:ipc.setMachineSlot", {
+  ipcSend("fluffyalien_energisticscore:ipc.setMachineSlot", {
     loc: makeSerializableDimensionLocation(loc),
     slot: slotId,
     item: newItemStack,

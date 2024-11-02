@@ -1,4 +1,3 @@
-import * as ipc from "mcbe-addon-ipc";
 import { Block, Dimension, Entity, Vector3 } from "@minecraft/server";
 import {
   NETWORK_LINK_BLOCK_TAG,
@@ -10,6 +9,7 @@ import {
 } from "./ipc_events.js";
 import { makeSerializableDimensionLocation } from "../serialize_utils.js";
 import { raise } from "../log.js";
+import { ipcInvoke } from "../ipc_wrapper.js";
 
 /**
  * A NetworkLinkNode represents a single node in the machine network
@@ -41,7 +41,7 @@ export class NetworkLinkNode {
       }),
     };
 
-    const res = (await ipc.invokeAuto(
+    const res = (await ipcInvoke(
       "fluffyalien_energisticscore:ipc.networkLinkGet",
       payload,
     )) as NetworkLinkGetResponse;
@@ -63,10 +63,7 @@ export class NetworkLinkNode {
       other: location,
     };
 
-    await ipc.invokeAuto(
-      "fluffyalien_energisticscore:ipc.networkLinkAdd",
-      payload,
-    );
+    await ipcInvoke("fluffyalien_energisticscore:ipc.networkLinkAdd", payload);
   }
 
   /**
@@ -83,7 +80,7 @@ export class NetworkLinkNode {
       other: location,
     };
 
-    await ipc.invokeAuto(
+    await ipcInvoke(
       "fluffyalien_energisticscore:ipc.networkLinkRemove",
       payload,
     );
@@ -101,7 +98,7 @@ export class NetworkLinkNode {
       }),
     };
 
-    await ipc.invokeAuto(
+    await ipcInvoke(
       "fluffyalien_energisticscore:ipc.networkLinkDestroy",
       payload,
     );

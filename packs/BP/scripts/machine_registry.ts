@@ -8,6 +8,7 @@ import {
   MangledRegisteredMachine,
 } from "@/public_api/src/machine_registry_internal";
 import { makeSerializableDimensionLocation } from "@/public_api/src/serialize_utils";
+import { ipcInvoke, ipcSend } from "./ipc_wrapper";
 
 export const machineRegistry: Record<string, InternalRegisteredMachine> = {};
 export const machineEntityToBlockIdMap: Record<string, string> = {};
@@ -40,7 +41,7 @@ export class InternalRegisteredMachine extends RegisteredMachine {
       );
     }
 
-    return ipc.invokeAuto(
+    return ipcInvoke(
       this.updateUiEvent,
       makeSerializableDimensionLocation(dimensionLocation),
     ) as Promise<UpdateUiHandlerResponse>;
@@ -65,7 +66,7 @@ export class InternalRegisteredMachine extends RegisteredMachine {
       c: recieveAmount,
     };
 
-    return ipc.invokeAuto(this.recieveHandlerEvent, payload) as Promise<number>;
+    return ipcInvoke(this.recieveHandlerEvent, payload) as Promise<number>;
   }
 
   callOnButtonPressedEvent(
@@ -89,7 +90,7 @@ export class InternalRegisteredMachine extends RegisteredMachine {
       d: buttonElementId,
     };
 
-    void ipc.sendAuto(this.onButtonPressedEvent, payload);
+    ipcSend(this.onButtonPressedEvent, payload);
   }
 
   /**

@@ -1,7 +1,7 @@
-import * as ipc from "mcbe-addon-ipc";
 import { Block, BlockPermutation, DimensionLocation } from "@minecraft/server";
 import { MangledGeneratePayload } from "./network_internal.js";
 import { makeSerializableDimensionLocation } from "./serialize_utils.js";
+import { ipcSend } from "./ipc_wrapper.js";
 
 export enum NetworkConnectionType {
   Conduit = "Conduit",
@@ -44,5 +44,5 @@ export function generate(
     c: amount,
   };
 
-  void ipc.sendAuto("fluffyalien_energisticscore:ipc.generate", payload);
+  ipcSend("fluffyalien_energisticscore:ipc.generate", payload);
 }

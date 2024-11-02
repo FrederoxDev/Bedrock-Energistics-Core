@@ -9,6 +9,7 @@ import {
   deserializeDimensionLocation,
   SerializableDimensionLocation,
 } from "./serialize_utils.js";
+import { ipcInvoke, ipcSend } from "./ipc_wrapper.js";
 
 const UPDATE_UI_HANDLER_SUFFIX = "__h0";
 const RECIEVE_HANDLER_SUFFIX = "__h1";
@@ -88,7 +89,7 @@ export function registerMachine(
     h: onButtonPressedEvent,
   };
 
-  void ipc.sendAuto("fluffyalien_energisticscore:ipc.registerMachine", payload);
+  ipcSend("fluffyalien_energisticscore:ipc.registerMachine", payload);
 }
 
 /**
@@ -154,7 +155,7 @@ export class RegisteredMachine {
    * @throws if Bedrock Energistics Core takes too long to respond.
    */
   static async get(id: string): Promise<RegisteredMachine | undefined> {
-    const mangled = (await ipc.invokeAuto(
+    const mangled = (await ipcInvoke(
       "fluffyalien_energisticscore:ipc.registeredMachineGet",
       id,
     )) as MangledRegisteredMachine | null;

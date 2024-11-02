@@ -1,4 +1,3 @@
-import * as ipc from "mcbe-addon-ipc";
 import { Block, DimensionLocation } from "@minecraft/server";
 import {
   MangledNetworkEstablishPayload,
@@ -16,6 +15,7 @@ import {
 } from "./network_utils.js";
 import { getBlockIoCategories } from "./io.js";
 import { makeSerializableDimensionLocation } from "./serialize_utils.js";
+import { ipcInvoke, ipcSend } from "./ipc_wrapper.js";
 
 /**
  * A network of machines with a certain I/O category.
@@ -42,10 +42,7 @@ export class MachineNetwork {
       a: this.id,
     };
 
-    void ipc.sendAuto(
-      "fluffyalien_energisisticscore:ipc.networkDestroy",
-      payload,
-    );
+    ipcSend("fluffyalien_energisisticscore:ipc.networkDestroy", payload);
   }
 
   /**
@@ -62,7 +59,7 @@ export class MachineNetwork {
       c: type,
     };
 
-    return ipc.invokeAuto(
+    return ipcInvoke(
       "fluffyalien_energisticscore:ipc.networkIsPartOfNetwork",
       payload,
     ) as Promise<boolean>;
@@ -101,10 +98,7 @@ export class MachineNetwork {
       d: amount,
     };
 
-    void ipc.sendAuto(
-      "fluffyalien_energisisticscore:ipc.networkQueueSend",
-      payload,
-    );
+    ipcSend("fluffyalien_energisisticscore:ipc.networkQueueSend", payload);
   }
 
   /**
@@ -120,7 +114,7 @@ export class MachineNetwork {
       b: makeSerializableDimensionLocation(location),
     };
 
-    const id = (await ipc.invokeAuto(
+    const id = (await ipcInvoke(
       "fluffyalien_energisticscore:ipc.networkEstablish",
       payload,
     )) as number | null;
@@ -146,7 +140,7 @@ export class MachineNetwork {
       c: type,
     };
 
-    const id = (await ipc.invokeAuto(
+    const id = (await ipcInvoke(
       "fluffyalien_energisticscore:ipc.networkGetWith",
       payload,
     )) as number | null;
@@ -182,7 +176,7 @@ export class MachineNetwork {
       b: type,
     };
 
-    const ids = (await ipc.invokeAuto(
+    const ids = (await ipcInvoke(
       "fluffyalien_energisticscore:ipc.networkGetAllWith",
       payload,
     )) as number[];
@@ -218,7 +212,7 @@ export class MachineNetwork {
       b: makeSerializableDimensionLocation(location),
     };
 
-    const id = (await ipc.invokeAuto(
+    const id = (await ipcInvoke(
       "fluffyalien_energisticscore:ipc.networkGetOrEstablish",
       payload,
     )) as number | null;

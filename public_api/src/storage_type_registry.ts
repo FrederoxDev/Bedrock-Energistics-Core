@@ -1,4 +1,4 @@
-import * as ipc from "mcbe-addon-ipc";
+import { ipcInvoke, ipcSend } from "./ipc_wrapper.js";
 import { StorageTypeColor, StorageTypeDefinition } from "./registry_types.js";
 import { MangledStorageTypeDefinition } from "./storage_type_registry_internal.js";
 
@@ -58,7 +58,7 @@ export class RegisteredStorageType {
    * @throws if Bedrock Energistics Core takes too long to respond.
    */
   static async get(id: string): Promise<RegisteredStorageType | undefined> {
-    const mangled = (await ipc.invokeAuto(
+    const mangled = (await ipcInvoke(
       "fluffyalien_energisticscore:ipc.registeredStorageTypeGet",
       id,
     )) as MangledStorageTypeDefinition | null;
@@ -88,8 +88,5 @@ export function registerStorageType(definition: StorageTypeDefinition): void {
     d: definition.name,
   };
 
-  void ipc.sendAuto(
-    "fluffyalien_energisticscore:ipc.registerStorageType",
-    payload,
-  );
+  ipcSend("fluffyalien_energisticscore:ipc.registerStorageType", payload);
 }

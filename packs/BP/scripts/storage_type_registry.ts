@@ -1,37 +1,53 @@
+import * as ipc from "mcbe-addon-ipc";
 import { world } from "@minecraft/server";
 import { logInfo, raise } from "./utils/log";
-import { StorageTypeDefinition } from "@/public_api/src";
+import { RegisteredStorageType, StorageTypeDefinition } from "@/public_api/src";
 import { MangledStorageTypeDefinition } from "@/public_api/src/storage_type_registry_internal";
 
-const storageTypeRegistry: Record<string, StorageTypeDefinition> = {};
-
-export function getRegisteredStorageType(
-  id: string,
-): StorageTypeDefinition | undefined {
-  return storageTypeRegistry[id];
-}
-
-export function forceGetRegisteredStorageType(
-  id: string,
-): StorageTypeDefinition {
-  const registered = getRegisteredStorageType(id);
-  if (!registered) {
-    raise(
-      `Expected '${id}' to be registered as a storage type, but it could not be found in the storage type registry.`,
-    );
+export class InternalRegisteredStorageType extends RegisteredStorageType {
+  get mangled(): MangledStorageTypeDefinition {
+    return this.internal;
   }
-  return registered;
+
+  static getInternal(id: string): InternalRegisteredStorageType | undefined {
+    return storageTypeRegistry[id];
+  }
+
+  static forceGetInternal(id: string): InternalRegisteredStorageType {
+    const registered = InternalRegisteredStorageType.getInternal(id);
+    if (!registered) {
+      raise(
+        `Expected '${id}' to be registered as a storage type, but it could not be found in the storage type registry.`,
+      );
+    }
+    return registered;
+  }
 }
+
+const storageTypeRegistry: Record<string, InternalRegisteredStorageType> = {};
 
 // register energy by default
-registerStorageType({
-  id: "energy",
-  category: "energy",
-  color: "yellow",
-  name: "energy",
-});
+registerStorageType(
+  makeRegisteredStorageTypeFromDefinition({
+    id: "energy",
+    category: "energy",
+    color: "yellow",
+    name: "energy",
+  }),
+);
 
-function registerStorageType(data: StorageTypeDefinition): void {
+function makeRegisteredStorageTypeFromDefinition(
+  def: StorageTypeDefinition,
+): InternalRegisteredStorageType {
+  return new InternalRegisteredStorageType({
+    a: def.id,
+    b: def.category,
+    c: def.color,
+    d: def.name,
+  });
+}
+
+function registerStorageType(data: InternalRegisteredStorageType): void {
   if (data.id in storageTypeRegistry) {
     logInfo(`overrode storage type '${data.id}'`);
   }
@@ -46,14 +62,10 @@ function registerStorageType(data: StorageTypeDefinition): void {
 }
 
 export function registerStorageTypeListener(
-  mData: MangledStorageTypeDefinition,
-): void {
-  const data: StorageTypeDefinition = {
-    id: mData.a,
-    category: mData.b,
-    color: mData.c,
-    name: mData.d,
-  };
-
+  payload: ipc.SerializableValue,
+): null {
+  const mData = payload as MangledStorageTypeDefinition;
+  const data = new InternalRegisteredStorageType(mData);
   registerStorageType(data);
+  return null;
 }

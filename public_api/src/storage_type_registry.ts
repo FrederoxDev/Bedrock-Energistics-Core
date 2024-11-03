@@ -1,14 +1,79 @@
-import { dispatchScriptEvent } from "mcbe-addon-ipc";
-import { ensureInitialized } from "./init.js";
-import { StorageTypeDefinition } from "./registry_types.js";
+import { ipcInvoke, ipcSend } from "./ipc_wrapper.js";
+import { StorageTypeColor, StorageTypeDefinition } from "./registry_types.js";
+import { MangledStorageTypeDefinition } from "./storage_type_registry_internal.js";
+
+/**
+ * Representation of a storage type definition that has been registered.
+ * @beta
+ * @see {@link StorageTypeDefinition}, {@link registerStorageType}
+ */
+export class RegisteredStorageType {
+  /**
+   * @internal
+   */
+  constructor(
+    /**
+     * @internal
+     */
+    protected readonly internal: MangledStorageTypeDefinition,
+  ) {}
+
+  /**
+   * @returns The ID of this storage type.
+   * @beta
+   */
+  get id(): string {
+    return this.internal.a;
+  }
+
+  /**
+   * @returns The category of this storage type.
+   * @beta
+   */
+  get category(): string {
+    return this.internal.b;
+  }
+
+  /**
+   * @returns The {@link StorageTypeColor} of this storage type.
+   * @beta
+   */
+  get color(): StorageTypeColor {
+    return this.internal.c;
+  }
+
+  /**
+   * @returns The name of this storage type.
+   * @beta
+   */
+  get name(): string {
+    return this.internal.d;
+  }
+
+  /**
+   * Gets a registered storage type.
+   * @beta
+   * @param id The ID of the storage type.
+   * @returns The {@link RegisteredStorageType} with the specified `id` or `null` if it doesn't exist.
+   * @throws if Bedrock Energistics Core takes too long to respond.
+   */
+  static async get(id: string): Promise<RegisteredStorageType | undefined> {
+    const mangled = (await ipcInvoke(
+      "fluffyalien_energisticscore:ipc.registeredStorageTypeGet",
+      id,
+    )) as MangledStorageTypeDefinition | null;
+
+    if (!mangled) return;
+
+    return new RegisteredStorageType(mangled);
+  }
+}
 
 /**
  * Registers a storage type. This function should be called in the `worldInitialize` after event.
  * @beta
  */
 export function registerStorageType(definition: StorageTypeDefinition): void {
-  ensureInitialized();
-
   if (definition.id.startsWith("_") || definition.category.startsWith("_")) {
     throw new Error(
       `can't register storage type '${definition.id}' (category: '${definition.category}'): storage type IDs and categories cannot start with '_'`,
@@ -16,15 +81,12 @@ export function registerStorageType(definition: StorageTypeDefinition): void {
   }
 
   // reconstruct the definition in case the passed `definition` contains unnecessary keys
-  const payload: StorageTypeDefinition = {
-    id: definition.id,
-    category: definition.category,
-    color: definition.color,
-    name: definition.name,
+  const payload: MangledStorageTypeDefinition = {
+    a: definition.id,
+    b: definition.category,
+    c: definition.color,
+    d: definition.name,
   };
 
-  dispatchScriptEvent(
-    "fluffyalien_energisticscore:ipc.registerStorageType",
-    payload,
-  );
+  ipcSend("fluffyalien_energisticscore:ipc.registerStorageType", payload);
 }

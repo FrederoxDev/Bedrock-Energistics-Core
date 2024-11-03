@@ -24,11 +24,11 @@ import {
 import { truncateNumber } from "./utils/string";
 import { logWarn, makeErrorString } from "./utils/log";
 import { getEntityComponent } from "./polyfills/component_type_map";
-import { forceGetRegisteredStorageType } from "./storage_type_registry";
 import {
   getMachineIdFromEntityId,
   InternalRegisteredMachine,
 } from "./machine_registry";
+import { InternalRegisteredStorageType } from "./storage_type_registry";
 
 export const PROGRESS_INDICATOR_MAX_VALUES: Record<
   UiProgressIndicatorElementType,
@@ -158,7 +158,8 @@ function handleBarItems(
     return;
   }
 
-  const storageTypeOptions = forceGetRegisteredStorageType(type);
+  const storageTypeOptions =
+    InternalRegisteredStorageType.forceGetInternal(type);
 
   fillUiBar(
     `fluffyalien_energisticscore:ui_storage_bar_segment_${storageTypeOptions.color}`,

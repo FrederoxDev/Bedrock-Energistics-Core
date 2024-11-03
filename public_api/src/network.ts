@@ -1,6 +1,4 @@
 import { Block, DimensionLocation } from "@minecraft/server";
-import { dispatchScriptEvent, invokeScriptEvent } from "mcbe-addon-ipc";
-import { getInitNamespace } from "./init.js";
 import {
   MangledNetworkEstablishPayload,
   MangledNetworkGetAllWithPayload,
@@ -17,13 +15,11 @@ import {
 } from "./network_utils.js";
 import { getBlockIoCategories } from "./io.js";
 import { makeSerializableDimensionLocation } from "./serialize_utils.js";
+import { ipcInvoke, ipcSend } from "./ipc_wrapper.js";
 
 /**
  * A network of machines with a certain I/O category.
  * @beta
- * @privateRemarks
- * This class routes method calls to Bedrock Energistics Core via IPC.
- * - DO NOT USE THIS CLASS IN THE ADD-ON
  */
 export class MachineNetwork {
   private constructor(
@@ -46,10 +42,7 @@ export class MachineNetwork {
       a: this.id,
     };
 
-    dispatchScriptEvent(
-      "fluffyalien_energisisticscore:ipc.networkDestroy",
-      payload,
-    );
+    ipcSend("fluffyalien_energisisticscore:ipc.networkDestroy", payload);
   }
 
   /**
@@ -66,9 +59,8 @@ export class MachineNetwork {
       c: type,
     };
 
-    return invokeScriptEvent(
+    return ipcInvoke(
       "fluffyalien_energisticscore:ipc.networkIsPartOfNetwork",
-      getInitNamespace(),
       payload,
     ) as Promise<boolean>;
   }
@@ -106,10 +98,7 @@ export class MachineNetwork {
       d: amount,
     };
 
-    dispatchScriptEvent(
-      "fluffyalien_energisisticscore:ipc.networkQueueSend",
-      payload,
-    );
+    ipcSend("fluffyalien_energisisticscore:ipc.networkQueueSend", payload);
   }
 
   /**
@@ -125,9 +114,8 @@ export class MachineNetwork {
       b: makeSerializableDimensionLocation(location),
     };
 
-    const id = (await invokeScriptEvent(
+    const id = (await ipcInvoke(
       "fluffyalien_energisticscore:ipc.networkEstablish",
-      getInitNamespace(),
       payload,
     )) as number | null;
 
@@ -152,9 +140,8 @@ export class MachineNetwork {
       c: type,
     };
 
-    const id = (await invokeScriptEvent(
+    const id = (await ipcInvoke(
       "fluffyalien_energisticscore:ipc.networkGetWith",
-      getInitNamespace(),
       payload,
     )) as number | null;
 
@@ -189,9 +176,8 @@ export class MachineNetwork {
       b: type,
     };
 
-    const ids = (await invokeScriptEvent(
+    const ids = (await ipcInvoke(
       "fluffyalien_energisticscore:ipc.networkGetAllWith",
-      getInitNamespace(),
       payload,
     )) as number[];
 
@@ -226,9 +212,8 @@ export class MachineNetwork {
       b: makeSerializableDimensionLocation(location),
     };
 
-    const id = (await invokeScriptEvent(
+    const id = (await ipcInvoke(
       "fluffyalien_energisticscore:ipc.networkGetOrEstablish",
-      getInitNamespace(),
       payload,
     )) as number | null;
 

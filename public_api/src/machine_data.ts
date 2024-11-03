@@ -6,9 +6,9 @@ import {
   getScore,
   getStorageScoreboardObjective,
 } from "./machine_data_internal.js";
-import { dispatchScriptEvent } from "mcbe-addon-ipc";
 import { makeErrorString } from "./log.js";
 import { makeSerializableDimensionLocation } from "./serialize_utils.js";
+import { ipcSend } from "./ipc_wrapper.js";
 
 /**
  * Representation of an item stack stored in a machine inventory.
@@ -140,7 +140,7 @@ export function setMachineSlotItem(
   slotId: number,
   newItemStack?: MachineItemStack,
 ): void {
-  dispatchScriptEvent("fluffyalien_energisticscore:ipc.setMachineSlot", {
+  ipcSend("fluffyalien_energisticscore:ipc.setMachineSlot", {
     loc: makeSerializableDimensionLocation(loc),
     slot: slotId,
     item: newItemStack,

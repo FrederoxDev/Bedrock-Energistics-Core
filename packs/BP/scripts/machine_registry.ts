@@ -1,18 +1,23 @@
+import * as ipc from "mcbe-addon-ipc";
 import { DimensionLocation } from "@minecraft/server";
 import { logInfo, makeErrorString, raise } from "./utils/log";
 import { RegisteredMachine, UpdateUiHandlerResponse } from "@/public_api/src";
-import { dispatchScriptEvent, invokeScriptEvent } from "mcbe-addon-ipc";
 import {
   MangledOnButtonPressedPayload,
   MangledRecieveHandlerPayload,
   MangledRegisteredMachine,
 } from "@/public_api/src/machine_registry_internal";
 import { makeSerializableDimensionLocation } from "@/public_api/src/serialize_utils";
+import { ipcInvoke, ipcSend } from "./ipc_wrapper";
 
 export const machineRegistry: Record<string, InternalRegisteredMachine> = {};
 export const machineEntityToBlockIdMap: Record<string, string> = {};
 
 export class InternalRegisteredMachine extends RegisteredMachine {
+  get mangled(): MangledRegisteredMachine {
+    return this.internal;
+  }
+
   get updateUiEvent(): string | undefined {
     return this.internal.d;
   }
@@ -36,9 +41,8 @@ export class InternalRegisteredMachine extends RegisteredMachine {
       );
     }
 
-    return invokeScriptEvent(
+    return ipcInvoke(
       this.updateUiEvent,
-      "fluffyalien_energisticscore",
       makeSerializableDimensionLocation(dimensionLocation),
     ) as Promise<UpdateUiHandlerResponse>;
   }
@@ -62,11 +66,7 @@ export class InternalRegisteredMachine extends RegisteredMachine {
       c: recieveAmount,
     };
 
-    return invokeScriptEvent(
-      this.recieveHandlerEvent,
-      "fluffyalien_energisticscore",
-      payload,
-    ) as Promise<number>;
+    return ipcInvoke(this.recieveHandlerEvent, payload) as Promise<number>;
   }
 
   callOnButtonPressedEvent(
@@ -90,7 +90,7 @@ export class InternalRegisteredMachine extends RegisteredMachine {
       d: buttonElementId,
     };
 
-    dispatchScriptEvent(this.onButtonPressedEvent, payload);
+    ipcSend(this.onButtonPressedEvent, payload);
   }
 
   /**
@@ -120,7 +120,8 @@ export function getMachineIdFromEntityId(entityId: string): string | undefined {
   return machineEntityToBlockIdMap[entityId];
 }
 
-export function registerMachineListener(mData: MangledRegisteredMachine): void {
+export function registerMachineListener(payload: ipc.SerializableValue): null {
+  const mData = payload as MangledRegisteredMachine;
   const data = new InternalRegisteredMachine(mData);
 
   const entityExistingAttachment = machineEntityToBlockIdMap[data.entityId];
@@ -138,4 +139,6 @@ export function registerMachineListener(mData: MangledRegisteredMachine): void {
 
   machineRegistry[data.id] = data;
   machineEntityToBlockIdMap[data.entityId] = data.id;
+
+  return null;
 }

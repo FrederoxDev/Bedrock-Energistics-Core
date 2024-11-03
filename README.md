@@ -1,9 +1,3 @@
-# ipc-dev
-
-NOTE: This branch is using the latest dev version of `mcbe-addon-ipc` (the `main` branch).
-The `mcbe-addon-ipc` repository must be cloned and built in the same directory as `bedrock-energistics-core`
-(see `package.json`)
-
 ![Bedrock Energistics Core](keyart/thumbnail.png)
 
 APIs for creating tech add-ons.

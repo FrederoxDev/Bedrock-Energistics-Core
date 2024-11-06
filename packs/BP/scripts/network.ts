@@ -155,7 +155,9 @@ export class MachineNetwork extends DestroyableObject {
       // Machines can consume less than they're offered in which case the savings are given to further machines.
       for (let i = 0; i < machines.normalPriority.length; i++) {
         const machine = machines.normalPriority[i];
-        const budgetAllocation = budget / (machines.normalPriority.length - i);
+        const budgetAllocation = Math.floor(
+          budget / (machines.normalPriority.length - i),
+        );
         const currentStored = getMachineStorage(machine, type);
         const machineDef = InternalRegisteredMachine.forceGetInternal(
           machine.typeId,
@@ -168,11 +170,16 @@ export class MachineNetwork extends DestroyableObject {
 
         let waiting = true;
 
-        this.sendMachineAllocation(machine, machineDef, type, amountToAllocate)
+        this.determineActualMachineAllocation(
+          machine,
+          machineDef,
+          type,
+          amountToAllocate,
+        )
           .then((v) => (amountToAllocate = v))
           .catch((e: unknown) => {
             logWarn(
-              `Error in sendMachineAllocation to id: ${machineDef.id}, error: ${JSON.stringify(e)}`,
+              `Error in determineActualMachineAllocation for id: ${machineDef.id}, error: ${JSON.stringify(e)}`,
             );
             amountToAllocate = 0;
           })
@@ -193,7 +200,9 @@ export class MachineNetwork extends DestroyableObject {
       if (budget >= 0) {
         for (let i = 0; i < machines.lowPriority.length; i++) {
           const machine = machines.lowPriority[i];
-          const budgetAllocation = budget / (machines.lowPriority.length - i);
+          const budgetAllocation = Math.floor(
+            budget / (machines.lowPriority.length - i),
+          );
           const currentStored = getMachineStorage(machine, type);
           const machineDef = InternalRegisteredMachine.forceGetInternal(
             machine.typeId,
@@ -206,7 +215,7 @@ export class MachineNetwork extends DestroyableObject {
 
           let waiting = true;
 
-          this.sendMachineAllocation(
+          this.determineActualMachineAllocation(
             machine,
             machineDef,
             type,
@@ -215,7 +224,7 @@ export class MachineNetwork extends DestroyableObject {
             .then((v) => (amountToAllocate = v))
             .catch((e: unknown) => {
               logWarn(
-                `Error in sendMachineAllocation to id: ${machineDef.id}, error: ${JSON.stringify(e)}`,
+                `Error in determineActualMachineAllocation for id: ${machineDef.id}, error: ${JSON.stringify(e)}`,
               );
               amountToAllocate = 0;
             })
@@ -237,7 +246,12 @@ export class MachineNetwork extends DestroyableObject {
     this.sendJobRunning = false;
   }
 
-  private async sendMachineAllocation(
+  /**
+   * invoke the 'recieve' handler on a machine to get the
+   * actual allocation of a storage type (the 'recieve' handler
+   * may override the amount a machine is supposed to recieve)
+   */
+  private async determineActualMachineAllocation(
     machine: Block,
     machineDef: InternalRegisteredMachine,
     type: string,

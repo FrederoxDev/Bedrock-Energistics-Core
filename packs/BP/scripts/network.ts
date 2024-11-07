@@ -96,7 +96,7 @@ export class MachineNetwork extends DestroyableObject {
   private *send(): Generator<void, void, void> {
     if (!this.isValid) return;
 
-    // Calculate the amount of each type that is avaliable to send around.
+    // Calculate the amount of each type that is available to send around.
     const distribution: Record<string, number> = {};
 
     this.sendQueue.forEach((send) => {

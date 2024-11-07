@@ -219,12 +219,12 @@ export interface UpdateUiHandlerResponse {
  */
 export interface NetworkStorageTypeData {
   /**
-   * The amount of this storage type that was avaliable on this network *before* distribution
+   * The amount of this storage type that was available on this network *before* distribution
    */
   before: number;
 
   /**
-   * The amount of this storage type that was avaliable on this network *after* distribution
+   * The amount of this storage type that was available on this network *after* distribution
    */
   after: number;
 }
@@ -234,7 +234,7 @@ export interface NetworkStorageTypeData {
  */
 export interface NetworkStatsEventArg extends MachineCallbackArg {
   /**
-   * Contains an object where each key is a storage type ID and the value contains the amount that was avaliable on this network
+   * Contains an object where each key is a storage type ID and the value contains the amount that was available on this network
    */
   networkData: Record<string, NetworkStorageTypeData>;
 }

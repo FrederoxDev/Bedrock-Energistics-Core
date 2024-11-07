@@ -1,6 +1,7 @@
 import * as ipc from "mcbe-addon-ipc";
 import { MachineDefinition, UiElement } from "./registry_types.js";
 import {
+  IpcNetworkStatsEventArg,
   MangledOnButtonPressedPayload,
   MangledRecieveHandlerPayload,
   MangledRegisteredMachine,
@@ -14,6 +15,7 @@ import { ipcInvoke, ipcSend } from "./ipc_wrapper.js";
 const UPDATE_UI_HANDLER_SUFFIX = "__h0";
 const RECIEVE_HANDLER_SUFFIX = "__h1";
 const ON_BUTTON_PRESSED_EVENT_SUFFIX = "__e0";
+const NETWORK_STAT_EVENT_SUFFIX = "__e1";
 
 /**
  * Registers a machine. This function should be called in the `worldInitialize` after event.
@@ -78,6 +80,24 @@ export function registerMachine(
     });
   }
 
+  let networkStatEvent: string | undefined;
+  if (definition.events?.onNetworkStatsRecieved) {
+    networkStatEvent = eventIdPrefix + NETWORK_STAT_EVENT_SUFFIX;
+
+    const callback = definition.events.onNetworkStatsRecieved.bind(null);
+
+    ipc.registerListener(networkStatEvent, (payload) => {
+      const data = payload as IpcNetworkStatsEventArg;
+
+      callback({
+        blockLocation: deserializeDimensionLocation(data.blockLocation),
+        networkData: data.networkData,
+      });
+
+      return null;
+    });
+  }
+
   const payload: MangledRegisteredMachine = {
     a: definition.description.id,
     b: definition.description.persistentEntity,
@@ -87,6 +107,7 @@ export function registerMachine(
     f: receiveHandlerEvent,
     g: definition.description.maxStorage,
     h: onButtonPressedEvent,
+    i: networkStatEvent,
   };
 
   ipcSend("fluffyalien_energisticscore:ipc.registerMachine", payload);

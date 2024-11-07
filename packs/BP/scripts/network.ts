@@ -18,6 +18,7 @@ import { InternalNetworkLinkNode } from "./network_links/network_link_internal";
 import {
   getBlockNetworkConnectionType,
   NetworkConnectionType,
+  NetworkStorageTypeData,
 } from "@/public_api/src";
 import { InternalRegisteredMachine } from "./machine_registry";
 
@@ -114,6 +115,8 @@ export class MachineNetwork extends DestroyableObject {
 
     // initialize consumers keys.
     const consumers: Record<string, ConsumerGroups> = {};
+    const networkStatListeners: [Block, InternalRegisteredMachine][] = [];
+
     for (const key of typesToDistribute) {
       consumers[key] = { lowPriority: [], normalPriority: [] };
     }
@@ -140,16 +143,25 @@ export class MachineNetwork extends DestroyableObject {
         if (isLowPriority) consumers[consumerType].lowPriority.push(machine);
         else consumers[consumerType].normalPriority.push(machine);
       });
+
+      // Check if the machine is listening for network stat events.
+      const machineDef = InternalRegisteredMachine.forceGetInternal(
+        machine.typeId,
+      );
+
+      if (machineDef.onNetworkStatsRecievedEvent) {
+        networkStatListeners.push([machine, machineDef]);
+      }
     });
+
+    const networkStats: Record<string, NetworkStorageTypeData> = {};
 
     // send each machine its share of the pool.
     for (const type of typesToDistribute) {
       const machines = consumers[type];
-      const numMachines =
-        machines.lowPriority.length + machines.normalPriority.length;
-      if (numMachines === 0) continue;
 
-      let budget = distribution[type];
+      const originalBudget = distribution[type];
+      let budget = originalBudget;
 
       // Give each machine in the normal priority an equal split of the budget
       // Machines can consume less than they're offered in which case the savings are given to further machines.
@@ -241,7 +253,16 @@ export class MachineNetwork extends DestroyableObject {
           yield;
         }
       }
+
+      networkStats[type] = {
+        before: originalBudget,
+        after: budget,
+      };
     }
+
+    networkStatListeners.forEach(([block, machineDef]) => {
+      machineDef.callOnNetworkStatsRecievedEvent(block, networkStats);
+    });
 
     this.sendJobRunning = false;
   }

@@ -187,6 +187,12 @@ export interface MachineOnButtonPressedEventArg extends MachineCallbackArg {
  */
 export interface MachineDefinitionEvents {
   onButtonPressed?: MachineEventCallback<MachineOnButtonPressedEventArg>;
+
+  /**
+   * Called after a network has completed sending machine storage allocations
+   * contains information on each category sent in that pass with the starting and remaining budget.
+   */
+  onNetworkStatsRecieved: MachineEventCallback<NetworkStatsEventArg>;
 }
 
 // handlers
@@ -206,6 +212,31 @@ export interface UpdateUiHandlerResponse {
   storageBars?: Record<string, UiStorageBarElementUpdateOptions>;
   progressIndicators?: Record<string, number>;
   buttons?: Record<string, UiButtonElementUpdateOptions>;
+}
+
+/**
+ * @beta
+ */
+export interface NetworkStorageTypeData {
+  /**
+   * The amount of this storage type that was avaliable on this network *before* distribution
+   */
+  before: number;
+
+  /**
+   * The amount of this storage type that was avaliable on this network *after* distribution
+   */
+  after: number;
+}
+
+/**
+ * @beta
+ */
+export interface NetworkStatsEventArg extends MachineCallbackArg {
+  /**
+   * Contains an object where each key is a storage type ID and the value contains the amount that was avaliable on this network
+   */
+  networkData: Record<string, NetworkStorageTypeData>;
 }
 
 /**

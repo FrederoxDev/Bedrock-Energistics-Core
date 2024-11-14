@@ -95,16 +95,30 @@ export class MachineNetwork extends DestroyableObject {
   private *send(): Generator<void, void, void> {
     if (!this.isValid) return;
 
+    interface DistributionData {
+      total: number;
+      queueItems: SendQueueItem[];
+    }
+
     // Calculate the amount of each type that is available to send around.
-    const distribution: Record<string, number> = {};
+    const distribution: Record<string, DistributionData> = {};
 
-    this.sendQueue.forEach((send) => {
-      const newValue = distribution[send.type] ?? 0;
-      distribution[send.type] = newValue + send.amount;
-    });
+    for (const send of this.sendQueue) {
+      if (send.type in distribution) {
+        const data = distribution[send.type];
+        data.total += send.amount;
+        data.queueItems.push(send);
+        continue;
+      }
 
-    // Clear queue for next time.
+      distribution[send.type] = {
+        total: send.amount,
+        queueItems: [send],
+      };
+    }
+
     this.sendQueue = [];
+
     const typesToDistribute = Object.keys(distribution);
 
     interface ConsumerGroups {
@@ -159,7 +173,8 @@ export class MachineNetwork extends DestroyableObject {
     for (const type of typesToDistribute) {
       const machines = consumers[type];
 
-      const originalBudget = distribution[type];
+      const distributionData = distribution[type];
+      const originalBudget = distributionData.total;
       let budget = originalBudget;
 
       // Give each machine in the normal priority an equal split of the budget
@@ -257,6 +272,34 @@ export class MachineNetwork extends DestroyableObject {
         before: originalBudget,
         after: budget,
       };
+
+      if (budget <= 0) continue;
+
+      // return unused storage to generators
+      for (let i = 0; i < distributionData.queueItems.length; i++) {
+        const sendData = distributionData.queueItems[i];
+
+        const machine = sendData.block;
+        const budgetAllocation = Math.floor(
+          budget / (distributionData.queueItems.length - i),
+        );
+
+        const machineDef = InternalRegisteredMachine.forceGetInternal(
+          machine.typeId,
+        );
+
+        const newAmount = Math.min(
+          budgetAllocation,
+          machineDef.maxStorage,
+          sendData.amount,
+        );
+
+        // finally give the machine its allocated share
+        budget -= newAmount;
+        setMachineStorage(machine, type, newAmount);
+        if (budget <= 0) break;
+        yield;
+      }
     }
 
     networkStatListeners.forEach(([block, machineDef]) => {

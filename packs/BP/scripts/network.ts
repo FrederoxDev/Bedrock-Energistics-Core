@@ -7,7 +7,7 @@ import {
 } from "@minecraft/server";
 import { Vector3Utils } from "@minecraft/math";
 import { DestroyableObject } from "./utils/destroyable";
-import { logWarn, makeErrorString } from "./utils/log";
+import { logWarn } from "./utils/log";
 import { getMachineStorage, setMachineStorage } from "./data";
 import {
   DIRECTION_VECTORS,
@@ -323,13 +323,8 @@ export class MachineNetwork extends DestroyableObject {
   }
 
   queueSend(block: Block, type: string, amount: number): void {
-    if (amount <= 0) {
-      throw new Error(
-        makeErrorString("can't send <= 0 (MachineNetwork#queueSend)"),
-      );
-    }
-
-    this.sendQueue.push({ block, type, amount });
+    if (amount <= 0) return;
+    this.sendQueue.push({ block, type, amount: Math.floor(amount) });
   }
 
   private static discoverConnections(

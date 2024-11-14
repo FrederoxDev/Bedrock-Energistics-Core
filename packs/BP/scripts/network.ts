@@ -273,8 +273,6 @@ export class MachineNetwork extends DestroyableObject {
         after: budget,
       };
 
-      if (budget <= 0) continue;
-
       // return unused storage to generators
       for (let i = 0; i < distributionData.queueItems.length; i++) {
         const sendData = distributionData.queueItems[i];

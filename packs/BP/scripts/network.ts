@@ -26,7 +26,6 @@ interface SendQueueItem {
   block: Block;
   amount: number;
   type: string;
-  definition: InternalRegisteredMachine;
 }
 
 interface NetworkConnections {
@@ -330,17 +329,7 @@ export class MachineNetwork extends DestroyableObject {
       );
     }
 
-    const definition = InternalRegisteredMachine.getInternal(block.typeId);
-
-    if (!definition) {
-      throw new Error(
-        makeErrorString(
-          `can't queue sending '${type}' from machine '${block.typeId}': the machine to send from could not be found in the machine registry`,
-        ),
-      );
-    }
-
-    this.sendQueue.push({ block, type, amount, definition });
+    this.sendQueue.push({ block, type, amount });
   }
 
   private static discoverConnections(

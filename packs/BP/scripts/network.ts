@@ -135,27 +135,26 @@ export class MachineNetwork extends DestroyableObject {
     }
 
     // find and filter connections into their consumer groups.
-    this.connections.machines.forEach((machine) => {
-      const machineTags = machine.getTags();
-      const isLowPriority = machineTags.includes(
+    for (const machine of this.connections.machines) {
+      const isLowPriority = machine.hasTag(
         "fluffyalien_energisticscore:low_priority_consumer",
       );
-      const allowsAny = machineTags.includes(
+      const allowsAny = machine.hasTag(
         "fluffyalien_energisticscore:consumer._any",
       );
 
       // Check machine tags and sort into appropriate groups.
-      typesToDistribute.forEach((consumerType) => {
+      for (const consumerType of typesToDistribute) {
         const allowsType =
           allowsAny ||
-          machineTags.includes(
+          machine.hasTag(
             `fluffyalien_energisticscore:consumer.${consumerType}`,
           );
-        if (!allowsType) return;
+        if (!allowsType) continue;
 
         if (isLowPriority) consumers[consumerType].lowPriority.push(machine);
         else consumers[consumerType].normalPriority.push(machine);
-      });
+      }
 
       // Check if the machine is listening for network stat events.
       const machineDef = InternalRegisteredMachine.forceGetInternal(
@@ -165,7 +164,7 @@ export class MachineNetwork extends DestroyableObject {
       if (machineDef.onNetworkStatsRecievedEvent) {
         networkStatListeners.push([machine, machineDef]);
       }
-    });
+    }
 
     const networkStats: Record<string, NetworkStorageTypeData> = {};
 
@@ -300,9 +299,9 @@ export class MachineNetwork extends DestroyableObject {
       }
     }
 
-    networkStatListeners.forEach(([block, machineDef]) => {
+    for (const [block, machineDef] of networkStatListeners) {
       machineDef.callOnNetworkStatsRecievedEvent(block, networkStats);
-    });
+    }
 
     this.sendJobRunning = false;
   }

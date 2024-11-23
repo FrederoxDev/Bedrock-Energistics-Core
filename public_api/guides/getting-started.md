@@ -297,10 +297,8 @@ import { world } from "@minecraft/server";
 import * as beCore from "bedrock-energistics-core-api";
 
 // Initialize the Bedrock Energistics Core API.
-// This namespace should be less than 30 characters.
-// It doesn't have to be the same namespace as everything else.
-// So if your namespace is too long, you can pass a shorter one here.
-beCore.init({ namespace: "example" });
+// Pass the namespace of your add-on to this function.
+beCore.init("example");
 
 const ENERGY_GENERATION = 20;
 

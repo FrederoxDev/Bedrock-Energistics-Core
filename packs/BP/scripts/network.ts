@@ -157,9 +157,13 @@ export class MachineNetwork extends DestroyableObject {
       }
 
       // Check if the machine is listening for network stat events.
-      const machineDef = InternalRegisteredMachine.forceGetInternal(
-        machine.typeId,
-      );
+      const machineDef = InternalRegisteredMachine.getInternal(machine.typeId);
+      if (!machineDef) {
+        logWarn(
+          `Machine with ID '${machine.typeId}' not found in MachineNetwork#send.`,
+        );
+        continue;
+      }
 
       if (machineDef.onNetworkStatsRecievedEvent) {
         networkStatListeners.push([machine, machineDef]);
@@ -184,9 +188,15 @@ export class MachineNetwork extends DestroyableObject {
           budget / (machines.normalPriority.length - i),
         );
         const currentStored = getMachineStorage(machine, type);
-        const machineDef = InternalRegisteredMachine.forceGetInternal(
+        const machineDef = InternalRegisteredMachine.getInternal(
           machine.typeId,
         );
+        if (!machineDef) {
+          logWarn(
+            `Machine with ID '${machine.typeId}' not found in MachineNetwork#send.`,
+          );
+          continue;
+        }
 
         let amountToAllocate: number = Math.min(
           budgetAllocation,
@@ -229,9 +239,15 @@ export class MachineNetwork extends DestroyableObject {
             budget / (machines.lowPriority.length - i),
           );
           const currentStored = getMachineStorage(machine, type);
-          const machineDef = InternalRegisteredMachine.forceGetInternal(
+          const machineDef = InternalRegisteredMachine.getInternal(
             machine.typeId,
           );
+          if (!machineDef) {
+            logWarn(
+              `Machine with ID '${machine.typeId}' not found in MachineNetwork#send.`,
+            );
+            continue;
+          }
 
           let amountToAllocate: number = Math.min(
             budgetAllocation,
@@ -311,9 +327,15 @@ export class MachineNetwork extends DestroyableObject {
           continue;
         }
 
-        const machineDef = InternalRegisteredMachine.forceGetInternal(
+        const machineDef = InternalRegisteredMachine.getInternal(
           machine.typeId,
         );
+        if (!machineDef) {
+          logWarn(
+            `Machine with ID '${machine.typeId}' not found in MachineNetwork#send.`,
+          );
+          continue;
+        }
 
         const newAmount = Math.min(
           budgetAllocation,

@@ -1,7 +1,9 @@
 import { ipcInvoke, ipcSend } from "./ipc_wrapper.js";
 import { StorageTypeColor, StorageTypeDefinition } from "./registry_types.js";
-import { MangledStorageTypeDefinition } from "./storage_type_registry_internal.js";
 
+/**
+ * @beta
+ */
 export interface StorageTypeData {
   id: string;
   category: string;
@@ -13,14 +15,11 @@ export interface StorageTypeData {
  * @see {@link StorageTypeDefinition}, {@link registerStorageType}
  */
 export class RegisteredStorageType implements StorageTypeData {
-  /**
-   * @internal
-   */
-  constructor(
+  private constructor(
     /**
      * @internal
      */
-    protected readonly internal: MangledStorageTypeDefinition,
+    protected readonly definition: StorageTypeDefinition,
   ) {}
 
   /**
@@ -28,7 +27,7 @@ export class RegisteredStorageType implements StorageTypeData {
    * @beta
    */
   get id(): string {
-    return this.internal.a;
+    return this.definition.id;
   }
 
   /**
@@ -36,7 +35,7 @@ export class RegisteredStorageType implements StorageTypeData {
    * @beta
    */
   get category(): string {
-    return this.internal.b;
+    return this.definition.category;
   }
 
   /**
@@ -44,7 +43,7 @@ export class RegisteredStorageType implements StorageTypeData {
    * @beta
    */
   get color(): StorageTypeColor {
-    return this.internal.c;
+    return this.definition.color;
   }
 
   /**
@@ -52,25 +51,24 @@ export class RegisteredStorageType implements StorageTypeData {
    * @beta
    */
   get name(): string {
-    return this.internal.d;
+    return this.definition.name;
   }
 
   /**
-   * Gets a registered storage type.
+   * Get a registered storage type by its ID.
    * @beta
-   * @param id The ID of the storage type.
-   * @returns The {@link RegisteredStorageType} with the specified ID or `undefined` if it doesn't exist.
-   * @throws if Bedrock Energistics Core takes too long to respond.
+   * @param id The ID of the storage type to get.
+   * @returns The registered storage type, or `undefined` if it does not exist.
    */
   static async get(id: string): Promise<RegisteredStorageType | undefined> {
-    const mangled = (await ipcInvoke(
+    const def = (await ipcInvoke(
       "fluffyalien_energisticscore:ipc.registeredStorageTypeGet",
       id,
-    )) as MangledStorageTypeDefinition | null;
+    )) as StorageTypeDefinition | null;
 
-    if (!mangled) return;
+    if (!def) return;
 
-    return new RegisteredStorageType(mangled);
+    return new RegisteredStorageType(def);
   }
 }
 
@@ -86,11 +84,11 @@ export function registerStorageType(definition: StorageTypeDefinition): void {
   }
 
   // reconstruct the definition in case the passed `definition` contains unnecessary keys
-  const payload: MangledStorageTypeDefinition = {
-    a: definition.id,
-    b: definition.category,
-    c: definition.color,
-    d: definition.name,
+  const payload: StorageTypeDefinition = {
+    id: definition.id,
+    category: definition.category,
+    color: definition.color,
+    name: definition.name,
   };
 
   ipcSend("fluffyalien_energisticscore:ipc.registerStorageType", payload);

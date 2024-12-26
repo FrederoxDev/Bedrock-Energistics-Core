@@ -3,12 +3,18 @@ import { MangledGeneratePayload } from "./network_internal.js";
 import { makeSerializableDimensionLocation } from "./serialize_utils.js";
 import { ipcSend } from "./ipc_wrapper.js";
 
+/**
+ * @beta
+ */
 export enum NetworkConnectionType {
   Conduit = "Conduit",
   Machine = "Machine",
   NetworkLink = "NetworkLink",
 }
 
+/**
+ * @beta
+ */
 export function getBlockNetworkConnectionType(
   block: Block | BlockPermutation,
 ): NetworkConnectionType | null {

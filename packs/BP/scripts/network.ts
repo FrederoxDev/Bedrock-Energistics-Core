@@ -167,7 +167,7 @@ export class MachineNetwork extends DestroyableObject {
         continue;
       }
 
-      if (machineDef.onNetworkStatsRecievedEvent) {
+      if (machineDef.getData().networkStatEvent) {
         networkStatListeners.push([machine, machineDef]);
       }
     }
@@ -371,7 +371,7 @@ export class MachineNetwork extends DestroyableObject {
     amount: number,
   ): Promise<number> {
     // Allow the machine to change how much of its allocation it chooses to take
-    if (machineDef.recieveHandlerEvent) {
+    if (machineDef.getData().receiveHandlerEvent) {
       return machineDef.invokeRecieveHandler(machine, type, amount);
     }
 

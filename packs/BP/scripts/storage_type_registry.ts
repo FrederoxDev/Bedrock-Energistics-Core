@@ -9,9 +9,6 @@ import {
 
 const storageTypeRegistry = new Map<string, InternalRegisteredStorageType>();
 
-// register energy by default
-registerStorageType(STANDARD_STORAGE_TYPE_DEFINITIONS.energy);
-
 // @ts-expect-error extending private class for internal use
 export class InternalRegisteredStorageType extends RegisteredStorageType {
   // override to make it public
@@ -38,12 +35,16 @@ export class InternalRegisteredStorageType extends RegisteredStorageType {
   }
 }
 
+// register energy by default
+registerStorageType(STANDARD_STORAGE_TYPE_DEFINITIONS.energy);
+
 function registerStorageType(data: StorageTypeDefinition): void {
   if (storageTypeRegistry.has(data.id)) {
     logInfo(`overrode storage type '${data.id}'`);
   }
 
-  storageTypeRegistry.set(data.id, new InternalRegisteredStorageType(data));
+  const registered = new InternalRegisteredStorageType(data);
+  storageTypeRegistry.set(data.id, registered);
 
   const objectiveId = `fluffyalien_energisticscore:storage${data.id}`;
 

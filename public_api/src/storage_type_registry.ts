@@ -1,5 +1,12 @@
 import { ipcInvoke, ipcSend } from "./ipc_wrapper.js";
+import { raise } from "./log.js";
+import { isRegistrationAllowed } from "./registration_allowed.js";
 import { StorageTypeColor, StorageTypeDefinition } from "./registry_types.js";
+
+/**
+ * value should be `undefined` if the storage type does not exist
+ */
+const storageTypeCache = new Map<string, RegisteredStorageType | undefined>();
 
 /**
  * @beta
@@ -61,22 +68,38 @@ export class RegisteredStorageType implements StorageTypeData {
    * @returns The registered storage type, or `undefined` if it does not exist.
    */
   static async get(id: string): Promise<RegisteredStorageType | undefined> {
+    if (storageTypeCache.has(id)) {
+      return storageTypeCache.get(id);
+    }
+
     const def = (await ipcInvoke(
       "fluffyalien_energisticscore:ipc.registeredStorageTypeGet",
       id,
     )) as StorageTypeDefinition | null;
 
-    if (!def) return;
+    const result = def ? new RegisteredStorageType(def) : undefined;
 
-    return new RegisteredStorageType(def);
+    if (!isRegistrationAllowed()) {
+      storageTypeCache.set(id, result);
+    }
+
+    return result;
   }
 }
 
 /**
  * Registers a storage type. This function should be called in the `worldInitialize` after event.
  * @beta
+ * @throws Throws if registration has been closed.
+ * @throws Throws if the definition ID or category is invalid.
  */
 export function registerStorageType(definition: StorageTypeDefinition): void {
+  if (!isRegistrationAllowed()) {
+    raise(
+      `Attempted to register storage type '${definition.id}' after registration was closed.`,
+    );
+  }
+
   if (definition.id.startsWith("_") || definition.category.startsWith("_")) {
     throw new Error(
       `can't register storage type '${definition.id}' (category: '${definition.category}'): storage type IDs and categories cannot start with '_'`,

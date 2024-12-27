@@ -15,8 +15,8 @@ import {
 import { makeSerializableDimensionLocation } from "@/public_api/src/serialize_utils";
 import { ipcInvoke, ipcSend } from "./ipc_wrapper";
 
-export const machineRegistry: Record<string, InternalRegisteredMachine> = {};
-export const machineEntityToBlockIdMap: Record<string, string> = {};
+const machineRegistry = new Map<string, InternalRegisteredMachine>();
+const machineEntityToBlockIdMap = new Map<string, string>();
 
 // @ts-expect-error extending private class for internal use
 export class InternalRegisteredMachine extends RegisteredMachine {
@@ -113,7 +113,7 @@ export class InternalRegisteredMachine extends RegisteredMachine {
    * @returns the `InternalRegisteredMachine` if it exists, otherwise `undefined`.
    */
   static getInternal(id: string): InternalRegisteredMachine | undefined {
-    return machineRegistry[id];
+    return machineRegistry.get(id);
   }
 
   /**
@@ -133,14 +133,14 @@ export class InternalRegisteredMachine extends RegisteredMachine {
 }
 
 export function getMachineIdFromEntityId(entityId: string): string | undefined {
-  return machineEntityToBlockIdMap[entityId];
+  return machineEntityToBlockIdMap.get(entityId);
 }
 
 export function registerMachineListener(payload: ipc.SerializableValue): null {
   const data = new InternalRegisteredMachine(payload as RegisteredMachineData);
 
-  const entityExistingAttachment = machineEntityToBlockIdMap[data.entityId];
-  if (entityExistingAttachment && entityExistingAttachment !== data.id) {
+  const entityExistingAttachment = machineEntityToBlockIdMap.get(data.entityId);
+  if (entityExistingAttachment && entityExistingAttachment !== data.entityId) {
     throw new Error(
       makeErrorString(
         `can't register machine '${data.id}': the machine entity '${data.entityId}' is already attached to the machine '${entityExistingAttachment}'`,
@@ -148,12 +148,12 @@ export function registerMachineListener(payload: ipc.SerializableValue): null {
     );
   }
 
-  if (data.id in machineRegistry) {
+  if (machineRegistry.has(data.id)) {
     logInfo(`overrode machine '${data.id}'`);
   }
 
-  machineRegistry[data.id] = data;
-  machineEntityToBlockIdMap[data.entityId] = data.id;
+  machineRegistry.set(data.id, data);
+  machineEntityToBlockIdMap.set(data.entityId, data.id);
 
   return null;
 }

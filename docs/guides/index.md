@@ -16,4 +16,15 @@ children:
 
 # Guides
 
-Choose a page from the navigation on the left.
+## Index
+- [Conduits](conduits.md)
+- [Debug Stick](debug-stick.md)
+- [Getting Started](getting-started.md)
+- [Machine Block Tags](machine-block-tags.md)
+- [Machine UI](machine-ui.md)
+- [Network Links](network-links.md)
+- [Persistent Entities](persistent-entities.md)
+- [Pistons](pistons.md)
+- [Storage Type Containers](storage-type-containers.md)
+- [Storage Types](storage-types.md)
+- [Versioning](versioning.md)

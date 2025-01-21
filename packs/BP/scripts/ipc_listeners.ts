@@ -32,6 +32,15 @@ import {
 } from "./storage_type_registry";
 import { registerListener } from "./ipc_wrapper";
 import { BecIpcListener } from "@/public_api/src/bec_ipc_listener";
+import {
+  InternalRegisteredItemMachine,
+  registerItemMachineListener,
+} from "./item_machine_registry";
+import {
+  getItemMachineIoHandler,
+  getItemMachineStorageHandler,
+  setItemMachineStorageListener,
+} from "./item_machine_ipc";
 
 interface SetItemInMachineSlotPayload {
   loc: SerializableDimensionLocation;
@@ -62,6 +71,10 @@ registerListener(BecIpcListener.GetAllNetworksWith, networkGetAllWithHandler);
 registerListener(
   BecIpcListener.GetOrEstablishNetwork,
   networkGetOrEstablishHandler,
+);
+registerListener(
+  BecIpcListener.RegisterItemMachine,
+  registerItemMachineListener,
 );
 registerListener(BecIpcListener.IsPartOfNetwork, networkIsPartOfNetworkHandler);
 registerListener(
@@ -100,3 +113,18 @@ registerListener(BecIpcListener.DestroyNetworkLink, (payload) => {
   link.destroyNode();
   return null;
 });
+registerListener(
+  BecIpcListener.GetRegisteredItemMachine,
+  (payload) =>
+    InternalRegisteredItemMachine.getInternal(payload as string)?.getData() ??
+    null,
+);
+registerListener(
+  BecIpcListener.GetItemMachineStorage,
+  getItemMachineStorageHandler,
+);
+registerListener(
+  BecIpcListener.SetItemMachineStorage,
+  setItemMachineStorageListener,
+);
+registerListener(BecIpcListener.GetItemMachineIo, getItemMachineIoHandler);

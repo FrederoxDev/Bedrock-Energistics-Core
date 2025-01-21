@@ -25,3 +25,10 @@ export function getIpcRouter(): ipc.Router {
 
   return ipcRouter;
 }
+
+/**
+ * @internal
+ */
+export function tryGetIpcRouter(): ipc.Router | undefined {
+  return ipcRouter;
+}

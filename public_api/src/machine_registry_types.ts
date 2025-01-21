@@ -186,6 +186,10 @@ export interface MachineOnButtonPressedEventArg extends MachineCallbackArg {
  * @beta
  */
 export interface MachineDefinitionEvents {
+  /**
+   * Called after a UI button has been pressed.
+   * @see {@link UiButtonElement}
+   */
   onButtonPressed?: MachineEventCallback<MachineOnButtonPressedEventArg>;
 
   /**

@@ -68,6 +68,9 @@ export interface ItemMachineDefinitionHandlers {
 
 // events
 
+/**
+ * @beta
+ */
 export interface ItemMachineOnStorageSetArg extends ItemMachineCallbackArg {
   type: string;
   value: number;

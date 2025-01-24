@@ -44,4 +44,3 @@ for (const addon of shuffledFeaturedAddons) {
 
   container.appendChild(a);
 }
-

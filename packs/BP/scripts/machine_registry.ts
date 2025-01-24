@@ -66,7 +66,10 @@ export class InternalRegisteredMachine extends RegisteredMachine {
       c: recieveAmount,
     };
 
-    return ipcInvoke(this.data.receiveHandlerEvent, payload) as Promise<RecieveHandlerResponse>;
+    return ipcInvoke(
+      this.data.receiveHandlerEvent,
+      payload,
+    ) as Promise<RecieveHandlerResponse>;
   }
 
   callOnNetworkStatsRecievedEvent(

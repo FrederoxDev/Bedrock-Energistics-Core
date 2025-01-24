@@ -277,7 +277,7 @@ export interface RecieveHandlerResponse {
   /**
    * Should the API handle setting machine storage?
    * - Note the API setting incurs a tick delay, for blocks where the tick order is important, this can help avoid race-conditions.
-   * 
+   *
    * Default value: true
    */
   handleStorage?: boolean;

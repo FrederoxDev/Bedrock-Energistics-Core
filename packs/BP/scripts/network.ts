@@ -231,7 +231,7 @@ export class MachineNetwork extends DestroyableObject {
         budget -= amountToAllocate;
         if (shouldHandleStorage as boolean) {
           setMachineStorage(machine, type, currentStored + amountToAllocate);
-        } 
+        }
         if (budget <= 0) break;
         yield;
       }
@@ -269,7 +269,7 @@ export class MachineNetwork extends DestroyableObject {
             amountToAllocate,
           )
             .then((v) => {
-              amountToAllocate = v.amount
+              amountToAllocate = v.amount;
               shouldHandleStorage = v.handleStorage ?? true;
             })
             .catch((e: unknown) => {
@@ -292,7 +292,7 @@ export class MachineNetwork extends DestroyableObject {
           if (budget <= 0) break;
           yield;
         }
-      } 
+      }
 
       networkStats[type] = {
         before: originalBudget,
@@ -386,8 +386,8 @@ export class MachineNetwork extends DestroyableObject {
 
     // if no handler, give it everything in its allocation
     return {
-      amount
-    }
+      amount,
+    };
   }
 
   /**

@@ -144,12 +144,13 @@ export function registerMachine(definition: MachineDefinition): void {
 
     ipcRouter.registerListener(receiveHandlerEvent, (payload) => {
       const data = payload as MangledRecieveHandlerPayload;
+
       return (
         callback({
           blockLocation: deserializeDimensionLocation(data.a),
           receiveType: data.b,
           receiveAmount: data.c,
-        }) ?? data.c
+        })
       );
     });
   }

@@ -254,7 +254,7 @@ export interface MachineDefinitionHandlers {
    * (must be a non-negative integer),
    * or `undefined` to not change anything.
    */
-  receive?: MachineCallback<MachineRecieveHandlerArg, number | undefined>;
+  receive?: MachineCallback<MachineRecieveHandlerArg, RecieveHandlerResponse>;
 }
 
 // registered machine
@@ -266,4 +266,19 @@ export interface MachineDefinition {
   description: MachineDefinitionDescription;
   handlers?: MachineDefinitionHandlers;
   events?: MachineDefinitionEvents;
+}
+
+export interface RecieveHandlerResponse {
+  /**
+   * How much was recieved
+   */
+  amount: number;
+
+  /**
+   * Should the API handle setting machine storage?
+   * - Note the API setting incurs a tick delay, for blocks where the tick order is important, this can help avoid race-conditions.
+   * 
+   * Default value: true
+   */
+  handleStorage?: boolean;
 }

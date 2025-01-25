@@ -16,6 +16,7 @@ import {
   IoCapabilities,
   NetworkConnectionType,
   NetworkStorageTypeData,
+  RecieveHandlerResponse,
   StorageTypeData,
 } from "@/public_api/src";
 import { InternalRegisteredMachine } from "./machine_registry";
@@ -202,6 +203,7 @@ export class MachineNetwork extends DestroyableObject {
         );
 
         let waiting = true;
+        let shouldHandleStorage = true;
 
         this.determineActualMachineAllocation(
           machine,
@@ -209,7 +211,10 @@ export class MachineNetwork extends DestroyableObject {
           type,
           amountToAllocate,
         )
-          .then((v) => (amountToAllocate = v))
+          .then((v) => {
+            amountToAllocate = v.amount;
+            shouldHandleStorage = v.handleStorage ?? true;
+          })
           .catch((e: unknown) => {
             logWarn(
               `Error in determineActualMachineAllocation for id: ${machineDef.id}, error: ${JSON.stringify(e)}`,
@@ -224,7 +229,9 @@ export class MachineNetwork extends DestroyableObject {
 
         // finally give the machine its allocated share
         budget -= amountToAllocate;
-        setMachineStorage(machine, type, currentStored + amountToAllocate);
+        if (shouldHandleStorage as boolean) {
+          setMachineStorage(machine, type, currentStored + amountToAllocate);
+        }
         if (budget <= 0) break;
         yield;
       }
@@ -252,6 +259,7 @@ export class MachineNetwork extends DestroyableObject {
             machineDef.maxStorage - currentStored,
           );
 
+          let shouldHandleStorage = true;
           let waiting = true;
 
           this.determineActualMachineAllocation(
@@ -260,7 +268,10 @@ export class MachineNetwork extends DestroyableObject {
             type,
             amountToAllocate,
           )
-            .then((v) => (amountToAllocate = v))
+            .then((v) => {
+              amountToAllocate = v.amount;
+              shouldHandleStorage = v.handleStorage ?? true;
+            })
             .catch((e: unknown) => {
               logWarn(
                 `Error in determineActualMachineAllocation for id: ${machineDef.id}, error: ${JSON.stringify(e)}`,
@@ -275,7 +286,9 @@ export class MachineNetwork extends DestroyableObject {
 
           // finally give the machine its allocated share
           budget -= amountToAllocate;
-          setMachineStorage(machine, type, currentStored + amountToAllocate);
+          if (shouldHandleStorage as boolean) {
+            setMachineStorage(machine, type, currentStored + amountToAllocate);
+          }
           if (budget <= 0) break;
           yield;
         }
@@ -365,14 +378,16 @@ export class MachineNetwork extends DestroyableObject {
     machineDef: InternalRegisteredMachine,
     type: string,
     amount: number,
-  ): Promise<number> {
+  ): Promise<RecieveHandlerResponse> {
     // Allow the machine to change how much of its allocation it chooses to take
     if (machineDef.getData().receiveHandlerEvent) {
       return machineDef.invokeRecieveHandler(machine, type, amount);
     }
 
     // if no handler, give it everything in its allocation
-    return amount;
+    return {
+      amount,
+    };
   }
 
   /**

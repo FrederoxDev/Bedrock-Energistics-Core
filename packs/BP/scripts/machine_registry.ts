@@ -3,6 +3,7 @@ import { DimensionLocation } from "@minecraft/server";
 import { logInfo, makeErrorString, raise } from "./utils/log";
 import {
   NetworkStorageTypeData,
+  RecieveHandlerResponse,
   RegisteredMachine,
   UpdateUiHandlerResponse,
 } from "@/public_api/src";
@@ -50,7 +51,7 @@ export class InternalRegisteredMachine extends RegisteredMachine {
     blockLocation: DimensionLocation,
     recieveType: string,
     recieveAmount: number,
-  ): Promise<number> {
+  ): Promise<RecieveHandlerResponse> {
     if (!this.data.receiveHandlerEvent) {
       throw new Error(
         makeErrorString(
@@ -65,7 +66,10 @@ export class InternalRegisteredMachine extends RegisteredMachine {
       c: recieveAmount,
     };
 
-    return ipcInvoke(this.data.receiveHandlerEvent, payload) as Promise<number>;
+    return ipcInvoke(
+      this.data.receiveHandlerEvent,
+      payload,
+    ) as Promise<RecieveHandlerResponse>;
   }
 
   callOnNetworkStatsRecievedEvent(

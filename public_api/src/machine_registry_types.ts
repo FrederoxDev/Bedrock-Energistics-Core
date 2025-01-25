@@ -270,7 +270,7 @@ export interface MachineDefinition {
 
 export interface RecieveHandlerResponse {
   /**
-   * How much was recieved
+   * Override the amount to recieve.
    */
   amount: number;
 
@@ -278,7 +278,7 @@ export interface RecieveHandlerResponse {
    * Should the API handle setting machine storage?
    * - Note the API setting incurs a tick delay, for blocks where the tick order is important, this can help avoid race-conditions.
    *
-   * Default value: true
+   * @default true
    */
   handleStorage?: boolean;
 }

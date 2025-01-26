@@ -20,6 +20,7 @@ import {
   StorageTypeData,
 } from "@/public_api/src";
 import { InternalRegisteredMachine } from "./machine_registry";
+import { InternalRegisteredStorageType } from "./storage_type_registry";
 
 interface SendQueueItem {
   block: Block;
@@ -144,11 +145,19 @@ export class MachineNetwork extends DestroyableObject {
 
       // Check machine tags and sort into appropriate groups.
       for (const consumerType of typesToDistribute) {
+        const consumerCategory =
+          InternalRegisteredStorageType.getInternal(consumerType)?.category;
+
         const allowsType =
           allowsAny ||
           machine.hasTag(
             `fluffyalien_energisticscore:consumer.${consumerType}`,
-          );
+          ) ||
+          (consumerCategory &&
+            machine.hasTag(
+              `fluffyalien_energisticscore:consumer.${consumerCategory}`,
+            ));
+
         if (!allowsType) continue;
 
         if (isLowPriority) consumers[consumerType].lowPriority.push(machine);
@@ -168,6 +177,9 @@ export class MachineNetwork extends DestroyableObject {
         networkStatListeners.push([machine, machineDef]);
       }
     }
+
+    console.log(JSON.stringify(consumers));
+    console.log(JSON.stringify(distribution));
 
     const networkStats: Record<string, NetworkStorageTypeData> = {};
 
@@ -521,6 +533,8 @@ export class MachineNetwork extends DestroyableObject {
       next(block, "up");
       next(block, "down");
     }
+
+    console.log(ioType.category, ioType.id, JSON.stringify(connections));
 
     return connections;
   }

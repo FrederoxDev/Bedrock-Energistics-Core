@@ -178,9 +178,6 @@ export class MachineNetwork extends DestroyableObject {
       }
     }
 
-    console.log(JSON.stringify(consumers));
-    console.log(JSON.stringify(distribution));
-
     const networkStats: Record<string, NetworkStorageTypeData> = {};
 
     // send each machine its share of the pool.
@@ -533,8 +530,6 @@ export class MachineNetwork extends DestroyableObject {
       next(block, "up");
       next(block, "down");
     }
-
-    console.log(ioType.category, ioType.id, JSON.stringify(connections));
 
     return connections;
   }

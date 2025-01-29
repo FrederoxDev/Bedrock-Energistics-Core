@@ -140,7 +140,7 @@ export class MachineNetwork extends DestroyableObject {
         "fluffyalien_energisticscore:low_priority_consumer",
       );
       const allowsAny = machine.hasTag(
-        "fluffyalien_energisticscore:consumer._any",
+        "fluffyalien_energisticscore:consumer.any",
       );
 
       // Check machine tags and sort into appropriate groups.
@@ -321,7 +321,7 @@ export class MachineNetwork extends DestroyableObject {
 
         const isConsumer =
           categoryIsConsumer ||
-          machine.hasTag("fluffyalien_energisticscore:consumer._any") ||
+          machine.hasTag("fluffyalien_energisticscore:consumer.any") ||
           machine.hasTag(`fluffyalien_energisticscore:consumer.type.${type}`);
 
         if (budget <= 0 && !isConsumer) {

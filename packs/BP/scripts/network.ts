@@ -224,6 +224,9 @@ export class MachineNetwork extends DestroyableObject {
    */
   private async distributeToGroup(machines: Block[], type: string, budget: number): Promise<number> {
     const promises: Promise<void>[] = [];
+    if (type === "water") {
+      console.log(`distrubutetoGroup ${machines.length.toString()} machines, type: ${type}, budget: ${budget.toString()}`);
+    }
 
     for (let i = 0; i < machines.length; i++) {
       const machine = machines[i];
@@ -246,8 +249,12 @@ export class MachineNetwork extends DestroyableObject {
       const promise = this.determineActualMachineAllocation(machine, machineDef, type, amountToAllocate)
         .then((v) => {
           budget -= v.amount;
+          if (type === "water") {
+            console.log("hi?");
+          }
           if (v.handleStorage) {
             setMachineStorage(machine, type, currentStored + v.amount);
+            console.log(`Allocated ${v.amount.toString()} of ${type} to ${machine.typeId}`);
           }
         })
         .catch((e: unknown) => {

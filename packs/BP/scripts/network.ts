@@ -138,8 +138,6 @@ export class MachineNetwork extends DestroyableObject {
       consumers[key] = { lowPriority: [], normalPriority: [] };
     }
 
-    // console.log(JSON.stringify(typesToDistribute), JSON.stringify(this.connections));
-
     // find and filter connections into their consumer groups.
     for (const machine of this.connections.machines) {
       const isLowPriority = machine.hasTag(
@@ -190,31 +188,31 @@ export class MachineNetwork extends DestroyableObject {
       const distributionData = distribution[type];
       let budget = distributionData.total;
       
-      // console.log(type, JSON.stringify(consumers[type]));
-      yield;
+      budget = yield* asyncAsGenerator(() => this.distributeToGroup(consumers[type].normalPriority, type, budget));
+      if (budget <= 0) continue;
+      if (type === "water") console.log("budget pass 0", budget);
 
-      // budget = yield* asyncAsGenerator(() => this.distributeToGroup(consumers[type].normalPriority, type, budget));
-      // if (budget <= 0) continue;
+      budget = yield* asyncAsGenerator(() => this.distributeToGroup(consumers[type].lowPriority, type, budget));
+      if (budget <= 0) continue;
+      if (type === "water") console.log("budget pass 1", budget);
 
-      // budget = yield* asyncAsGenerator(() => this.distributeToGroup(consumers[type].lowPriority, type, budget));
-      // if (budget <= 0) continue;
-
-      // const typeCategory = InternalRegisteredStorageType.getInternal(type)?.category;
+      const typeCategory = InternalRegisteredStorageType.getInternal(type)?.category;
 
       // Return any completely unused budget to the generators.
       // First filter down the generators that actually can consume this type.
-      // const recievingGenerators = distributionData.generators.filter((block) => {
-      //   const hasSameCategory = typeCategory !== undefined && block.hasTag(
-      //     `fluffyalien_energisticscore:consumer.type.${typeCategory}`,
-      //   );
+      const recievingGenerators = distributionData.generators.filter((block) => {
+        const hasSameCategory = typeCategory !== undefined && block.hasTag(
+          `fluffyalien_energisticscore:consumer.type.${typeCategory}`,
+        );
 
-      //   return hasSameCategory ||
-      //     block.hasTag("fluffyalien_energisticscore:consumer.any") ||
-      //     block.hasTag(`fluffyalien_energisticscore:consumer.type.${type}`);
-      // });
+        return hasSameCategory ||
+          block.hasTag("fluffyalien_energisticscore:consumer.any") ||
+          block.hasTag(`fluffyalien_energisticscore:consumer.type.${type}`);
+      });
 
-      // // Then distribute the remaining budget to the filtered generators.
-      // yield* asyncAsGenerator(() => this.distributeToGroup(recievingGenerators, type, budget));
+      // Then distribute the remaining budget to the filtered generators.
+      budget = yield* asyncAsGenerator(() => this.distributeToGroup(recievingGenerators, type, budget));
+      if (type === "water") console.log("budget pass 3", budget);
     }
 
     for (const [block, machineDef] of networkStatListeners) {
@@ -229,13 +227,11 @@ export class MachineNetwork extends DestroyableObject {
    */
   private async distributeToGroup(machines: Block[], type: string, budget: number): Promise<number> {
     const promises: Promise<void>[] = [];
-    if (type === "water") {
-      console.log(`distrubutetoGroup ${machines.length.toString()} machines, type: ${type}, budget: ${budget.toString()}`);
-    }
+    const budgetAllocation = Math.floor(budget / machines.length);
 
+    // eslint-disable-next-line @typescript-eslint/prefer-for-of
     for (let i = 0; i < machines.length; i++) {
       const machine = machines[i];
-      const budgetAllocation = Math.floor(budget / (machines.length - i));
       const currentStored = getMachineStorage(machine, type);
       const machineDef = InternalRegisteredMachine.getInternal(machine.typeId);
 
@@ -253,19 +249,16 @@ export class MachineNetwork extends DestroyableObject {
 
       const promise = this.determineActualMachineAllocation(machine, machineDef, type, amountToAllocate)
         .then((v) => {
+          console.log(JSON.stringify(machine.location), "took", v.amount)
           budget -= v.amount;
-          if (type === "water") {
-            console.log("hi?");
-          }
-          if (v.handleStorage) {
+          if (v.handleStorage ?? true) {
             setMachineStorage(machine, type, currentStored + v.amount);
-            console.log(`Allocated ${v.amount.toString()} of ${type} to ${machine.typeId}`);
-          }
+          } 
         })
         .catch((e: unknown) => {
           logWarn(`Error in determineActualMachineAllocation for id: ${machineDef.id}, error: ${JSON.stringify(e)}`);
         });
-
+  
       promises.push(promise);
     }
 
@@ -413,21 +406,7 @@ export class MachineNetwork extends DestroyableObject {
         strDirectionToDirection(direction),
       );
 
-      const temp = IoCapabilities.fromMachine(
-        nextBlock,
-        strDirectionToDirection(reverseDirection(direction)),
-      );
-
-      if (nextBlock.typeId !== "minecraft:air") {
-        console.log("selfIO", JSON.stringify(ioType), currentBlock.typeId, JSON.stringify(selfIo), nextIsConduit, nextBlock.typeId, JSON.stringify(temp), JSON.stringify(nextBlock.location));
-      }
-
-      if (!selfIo.acceptsType(ioType, nextIsConduit)) {
-        console.log("selfIO did not accept");
-        return;
-      }
-
-      if (nextBlock.typeId !== "minecraft:air") console.log("self io accepted.")
+      if (!selfIo.acceptsType(ioType, nextIsConduit)) return;
 
       // Check that the recieving block can take this type in too
       const io = IoCapabilities.fromMachine(
@@ -435,14 +414,7 @@ export class MachineNetwork extends DestroyableObject {
         strDirectionToDirection(reverseDirection(direction)),
       );
       
-      if (!io.acceptsType(ioType, selfIsConduit)) {
-        if (nextBlock.typeId !== "minecraft:air") console.log("io did not accept")
-        return;
-      }
-
-      if (nextBlock.typeId !== "minecraft:air") console.log("io accepted")
-
-
+      if (!io.acceptsType(ioType, selfIsConduit)) return;
       handleBlock(nextBlock);
     }
 
@@ -458,9 +430,6 @@ export class MachineNetwork extends DestroyableObject {
       next(block, "down");
     }
 
-
-
-    console.log(ioType.id, JSON.stringify(connections));
     return connections;
   }
 

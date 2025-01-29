@@ -507,6 +507,13 @@ export class MachineNetwork extends DestroyableObject {
       const nextBlock = getBlockInDirection(currentBlock, direction);
       if (!nextBlock) return;
 
+      const selfIsConduit = currentBlock.hasTag(
+        "fluffyalien_energisticscore:conduit",
+      );
+      const nextIsConduit = nextBlock.hasTag(
+        "fluffyalien_energisticscore:conduit",
+      );
+
       const isHandled = visitedLocations.has(
         Vector3Utils.toString(nextBlock.location),
       );
@@ -517,14 +524,14 @@ export class MachineNetwork extends DestroyableObject {
         currentBlock,
         strDirectionToDirection(direction),
       );
-      if (!selfIo.acceptsType(ioType)) return;
+      if (!selfIo.acceptsType(ioType, nextIsConduit)) return;
 
       // Check that the recieving block can take this type in too
       const io = IoCapabilities.fromMachine(
         nextBlock,
         strDirectionToDirection(reverseDirection(direction)),
       );
-      if (!io.acceptsType(ioType)) return;
+      if (!io.acceptsType(ioType, selfIsConduit)) return;
 
       handleBlock(nextBlock);
     }

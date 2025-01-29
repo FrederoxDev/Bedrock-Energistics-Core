@@ -151,11 +151,11 @@ export class MachineNetwork extends DestroyableObject {
         const allowsType =
           allowsAny ||
           machine.hasTag(
-            `fluffyalien_energisticscore:consumer.${consumerType}`,
+            `fluffyalien_energisticscore:consumer.type.${consumerType}`,
           ) ||
           (consumerCategory &&
             machine.hasTag(
-              `fluffyalien_energisticscore:consumer.${consumerCategory}`,
+              `fluffyalien_energisticscore:consumer.category.${consumerCategory}`,
             ));
 
         if (!allowsType) continue;
@@ -308,15 +308,21 @@ export class MachineNetwork extends DestroyableObject {
         after: budget,
       };
 
+      const typeCategory =
+          InternalRegisteredStorageType.getInternal(type)?.category;
+
       // return unused storage to generators
       for (let i = 0; i < distributionData.queueItems.length; i++) {
         const sendData = distributionData.queueItems[i];
 
         const machine = sendData.block;
+       
+        const categoryIsConsumer = typeCategory !== undefined && machine.hasTag(`fluffyalien_energisticscore:consumer.type.${typeCategory}`);
 
         const isConsumer =
+          categoryIsConsumer ||
           machine.hasTag("fluffyalien_energisticscore:consumer._any") ||
-          machine.hasTag(`fluffyalien_energisticscore:consumer.${type}`);
+          machine.hasTag(`fluffyalien_energisticscore:consumer.type.${type}`);
 
         if (budget <= 0 && !isConsumer) {
           setMachineStorage(machine, sendData.type, 0);

@@ -138,6 +138,8 @@ export class MachineNetwork extends DestroyableObject {
       consumers[key] = { lowPriority: [], normalPriority: [] };
     }
 
+    // console.log(JSON.stringify(typesToDistribute), JSON.stringify(this.connections));
+
     // find and filter connections into their consumer groups.
     for (const machine of this.connections.machines) {
       const isLowPriority = machine.hasTag(
@@ -155,11 +157,11 @@ export class MachineNetwork extends DestroyableObject {
         const allowsType =
           allowsAny ||
           machine.hasTag(
-            `fluffyalien_energisticscore:consumer.${consumerType}`,
+            `fluffyalien_energisticscore:consumer.type.${consumerType}`,
           ) ||
           (consumerCategory &&
             machine.hasTag(
-              `fluffyalien_energisticscore:consumer.${consumerCategory}`,
+              `fluffyalien_energisticscore:consumer.category.${consumerCategory}`,
             ));
 
         if (!allowsType) continue;
@@ -188,28 +190,31 @@ export class MachineNetwork extends DestroyableObject {
       const distributionData = distribution[type];
       let budget = distributionData.total;
       
-      budget = yield* asyncAsGenerator(() => this.distributeToGroup(consumers[type].normalPriority, type, budget));
-      if (budget <= 0) continue;
+      // console.log(type, JSON.stringify(consumers[type]));
+      yield;
 
-      budget = yield* asyncAsGenerator(() => this.distributeToGroup(consumers[type].lowPriority, type, budget));
-      if (budget <= 0) continue;
+      // budget = yield* asyncAsGenerator(() => this.distributeToGroup(consumers[type].normalPriority, type, budget));
+      // if (budget <= 0) continue;
 
-      const typeCategory = InternalRegisteredStorageType.getInternal(type)?.category;
+      // budget = yield* asyncAsGenerator(() => this.distributeToGroup(consumers[type].lowPriority, type, budget));
+      // if (budget <= 0) continue;
+
+      // const typeCategory = InternalRegisteredStorageType.getInternal(type)?.category;
 
       // Return any completely unused budget to the generators.
       // First filter down the generators that actually can consume this type.
-      const recievingGenerators = distributionData.generators.filter((block) => {
-        const hasSameCategory = typeCategory !== undefined && block.hasTag(
-          `fluffyalien_energisticscore:consumer.type.${typeCategory}`,
-        );
+      // const recievingGenerators = distributionData.generators.filter((block) => {
+      //   const hasSameCategory = typeCategory !== undefined && block.hasTag(
+      //     `fluffyalien_energisticscore:consumer.type.${typeCategory}`,
+      //   );
 
-        return hasSameCategory ||
-          block.hasTag("fluffyalien_energisticscore:consumer.any") ||
-          block.hasTag(`fluffyalien_energisticscore:consumer.type.${type}`);
-      });
+      //   return hasSameCategory ||
+      //     block.hasTag("fluffyalien_energisticscore:consumer.any") ||
+      //     block.hasTag(`fluffyalien_energisticscore:consumer.type.${type}`);
+      // });
 
-      // Then distribute the remaining budget to the filtered generators.
-      yield* asyncAsGenerator(() => this.distributeToGroup(recievingGenerators, type, budget));
+      // // Then distribute the remaining budget to the filtered generators.
+      // yield* asyncAsGenerator(() => this.distributeToGroup(recievingGenerators, type, budget));
     }
 
     for (const [block, machineDef] of networkStatListeners) {
@@ -388,31 +393,55 @@ export class MachineNetwork extends DestroyableObject {
       const nextBlock = getBlockInDirection(currentBlock, direction);
       if (!nextBlock) return;
 
-      const selfIsConduit = currentBlock.hasTag(
-        "fluffyalien_energisticscore:conduit",
-      );
-      const nextIsConduit = nextBlock.hasTag(
-        "fluffyalien_energisticscore:conduit",
-      );
-
       const isHandled = visitedLocations.has(
         Vector3Utils.toString(nextBlock.location),
       );
+
       if (isHandled) return;
+
+      const selfIsConduit = currentBlock.hasTag(
+        "fluffyalien_energisticscore:conduit",
+      );
+
+      const nextIsConduit = nextBlock.hasTag(
+        "fluffyalien_energisticscore:conduit",
+      );
 
       // Check that this current block can send this type out this side.
       const selfIo = IoCapabilities.fromMachine(
         currentBlock,
         strDirectionToDirection(direction),
       );
-      if (!selfIo.acceptsType(ioType, nextIsConduit)) return;
+
+      const temp = IoCapabilities.fromMachine(
+        nextBlock,
+        strDirectionToDirection(reverseDirection(direction)),
+      );
+
+      if (nextBlock.typeId !== "minecraft:air") {
+        console.log("selfIO", JSON.stringify(ioType), currentBlock.typeId, JSON.stringify(selfIo), nextIsConduit, nextBlock.typeId, JSON.stringify(temp), JSON.stringify(nextBlock.location));
+      }
+
+      if (!selfIo.acceptsType(ioType, nextIsConduit)) {
+        console.log("selfIO did not accept");
+        return;
+      }
+
+      if (nextBlock.typeId !== "minecraft:air") console.log("self io accepted.")
 
       // Check that the recieving block can take this type in too
       const io = IoCapabilities.fromMachine(
         nextBlock,
         strDirectionToDirection(reverseDirection(direction)),
       );
-      if (!io.acceptsType(ioType, selfIsConduit)) return;
+      
+      if (!io.acceptsType(ioType, selfIsConduit)) {
+        if (nextBlock.typeId !== "minecraft:air") console.log("io did not accept")
+        return;
+      }
+
+      if (nextBlock.typeId !== "minecraft:air") console.log("io accepted")
+
 
       handleBlock(nextBlock);
     }
@@ -429,6 +458,9 @@ export class MachineNetwork extends DestroyableObject {
       next(block, "down");
     }
 
+
+
+    console.log(ioType.id, JSON.stringify(connections));
     return connections;
   }
 

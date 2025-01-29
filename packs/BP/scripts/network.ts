@@ -309,15 +309,19 @@ export class MachineNetwork extends DestroyableObject {
       };
 
       const typeCategory =
-          InternalRegisteredStorageType.getInternal(type)?.category;
+        InternalRegisteredStorageType.getInternal(type)?.category;
 
       // return unused storage to generators
       for (let i = 0; i < distributionData.queueItems.length; i++) {
         const sendData = distributionData.queueItems[i];
 
         const machine = sendData.block;
-       
-        const categoryIsConsumer = typeCategory !== undefined && machine.hasTag(`fluffyalien_energisticscore:consumer.type.${typeCategory}`);
+
+        const categoryIsConsumer =
+          typeCategory !== undefined &&
+          machine.hasTag(
+            `fluffyalien_energisticscore:consumer.type.${typeCategory}`,
+          );
 
         const isConsumer =
           categoryIsConsumer ||

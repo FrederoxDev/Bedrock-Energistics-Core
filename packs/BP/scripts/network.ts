@@ -189,30 +189,36 @@ export class MachineNetwork extends DestroyableObject {
       let budget = distributionData.total;
       
       budget = yield* asyncAsGenerator(() => this.distributeToGroup(consumers[type].normalPriority, type, budget));
-      if (budget <= 0) continue;
       if (type === "water") console.log("budget pass 0", budget);
 
-      budget = yield* asyncAsGenerator(() => this.distributeToGroup(consumers[type].lowPriority, type, budget));
-      if (budget <= 0) continue;
-      if (type === "water") console.log("budget pass 1", budget);
+      // change this to iterate all pass levels
+      if (budget <= 0) {
+        budget = yield* asyncAsGenerator(() => this.distributeToGroup(consumers[type].lowPriority, type, budget));
+        if (type === "water") console.log("budget pass 1", budget);
+      }
 
-      const typeCategory = InternalRegisteredStorageType.getInternal(type)?.category;
+      // this needs to be updated to take away from generators
+      // and then pass any remaining back into them
+      // comment was slightly misleading before
+      // so same logic can't be re-used.
+
+      // const typeCategory = InternalRegisteredStorageType.getInternal(type)?.category;
 
       // Return any completely unused budget to the generators.
       // First filter down the generators that actually can consume this type.
-      const recievingGenerators = distributionData.generators.filter((block) => {
-        const hasSameCategory = typeCategory !== undefined && block.hasTag(
-          `fluffyalien_energisticscore:consumer.type.${typeCategory}`,
-        );
+      // const recievingGenerators = distributionData.generators.filter((block) => {
+      //   const hasSameCategory = typeCategory !== undefined && block.hasTag(
+      //     `fluffyalien_energisticscore:consumer.type.${typeCategory}`,
+      //   );
 
-        return hasSameCategory ||
-          block.hasTag("fluffyalien_energisticscore:consumer.any") ||
-          block.hasTag(`fluffyalien_energisticscore:consumer.type.${type}`);
-      });
+      //   return hasSameCategory ||
+      //     block.hasTag("fluffyalien_energisticscore:consumer.any") ||
+      //     block.hasTag(`fluffyalien_energisticscore:consumer.type.${type}`);
+      // });
 
-      // Then distribute the remaining budget to the filtered generators.
-      budget = yield* asyncAsGenerator(() => this.distributeToGroup(recievingGenerators, type, budget));
-      if (type === "water") console.log("budget pass 3", budget);
+      // // Then distribute the remaining budget to the filtered generators.
+      // budget = yield* asyncAsGenerator(() => this.distributeToGroup(recievingGenerators, type, budget));
+      // if (type === "water") console.log("budget pass 3", budget);
     }
 
     for (const [block, machineDef] of networkStatListeners) {

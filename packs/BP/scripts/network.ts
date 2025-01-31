@@ -125,24 +125,29 @@ export class MachineNetwork extends DestroyableObject {
 
     const typesToDistribute = Object.keys(distribution);
 
-    interface ConsumerGroups {
-      normalPriority: Block[];
-      lowPriority: Block[];
-    }
-
-    // initialize consumers keys.
-    const consumers: Record<string, ConsumerGroups> = {};
+    // initialize consumers keys.      <priority>
+    const consumers: Record<string, Map<number, Block[]>> = {};
     const networkStatListeners: [Block, InternalRegisteredMachine][] = [];
 
     for (const key of typesToDistribute) {
-      consumers[key] = { lowPriority: [], normalPriority: [] };
+      consumers[key] = new Map();
     }
+
+    // console.log(JSON.stringify(Object.keys(consumers)));
+    // console.log(JSON.stringify(this.connections.machines));
 
     // find and filter connections into their consumer groups.
     for (const machine of this.connections.machines) {
-      const isLowPriority = machine.hasTag(
-        "fluffyalien_energisticscore:low_priority_consumer",
-      );
+      const tags = machine.getTags();
+
+      const priorityTags = tags.filter(t => t.startsWith("fluffyalien_energisticscore:priority_"))
+        .map(t => {
+          return parseInt(t.split("_")[2]
+        )
+      });
+
+      const priority = priorityTags.length === 0 ? 0 : Math.max(...priorityTags);
+
       const allowsAny = machine.hasTag(
         "fluffyalien_energisticscore:consumer.any",
       );
@@ -164,8 +169,11 @@ export class MachineNetwork extends DestroyableObject {
 
         if (!allowsType) continue;
 
-        if (isLowPriority) consumers[consumerType].lowPriority.push(machine);
-        else consumers[consumerType].normalPriority.push(machine);
+        if (!consumers[consumerType].has(priority)) {
+          consumers[consumerType].set(priority, []);
+        }
+
+        consumers[consumerType].get(priority)!.push(machine);
       }
 
       // Check if the machine is listening for network stat events.
@@ -188,48 +196,29 @@ export class MachineNetwork extends DestroyableObject {
       const distributionData = distribution[type];
       let budget = distributionData.total;
       
-      budget = yield* asyncAsGenerator(() => this.distributeToGroup(consumers[type].normalPriority, type, budget));
-      if (type === "water") console.log("budget pass 0", budget);
+      const sortedKeys = Array.from(consumers[type].keys()).sort((a, b) => a - b);
+      // console.log(JSON.stringify(sortedKeys));
 
-      // change this to iterate all pass levels
-      if (budget <= 0) {
-        budget = yield* asyncAsGenerator(() => this.distributeToGroup(consumers[type].lowPriority, type, budget));
-        if (type === "water") console.log("budget pass 1", budget);
+      for (const key of sortedKeys) {
+        budget = yield* asyncAsGenerator(() => this.distributeToGroup(consumers[type].get(key)!, type, budget));
+        if (budget <= 0) break;
       }
-
-      // this needs to be updated to take away from generators
-      // and then pass any remaining back into them
-      // comment was slightly misleading before
-      // so same logic can't be re-used.
 
       const typeCategory = InternalRegisteredStorageType.getInternal(type)?.category;
 
-      // First filter down the generators that actually can consume this type.
-      // const recievingGenerators = distributionData.generators.filter((block) => {
-      //   const hasSameCategory = typeCategory !== undefined && block.hasTag(
-      //     `fluffyalien_energisticscore:consumer.type.${typeCategory}`,
-      //   );
-
-      //   const canRecieve = hasSameCategory ||
-      //     block.hasTag("fluffyalien_energisticscore:consumer.any") ||
-      //     block.hasTag(`fluffyalien_energisticscore:consumer.type.${type}`);
-
-      //   // If all of the budget was used up, 
-
-      //   return canRecieve;
-      // });
-
+      // consume the allocated amounts from the generators
+      // also handles returning any excess back 
       for (let i = 0; i < distributionData.queueItems.length; i++) {
         const sendData = distributionData.queueItems[i];
         const machine = sendData.block;
 
-        const hasSameCategory = typeCategory !== undefined && block.hasTag(
+        const hasSameCategory = typeCategory !== undefined && machine.hasTag(
           `fluffyalien_energisticscore:consumer.type.${typeCategory}`,
         );
 
         const isConsumer = hasSameCategory ||
-          block.hasTag("fluffyalien_energisticscore:consumer.any") ||
-          block.hasTag(`fluffyalien_energisticscore:consumer.type.${type}`);
+          machine.hasTag("fluffyalien_energisticscore:consumer.any") ||
+          machine.hasTag(`fluffyalien_energisticscore:consumer.type.${type}`);
 
         if (budget <= 0 && !isConsumer) {
           setMachineStorage(machine, sendData.type, 0);
@@ -277,10 +266,6 @@ export class MachineNetwork extends DestroyableObject {
         budget -= newAmount;
         setMachineStorage(machine, type, newAmount);
       }
-
-      // // Then distribute the remaining budget to the filtered generators.
-      // budget = yield* asyncAsGenerator(() => this.distributeToGroup(recievingGenerators, type, budget));
-      // if (type === "water") console.log("budget pass 3", budget);
     }
 
     for (const [block, machineDef] of networkStatListeners) {
@@ -317,7 +302,6 @@ export class MachineNetwork extends DestroyableObject {
 
       const promise = this.determineActualMachineAllocation(machine, machineDef, type, amountToAllocate)
         .then((v) => {
-          console.log(JSON.stringify(machine.location), "took", v.amount)
           budget -= v.amount;
           if (v.handleStorage ?? true) {
             setMachineStorage(machine, type, currentStored + v.amount);
@@ -498,6 +482,7 @@ export class MachineNetwork extends DestroyableObject {
       next(block, "down");
     }
 
+    console.log(ioType.id, ioType.category, JSON.stringify(connections)); 
     return connections;
   }
 

@@ -20,6 +20,7 @@ import {
   StorageTypeData,
 } from "@/public_api/src";
 import { InternalRegisteredMachine } from "./machine_registry";
+import { InternalRegisteredStorageType } from "./storage_type_registry";
 
 interface SendQueueItem {
   block: Block;
@@ -139,16 +140,24 @@ export class MachineNetwork extends DestroyableObject {
         "fluffyalien_energisticscore:low_priority_consumer",
       );
       const allowsAny = machine.hasTag(
-        "fluffyalien_energisticscore:consumer._any",
+        "fluffyalien_energisticscore:consumer.any",
       );
 
       // Check machine tags and sort into appropriate groups.
       for (const consumerType of typesToDistribute) {
+        const consumerCategory =
+          InternalRegisteredStorageType.getInternal(consumerType)?.category;
+
         const allowsType =
           allowsAny ||
           machine.hasTag(
-            `fluffyalien_energisticscore:consumer.${consumerType}`,
-          );
+            `fluffyalien_energisticscore:consumer.type.${consumerType}`,
+          ) ||
+          (consumerCategory &&
+            machine.hasTag(
+              `fluffyalien_energisticscore:consumer.category.${consumerCategory}`,
+            ));
+
         if (!allowsType) continue;
 
         if (isLowPriority) consumers[consumerType].lowPriority.push(machine);
@@ -299,15 +308,25 @@ export class MachineNetwork extends DestroyableObject {
         after: budget,
       };
 
+      const typeCategory =
+        InternalRegisteredStorageType.getInternal(type)?.category;
+
       // return unused storage to generators
       for (let i = 0; i < distributionData.queueItems.length; i++) {
         const sendData = distributionData.queueItems[i];
 
         const machine = sendData.block;
 
+        const categoryIsConsumer =
+          typeCategory !== undefined &&
+          machine.hasTag(
+            `fluffyalien_energisticscore:consumer.category.${typeCategory}`,
+          );
+
         const isConsumer =
-          machine.hasTag("fluffyalien_energisticscore:consumer._any") ||
-          machine.hasTag(`fluffyalien_energisticscore:consumer.${type}`);
+          categoryIsConsumer ||
+          machine.hasTag("fluffyalien_energisticscore:consumer.any") ||
+          machine.hasTag(`fluffyalien_energisticscore:consumer.type.${type}`);
 
         if (budget <= 0 && !isConsumer) {
           setMachineStorage(machine, sendData.type, 0);

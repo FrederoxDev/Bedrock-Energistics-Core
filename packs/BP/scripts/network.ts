@@ -202,19 +202,81 @@ export class MachineNetwork extends DestroyableObject {
       // comment was slightly misleading before
       // so same logic can't be re-used.
 
-      // const typeCategory = InternalRegisteredStorageType.getInternal(type)?.category;
+      const typeCategory = InternalRegisteredStorageType.getInternal(type)?.category;
 
-      // Return any completely unused budget to the generators.
       // First filter down the generators that actually can consume this type.
       // const recievingGenerators = distributionData.generators.filter((block) => {
       //   const hasSameCategory = typeCategory !== undefined && block.hasTag(
       //     `fluffyalien_energisticscore:consumer.type.${typeCategory}`,
       //   );
 
-      //   return hasSameCategory ||
+      //   const canRecieve = hasSameCategory ||
       //     block.hasTag("fluffyalien_energisticscore:consumer.any") ||
       //     block.hasTag(`fluffyalien_energisticscore:consumer.type.${type}`);
+
+      //   // If all of the budget was used up, 
+
+      //   return canRecieve;
       // });
+
+      for (let i = 0; i < distributionData.queueItems.length; i++) {
+        const sendData = distributionData.queueItems[i];
+        const machine = sendData.block;
+
+        const hasSameCategory = typeCategory !== undefined && block.hasTag(
+          `fluffyalien_energisticscore:consumer.type.${typeCategory}`,
+        );
+
+        const isConsumer = hasSameCategory ||
+          block.hasTag("fluffyalien_energisticscore:consumer.any") ||
+          block.hasTag(`fluffyalien_energisticscore:consumer.type.${type}`);
+
+        if (budget <= 0 && !isConsumer) {
+          setMachineStorage(machine, sendData.type, 0);
+          continue;
+        }
+
+        const budgetAllocation = Math.floor(
+          budget / (distributionData.queueItems.length - i)
+        );
+
+        if (isConsumer) {
+          const actualBudgetAllocation = Math.min(
+            sendData.amount,
+            budgetAllocation
+          );
+
+          setMachineStorage(
+            machine,
+            sendData.type,
+            getMachineStorage(machine, sendData.type) +
+              actualBudgetAllocation - sendData.amount
+          );
+
+          budget -= actualBudgetAllocation;
+          continue;
+        }
+
+        const machineDef = InternalRegisteredMachine.getInternal(
+          machine.typeId,
+        );
+
+        if (!machineDef) {
+          logWarn(
+            `Machine with ID '${machine.typeId}' not found in MachineNetwork#send.`,
+          );
+          continue;
+        }
+
+        const newAmount = Math.min(
+          budgetAllocation, 
+          machineDef.maxStorage,
+          sendData.amount
+        );
+
+        budget -= newAmount;
+        setMachineStorage(machine, type, newAmount);
+      }
 
       // // Then distribute the remaining budget to the filtered generators.
       // budget = yield* asyncAsGenerator(() => this.distributeToGroup(recievingGenerators, type, budget));

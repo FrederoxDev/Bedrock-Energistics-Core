@@ -35,6 +35,12 @@ interface NetworkConnections {
   networkLinks: Block[];
 }
 
+interface DistributionData {
+  total: number;
+  queueItems: SendQueueItem[];
+  generators: Block[];
+}
+
 let totalNetworkCount = 0; // used to create a unique id
 const networks = new Map<number, MachineNetwork>();
 
@@ -96,12 +102,6 @@ export class MachineNetwork extends DestroyableObject {
   private *send(): Generator<void, void, void> {
     if (!this.isValid) return;
 
-    interface DistributionData {
-      total: number;
-      queueItems: SendQueueItem[];
-      generators: Block[];
-    }
-
     // Calculate the amount of each type that is available to send around.
     const distribution: Record<string, DistributionData> = {};
 
@@ -143,8 +143,8 @@ export class MachineNetwork extends DestroyableObject {
       const priorityTags = tags.filter(t => t.startsWith("fluffyalien_energisticscore:priority_"))
         .map(t => {
           return parseInt(t.split("_")[2]
-        )
-      });
+          )
+        });
 
       const priority = priorityTags.length === 0 ? 0 : Math.max(...priorityTags);
 
@@ -177,13 +177,7 @@ export class MachineNetwork extends DestroyableObject {
       }
 
       // Check if the machine is listening for network stat events.
-      const machineDef = InternalRegisteredMachine.getInternal(machine.typeId);
-      if (!machineDef) {
-        logWarn(
-          `Machine with ID '${machine.typeId}' not found in MachineNetwork#send.`,
-        );
-        continue;
-      }
+      const machineDef = InternalRegisteredMachine.forceGetInternal(machine.typeId);
 
       if (machineDef.getData().networkStatEvent) {
         networkStatListeners.push([machine, machineDef]);
@@ -195,7 +189,7 @@ export class MachineNetwork extends DestroyableObject {
     for (const type of typesToDistribute) {
       const distributionData = distribution[type];
       let budget = distributionData.total;
-      
+
       const sortedKeys = Array.from(consumers[type].keys()).sort((a, b) => a - b);
       // console.log(JSON.stringify(sortedKeys));
 
@@ -204,68 +198,9 @@ export class MachineNetwork extends DestroyableObject {
         if (budget <= 0) break;
       }
 
-      const typeCategory = InternalRegisteredStorageType.getInternal(type)?.category;
-
-      // consume the allocated amounts from the generators
+      // consume the taken amounts from the generators
       // also handles returning any excess back 
-      for (let i = 0; i < distributionData.queueItems.length; i++) {
-        const sendData = distributionData.queueItems[i];
-        const machine = sendData.block;
-
-        const hasSameCategory = typeCategory !== undefined && machine.hasTag(
-          `fluffyalien_energisticscore:consumer.type.${typeCategory}`,
-        );
-
-        const isConsumer = hasSameCategory ||
-          machine.hasTag("fluffyalien_energisticscore:consumer.any") ||
-          machine.hasTag(`fluffyalien_energisticscore:consumer.type.${type}`);
-
-        if (budget <= 0 && !isConsumer) {
-          setMachineStorage(machine, sendData.type, 0);
-          continue;
-        }
-
-        const budgetAllocation = Math.floor(
-          budget / (distributionData.queueItems.length - i)
-        );
-
-        if (isConsumer) {
-          const actualBudgetAllocation = Math.min(
-            sendData.amount,
-            budgetAllocation
-          );
-
-          setMachineStorage(
-            machine,
-            sendData.type,
-            getMachineStorage(machine, sendData.type) +
-              actualBudgetAllocation - sendData.amount
-          );
-
-          budget -= actualBudgetAllocation;
-          continue;
-        }
-
-        const machineDef = InternalRegisteredMachine.getInternal(
-          machine.typeId,
-        );
-
-        if (!machineDef) {
-          logWarn(
-            `Machine with ID '${machine.typeId}' not found in MachineNetwork#send.`,
-          );
-          continue;
-        }
-
-        const newAmount = Math.min(
-          budgetAllocation, 
-          machineDef.maxStorage,
-          sendData.amount
-        );
-
-        budget -= newAmount;
-        setMachineStorage(machine, type, newAmount);
-      }
+      yield* asyncAsGenerator(() => this.returnToGenerators(distributionData, type, budget));
     }
 
     for (const [block, machineDef] of networkStatListeners) {
@@ -275,6 +210,80 @@ export class MachineNetwork extends DestroyableObject {
     this.sendJobRunning = false;
   }
 
+  private async returnToGenerators(distributionData: DistributionData, type: string, budget: number): Promise<void> {
+    const promises: Promise<void>[] = [];
+    const typeCategory = InternalRegisteredStorageType.getInternal(type)?.category;
+
+    const budgetAllocation = Math.floor(
+      budget / distributionData.queueItems.length
+    );
+
+    for (const sendData of distributionData.queueItems) {
+      const machine = sendData.block;
+
+      const hasSameCategory = typeCategory !== undefined && machine.hasTag(
+        `fluffyalien_energisticscore:consumer.type.${typeCategory}`,
+      );
+
+      const isConsumer = hasSameCategory ||
+        machine.hasTag("fluffyalien_energisticscore:consumer.any") ||
+        machine.hasTag(`fluffyalien_energisticscore:consumer.type.${type}`);
+
+      if (budget <= 0 && !isConsumer) {
+        setMachineStorage(machine, sendData.type, 0);
+        continue;
+      }
+
+      if (isConsumer) {
+        const actualBudgetAllocation = Math.min(
+          sendData.amount,
+          budgetAllocation
+        );
+
+        const leftoverAllocation = sendData.amount - actualBudgetAllocation;
+        const machineDef = InternalRegisteredMachine.forceGetInternal(machine.typeId);
+
+        // first take-away the amount actually spent.
+        setMachineStorage(machine, sendData.type, getMachineStorage(machine, sendData.type) - actualBudgetAllocation);
+
+        // next if there are any left-overs invoke the recieve handler and allow it to take its amount.
+        const promise = this.determineActualMachineAllocation(machine, machineDef, type, leftoverAllocation)
+          .then((v) => {
+            if (v.handleStorage ?? true) {
+              setMachineStorage(machine, type, getMachineStorage(machine, type) + v.amount);
+            }
+          })
+          .catch((e: unknown) => {
+            logWarn(`Error in determineActualMachineAllocation for id: ${machineDef.id}, error: ${JSON.stringify(e)}`);
+          });
+
+        promises.push(promise);
+        continue;
+      }
+
+      const machineDef = InternalRegisteredMachine.getInternal(
+        machine.typeId,
+      );
+
+      if (!machineDef) {
+        logWarn(
+          `Machine with ID '${machine.typeId}' not found in MachineNetwork#send.`,
+        );
+        continue;
+      }
+
+      const newAmount = Math.min(
+        budgetAllocation,
+        machineDef.maxStorage,
+        sendData.amount
+      );
+
+      setMachineStorage(machine, type, newAmount);
+    }
+
+    await Promise.all(promises);
+  }
+
   /**
    * @returns How much of the budget was left-over
    */
@@ -282,9 +291,7 @@ export class MachineNetwork extends DestroyableObject {
     const promises: Promise<void>[] = [];
     const budgetAllocation = Math.floor(budget / machines.length);
 
-    // eslint-disable-next-line @typescript-eslint/prefer-for-of
-    for (let i = 0; i < machines.length; i++) {
-      const machine = machines[i];
+    for (const machine of machines) {
       const currentStored = getMachineStorage(machine, type);
       const machineDef = InternalRegisteredMachine.getInternal(machine.typeId);
 
@@ -305,12 +312,12 @@ export class MachineNetwork extends DestroyableObject {
           budget -= v.amount;
           if (v.handleStorage ?? true) {
             setMachineStorage(machine, type, currentStored + v.amount);
-          } 
+          }
         })
         .catch((e: unknown) => {
           logWarn(`Error in determineActualMachineAllocation for id: ${machineDef.id}, error: ${JSON.stringify(e)}`);
         });
-  
+
       promises.push(promise);
     }
 
@@ -465,7 +472,7 @@ export class MachineNetwork extends DestroyableObject {
         nextBlock,
         strDirectionToDirection(reverseDirection(direction)),
       );
-      
+
       if (!io.acceptsType(ioType, selfIsConduit)) return;
       handleBlock(nextBlock);
     }
@@ -482,7 +489,7 @@ export class MachineNetwork extends DestroyableObject {
       next(block, "down");
     }
 
-    console.log(ioType.id, ioType.category, JSON.stringify(connections)); 
+    console.log(ioType.id, ioType.category, JSON.stringify(connections));
     return connections;
   }
 

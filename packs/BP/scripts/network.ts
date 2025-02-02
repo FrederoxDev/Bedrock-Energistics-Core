@@ -133,9 +133,6 @@ export class MachineNetwork extends DestroyableObject {
       consumers[key] = new Map();
     }
 
-    // console.log(JSON.stringify(Object.keys(consumers)));
-    // console.log(JSON.stringify(this.connections.machines));
-
     // find and filter connections into their consumer groups.
     for (const machine of this.connections.machines) {
       const tags = machine.getTags();
@@ -504,7 +501,6 @@ export class MachineNetwork extends DestroyableObject {
       next(block, "down");
     }
 
-    console.log(ioType.id, ioType.category, JSON.stringify(connections));
     return connections;
   }
 

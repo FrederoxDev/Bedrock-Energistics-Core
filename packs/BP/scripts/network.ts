@@ -609,7 +609,7 @@ export class MachineNetwork extends DestroyableObject {
         network.destroy();
       }
     }
-  }
+  } 
 
   /**
    * Update all {@link MachineNetwork}s that contain a machine that matches the arguments.

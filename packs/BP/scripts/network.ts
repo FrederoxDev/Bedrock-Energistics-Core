@@ -140,13 +140,14 @@ export class MachineNetwork extends DestroyableObject {
     for (const machine of this.connections.machines) {
       const tags = machine.getTags();
 
-      const priorityTags = tags.filter(t => t.startsWith("fluffyalien_energisticscore:priority_"))
-        .map(t => {
-          return parseInt(t.split("_")[2]
-          )
+      const priorityTags = tags
+        .filter((t) => t.startsWith("fluffyalien_energisticscore:priority_"))
+        .map((t) => {
+          return parseInt(t.split("_")[2]);
         });
 
-      const priority = priorityTags.length === 0 ? 0 : Math.max(...priorityTags);
+      const priority =
+        priorityTags.length === 0 ? 0 : Math.max(...priorityTags);
 
       const allowsAny = machine.hasTag(
         "fluffyalien_energisticscore:consumer.any",
@@ -177,7 +178,9 @@ export class MachineNetwork extends DestroyableObject {
       }
 
       // Check if the machine is listening for network stat events.
-      const machineDef = InternalRegisteredMachine.forceGetInternal(machine.typeId);
+      const machineDef = InternalRegisteredMachine.forceGetInternal(
+        machine.typeId,
+      );
 
       if (machineDef.getData().networkStatEvent) {
         networkStatListeners.push([machine, machineDef]);
@@ -190,17 +193,22 @@ export class MachineNetwork extends DestroyableObject {
       const distributionData = distribution[type];
       let budget = distributionData.total;
 
-      const sortedKeys = Array.from(consumers[type].keys()).sort((a, b) => a - b);
-      // console.log(JSON.stringify(sortedKeys));
+      const sortedKeys = Array.from(consumers[type].keys()).sort(
+        (a, b) => b - a,
+      );
 
       for (const key of sortedKeys) {
-        budget = yield* asyncAsGenerator(() => this.distributeToGroup(consumers[type].get(key)!, type, budget));
+        budget = yield* asyncAsGenerator(() =>
+          this.distributeToGroup(consumers[type].get(key)!, type, budget),
+        );
         if (budget <= 0) break;
       }
 
       // consume the taken amounts from the generators
-      // also handles returning any excess back 
-      yield* asyncAsGenerator(() => this.returnToGenerators(distributionData, type, budget));
+      // also handles returning any excess back
+      yield* asyncAsGenerator(() =>
+        this.returnToGenerators(distributionData, type, budget),
+      );
     }
 
     for (const [block, machineDef] of networkStatListeners) {
@@ -210,75 +218,71 @@ export class MachineNetwork extends DestroyableObject {
     this.sendJobRunning = false;
   }
 
-  private async returnToGenerators(distributionData: DistributionData, type: string, budget: number): Promise<void> {
+  private async returnToGenerators(
+    distributionData: DistributionData,
+    type: string,
+    budget: number,
+  ): Promise<void> {
     const promises: Promise<void>[] = [];
-    const typeCategory = InternalRegisteredStorageType.getInternal(type)?.category;
+    const typeCategory =
+      InternalRegisteredStorageType.getInternal(type)?.category;
 
-    const budgetAllocation = Math.floor(
-      budget / distributionData.queueItems.length
+    const leftOverBudget = Math.floor(
+      budget / distributionData.queueItems.length,
     );
 
     for (const sendData of distributionData.queueItems) {
       const machine = sendData.block;
 
-      const hasSameCategory = typeCategory !== undefined && machine.hasTag(
-        `fluffyalien_energisticscore:consumer.type.${typeCategory}`,
-      );
+      const hasSameCategory =
+        typeCategory !== undefined &&
+        machine.hasTag(
+          `fluffyalien_energisticscore:consumer.type.${typeCategory}`,
+        );
 
-      const isConsumer = hasSameCategory ||
+      const isConsumer =
+        hasSameCategory ||
         machine.hasTag("fluffyalien_energisticscore:consumer.any") ||
         machine.hasTag(`fluffyalien_energisticscore:consumer.type.${type}`);
 
-      if (budget <= 0 && !isConsumer) {
-        setMachineStorage(machine, sendData.type, 0);
-        continue;
-      }
+      // Take-away the amount actually spent.
+      setMachineStorage(
+        machine,
+        sendData.type,
+        Math.max(
+          getMachineStorage(machine, sendData.type) - sendData.amount,
+          0,
+        ),
+      );
 
-      if (isConsumer) {
-        const actualBudgetAllocation = Math.min(
-          sendData.amount,
-          budgetAllocation
-        );
-
-        const leftoverAllocation = sendData.amount - actualBudgetAllocation;
-        const machineDef = InternalRegisteredMachine.forceGetInternal(machine.typeId);
-
-        // first take-away the amount actually spent.
-        setMachineStorage(machine, sendData.type, getMachineStorage(machine, sendData.type) - actualBudgetAllocation);
-
-        // next if there are any left-overs invoke the recieve handler and allow it to take its amount.
-        const promise = this.determineActualMachineAllocation(machine, machineDef, type, leftoverAllocation)
-          .then((v) => {
-            if (v.handleStorage ?? true) {
-              setMachineStorage(machine, type, getMachineStorage(machine, type) + v.amount);
-            }
-          })
-          .catch((e: unknown) => {
-            logWarn(`Error in determineActualMachineAllocation for id: ${machineDef.id}, error: ${JSON.stringify(e)}`);
-          });
-
-        promises.push(promise);
-        continue;
-      }
-
-      const machineDef = InternalRegisteredMachine.getInternal(
+      // If the machine is also a consumer, that means the unused budget should be returned to it.
+      if (!isConsumer) continue;
+      const machineDef = InternalRegisteredMachine.forceGetInternal(
         machine.typeId,
       );
 
-      if (!machineDef) {
-        logWarn(
-          `Machine with ID '${machine.typeId}' not found in MachineNetwork#send.`,
-        );
-        continue;
-      }
+      const promise = this.determineActualMachineAllocation(
+        machine,
+        machineDef,
+        type,
+        leftOverBudget,
+      )
+        .then((v) => {
+          if (v.handleStorage ?? true) {
+            setMachineStorage(
+              machine,
+              type,
+              getMachineStorage(machine, type) + v.amount,
+            );
+          }
+        })
+        .catch((e: unknown) => {
+          logWarn(
+            `Error in determineActualMachineAllocation for id: ${machineDef.id}, error: ${JSON.stringify(e)}`,
+          );
+        });
 
-      const newAmount = Math.min(
-        budgetAllocation,
-        machineDef.maxStorage,
-        sendData.amount
-      );
-
-      setMachineStorage(machine, type, newAmount);
+      promises.push(promise);
     }
 
     await Promise.all(promises);
@@ -287,7 +291,11 @@ export class MachineNetwork extends DestroyableObject {
   /**
    * @returns How much of the budget was left-over
    */
-  private async distributeToGroup(machines: Block[], type: string, budget: number): Promise<number> {
+  private async distributeToGroup(
+    machines: Block[],
+    type: string,
+    budget: number,
+  ): Promise<number> {
     const promises: Promise<void>[] = [];
     const budgetAllocation = Math.floor(budget / machines.length);
 
@@ -307,7 +315,12 @@ export class MachineNetwork extends DestroyableObject {
         machineDef.maxStorage - currentStored,
       );
 
-      const promise = this.determineActualMachineAllocation(machine, machineDef, type, amountToAllocate)
+      const promise = this.determineActualMachineAllocation(
+        machine,
+        machineDef,
+        type,
+        amountToAllocate,
+      )
         .then((v) => {
           budget -= v.amount;
           if (v.handleStorage ?? true) {
@@ -315,7 +328,9 @@ export class MachineNetwork extends DestroyableObject {
           }
         })
         .catch((e: unknown) => {
-          logWarn(`Error in determineActualMachineAllocation for id: ${machineDef.id}, error: ${JSON.stringify(e)}`);
+          logWarn(
+            `Error in determineActualMachineAllocation for id: ${machineDef.id}, error: ${JSON.stringify(e)}`,
+          );
         });
 
       promises.push(promise);

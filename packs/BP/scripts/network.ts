@@ -138,10 +138,26 @@ export class MachineNetwork extends DestroyableObject {
       const tags = machine.getTags();
 
       const priorityTags = tags
-        .filter((t) => t.startsWith("fluffyalien_energisticscore:priority_"))
+        .filter((t) => t.startsWith("fluffyalien_energisticscore:priority."))
         .map((t) => {
-          return parseInt(t.split("_")[2]);
-        });
+          const number = Number(t.split(".")[1]);
+
+          if (!Number.isInteger(number)) {
+            logWarn(
+              `Priority tag '${t}' on machine with id '${machine.typeId}' is not a valid number. Ignoring.`,
+            );
+            return undefined;
+          }
+
+          return parseInt(t.split(".")[1]);
+        })
+        .filter((v) => v !== undefined);
+
+      if (priorityTags.length > 1) {
+        logWarn(
+          `Found multiple priority tags on a machine ${machine.typeId}, the highest priority will be used.`,
+        );
+      }
 
       const priority =
         priorityTags.length === 0 ? 0 : Math.max(...priorityTags);
@@ -175,9 +191,14 @@ export class MachineNetwork extends DestroyableObject {
       }
 
       // Check if the machine is listening for network stat events.
-      const machineDef = InternalRegisteredMachine.forceGetInternal(
-        machine.typeId,
-      );
+      const machineDef = InternalRegisteredMachine.getInternal(machine.typeId);
+
+      if (!machineDef) {
+        logWarn(
+          `Machine with ID '${machine.typeId}' not found in MachineNetwork#send.`,
+        );
+        continue;
+      }
 
       if (machineDef.getData().networkStatEvent) {
         networkStatListeners.push([machine, machineDef]);
@@ -221,26 +242,12 @@ export class MachineNetwork extends DestroyableObject {
     budget: number,
   ): Promise<void> {
     const promises: Promise<void>[] = [];
-    const typeCategory =
-      InternalRegisteredStorageType.getInternal(type)?.category;
-
     const leftOverBudget = Math.floor(
       budget / distributionData.queueItems.length,
     );
 
     for (const sendData of distributionData.queueItems) {
       const machine = sendData.block;
-
-      const hasSameCategory =
-        typeCategory !== undefined &&
-        machine.hasTag(
-          `fluffyalien_energisticscore:consumer.type.${typeCategory}`,
-        );
-
-      const isConsumer =
-        hasSameCategory ||
-        machine.hasTag("fluffyalien_energisticscore:consumer.any") ||
-        machine.hasTag(`fluffyalien_energisticscore:consumer.type.${type}`);
 
       // Take-away the amount actually spent.
       setMachineStorage(
@@ -252,12 +259,19 @@ export class MachineNetwork extends DestroyableObject {
         ),
       );
 
-      // If the machine is also a consumer, that means the unused budget should be returned to it.
-      if (!isConsumer) continue;
-      const machineDef = InternalRegisteredMachine.forceGetInternal(
-        machine.typeId,
-      );
+      // Nothing to return, skip below logic.
+      if (leftOverBudget <= 0) continue;
 
+      const machineDef = InternalRegisteredMachine.getInternal(machine.typeId);
+
+      if (!machineDef) {
+        logWarn(
+          `Machine with ID '${machine.typeId}' not found in MachineNetwork#send.`,
+        );
+        continue;
+      }
+
+      // Return any left-over budget
       const promise = this.determineActualMachineAllocation(
         machine,
         machineDef,
@@ -605,7 +619,7 @@ export class MachineNetwork extends DestroyableObject {
         network.destroy();
       }
     }
-  } 
+  }
 
   /**
    * Update all {@link MachineNetwork}s that contain a machine that matches the arguments.

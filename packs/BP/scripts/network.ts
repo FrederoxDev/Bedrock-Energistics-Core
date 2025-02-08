@@ -111,7 +111,11 @@ export class MachineNetwork extends DestroyableObject {
         data.total += send.amount;
         data.queueItems.push(send);
         data.generators.push(send.block);
-        setMachineStorage(send.block, send.type, getMachineStorage(send.block, send.type) + send.amount);
+        setMachineStorage(
+          send.block,
+          send.type,
+          getMachineStorage(send.block, send.type) + send.amount,
+        );
         continue;
       }
 
@@ -120,8 +124,12 @@ export class MachineNetwork extends DestroyableObject {
         queueItems: [send],
         generators: [send.block],
       };
-      
-      setMachineStorage(send.block, send.type, getMachineStorage(send.block, send.type) + send.amount);
+
+      setMachineStorage(
+        send.block,
+        send.type,
+        getMachineStorage(send.block, send.type) + send.amount,
+      );
     }
 
     this.sendQueue = [];
@@ -223,18 +231,26 @@ export class MachineNetwork extends DestroyableObject {
           setMachineStorage(
             sendData.block,
             sendData.type,
-            Math.min(getMachineStorage(sendData.block, sendData.type) - sendData.amount, 0),
+            Math.min(
+              getMachineStorage(sendData.block, sendData.type) -
+                sendData.amount,
+              0,
+            ),
           );
         }
 
         // Distribute to each consumer group in order of priority.
         for (const key of sortedKeys) {
-          budget = await this.distributeToGroup(consumers[type].get(key)!, type, budget);
+          budget = await this.distributeToGroup(
+            consumers[type].get(key)!,
+            type,
+            budget,
+          );
           if (budget <= 0) break;
         }
 
         // Then return any left-over budget to the generators.
-        await this.returnToGenerators(distributionData, type, budget)
+        await this.returnToGenerators(distributionData, type, budget);
       });
     }
 
@@ -280,7 +296,7 @@ export class MachineNetwork extends DestroyableObject {
             setMachineStorage(
               machine,
               type,
-              getMachineStorage(machine, type) + v.amount,
+              getMachineStorage(machine, type) + (v.amount ?? leftOverBudget),
             );
           }
         })
@@ -330,9 +346,13 @@ export class MachineNetwork extends DestroyableObject {
         amountToAllocate,
       )
         .then((v) => {
-          budget -= v.amount;
+          budget -= v.amount ?? amountToAllocate;
           if (v.handleStorage ?? true) {
-            setMachineStorage(machine, type, currentStored + v.amount);
+            setMachineStorage(
+              machine,
+              type,
+              currentStored + (v.amount ?? amountToAllocate),
+            );
           }
         })
         .catch((e: unknown) => {

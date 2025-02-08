@@ -144,14 +144,13 @@ export class MachineNetwork extends DestroyableObject {
 
           if (!Number.isInteger(number)) {
             logWarn(
-              `Priority tag '${t}' on machine with id '${machine.typeId}' is not a valid number. Ignoring.`,
+              `Priority tag '${t}' on machine with id '${machine.typeId}' is not a valid number. Defaulting to 0.`,
             );
-            return undefined;
+            return 0;
           }
 
-          return parseInt(t.split(".")[1]);
-        })
-        .filter((v) => v !== undefined);
+          return number;
+        });
 
       if (priorityTags.length > 1) {
         logWarn(

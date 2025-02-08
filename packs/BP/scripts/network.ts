@@ -214,18 +214,25 @@ export class MachineNetwork extends DestroyableObject {
         (a, b) => b - a,
       );
 
-      for (const key of sortedKeys) {
-        budget = yield* asyncAsGenerator(() =>
-          this.distributeToGroup(consumers[type].get(key)!, type, budget),
-        );
-        if (budget <= 0) break;
-      }
+      yield* asyncAsGenerator(async () => {
+        // Take all generated away from the generators
+        for (const sendData of distributionData.queueItems) {
+          setMachineStorage(
+            sendData.block,
+            sendData.type,
+            Math.min(getMachineStorage(sendData.block, sendData.type) - sendData.amount, 0),
+          );
+        }
 
-      // consume the taken amounts from the generators
-      // also handles returning any excess back
-      yield* asyncAsGenerator(() =>
-        this.returnToGenerators(distributionData, type, budget),
-      );
+        // Distribute to each consumer group in order of priority.
+        for (const key of sortedKeys) {
+          budget = await this.distributeToGroup(consumers[type].get(key)!, type, budget);
+          if (budget <= 0) break;
+        }
+
+        // Then return any left-over budget to the generators.
+        await this.returnToGenerators(distributionData, type, budget)
+      });
     }
 
     for (const [block, machineDef] of networkStatListeners) {
@@ -245,22 +252,10 @@ export class MachineNetwork extends DestroyableObject {
       budget / distributionData.queueItems.length,
     );
 
+    if (leftOverBudget <= 0) return;
+
     for (const sendData of distributionData.queueItems) {
       const machine = sendData.block;
-
-      // Take-away the amount actually spent.
-      setMachineStorage(
-        machine,
-        sendData.type,
-        Math.max(
-          getMachineStorage(machine, sendData.type) - sendData.amount,
-          0,
-        ),
-      );
-
-      // Nothing to return, skip below logic.
-      if (leftOverBudget <= 0) continue;
-
       const machineDef = InternalRegisteredMachine.getInternal(machine.typeId);
 
       if (!machineDef) {

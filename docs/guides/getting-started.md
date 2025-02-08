@@ -33,11 +33,11 @@ Ensure that your add-on is using a version of `@minecraft/server` that Bedrock E
 
 ### Creating the Block
 
-The first thing you need to do to add a machine is create the block.
+The first thing you need to do to add a machine is create the block. All machines must have the `fluffyalien_energisticscore:machine` tag AND custom component.
 
-To make a block that generates energy, it will need to have the `fluffyalien_energisticscore:io.energy` tag
+To make a block that generates energy, it will need to have the `fluffyalien_energisticscore:io.type.energy` tag
 
-To make a block that consumes energy, it will need to have both the `fluffyalien_energisticscore:io.energy` and `fluffyalien_energisticscore:consumer.energy` tags.
+To make a block that consumes energy, it will need to have both the `fluffyalien_energisticscore:io.type.energy` and `fluffyalien_energisticscore:consumer.type.energy` tags.
 
 See [Machine Block Tags](machine-block-tags.md) for more information on tags.
 
@@ -64,7 +64,7 @@ This is the full block JSON:
       ],
       // Machines must have this tag.
       "tag:fluffyalien_energisticscore:machine": {},
-      "tag:fluffyalien_energisticscore:io.energy": {},
+      "tag:fluffyalien_energisticscore:io.type.energy": {},
 
       "minecraft:geometry": "minecraft:geometry.full_block",
       "minecraft:material_instances": {

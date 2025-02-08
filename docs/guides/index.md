@@ -4,7 +4,8 @@ children:
   - ./conduits.md
   - ./debug-stick.md
   - ./getting-started.md
-  - ./machine-block-tags.md
+  - ./machine-io.md
+  - ./machine-priority.md
   - ./machine-ui.md
   - ./network-links.md
   - ./persistent-entities.md
@@ -21,7 +22,8 @@ children:
 - [Conduits](conduits.md)
 - [Debug Stick](debug-stick.md)
 - [Getting Started](getting-started.md)
-- [Machine Block Tags](machine-block-tags.md)
+- [Machine I/O](machine-io.md)
+- [Machine Priority](machine-priority.md)
 - [Machine UI](machine-ui.md)
 - [Network Links](network-links.md)
 - [Persistent Entities](persistent-entities.md)

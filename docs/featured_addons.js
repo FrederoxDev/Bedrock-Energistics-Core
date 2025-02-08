@@ -11,6 +11,12 @@ const FEATURED_ADDONS = [
     img: "https://media.forgecdn.net/avatars/thumbnails/1029/245/64/64/638551161203413381.png",
     url: "https://www.curseforge.com/minecraft-bedrock/addons/bedrock-energistics",
   },
+  {
+    name: "Not Enough Teleporters",
+    author: "Diamond Ruler",
+    img: "https://media.forgecdn.net/avatars/thumbnails/907/720/64/64/638359197856483557.png",
+    url: "https://www.curseforge.com/minecraft-bedrock/addons/not-enough-teleporters",
+  },
 ];
 
 const container = document.getElementById("featured-addons-container");

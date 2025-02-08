@@ -221,7 +221,7 @@ export class MachineNetwork extends DestroyableObject {
           amountToAllocate,
         )
           .then((v) => {
-            amountToAllocate = v.amount;
+            amountToAllocate = v.amount ?? amountToAllocate;
             shouldHandleStorage = v.handleStorage ?? true;
           })
           .catch((e: unknown) => {
@@ -278,7 +278,7 @@ export class MachineNetwork extends DestroyableObject {
             amountToAllocate,
           )
             .then((v) => {
-              amountToAllocate = v.amount;
+              amountToAllocate = v.amount ?? amountToAllocate;
               shouldHandleStorage = v.handleStorage ?? true;
             })
             .catch((e: unknown) => {

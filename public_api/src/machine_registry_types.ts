@@ -272,7 +272,7 @@ export interface RecieveHandlerResponse {
   /**
    * Override the amount to recieve.
    */
-  amount: number;
+  amount?: number;
 
   /**
    * Should the API handle setting machine storage?

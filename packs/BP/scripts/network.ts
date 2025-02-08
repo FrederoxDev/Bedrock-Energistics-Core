@@ -111,6 +111,7 @@ export class MachineNetwork extends DestroyableObject {
         data.total += send.amount;
         data.queueItems.push(send);
         data.generators.push(send.block);
+        setMachineStorage(send.block, send.type, getMachineStorage(send.block, send.type) + send.amount);
         continue;
       }
 
@@ -119,6 +120,8 @@ export class MachineNetwork extends DestroyableObject {
         queueItems: [send],
         generators: [send.block],
       };
+      
+      setMachineStorage(send.block, send.type, getMachineStorage(send.block, send.type) + send.amount);
     }
 
     this.sendQueue = [];

@@ -9,12 +9,20 @@ title: Machine I/O
 
 ## Network Connection
 
-In order for a machine to connect to a machine network, it must share one or more I/O types with that network.
+In order for a machine to connect to a machine network, it must be adjacent and share one or more I/O types with that network.
 To define which I/O types your machine uses, use the `fluffyalien_energisticscore:io.` tag.
 
-**Syntax:** `fluffyalien_energisticscore:io.any | fluffyalien_energisticscore:io.{type|category}.XYZ`
+**Syntax (Default):** `fluffyalien_energisticscore:io.any | fluffyalien_energisticscore:io.{type|category}.XYZ`
 
 For example, use the `fluffyalien_energisticscore:io.type.energy` tag to make your machine connect to networks that share the `energy` storage type, or `fluffyalien_energisticscore:io.category.gas` to make your machine connect to networks that share any storage type with the `gas` category.
+
+### Explicit Sides
+
+**Syntax (Explicit Sides):** `fluffyalien_energisticscore:io.any.{north|east|south|west|up|down|side} | fluffyalien_energisticscore:io.{type|category}.XYZ.{north|east|south|west|up|down|side}`
+
+`.{north|east|south|west|up|down|side}` can be appended at the end of the tag to only connect to networks that from specific directions. This will only be parsed if the `fluffyalien_energisticscore:explicit_sides` tag is added as well.
+
+For example, use the `fluffyalien_energisticscore:io.type.energy.north` to only connect to adjacent `energy` networks if they connect to the north face of this block.
 
 ## Consumer
 

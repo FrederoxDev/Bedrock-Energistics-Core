@@ -251,14 +251,6 @@ export class MachineNetwork extends DestroyableObject {
 
     for (const sendData of distributionData.queueItems) {
       const machine = sendData.block;
-      const machineDef = InternalRegisteredMachine.getInternal(machine.typeId);
-
-      if (!machineDef) {
-        logWarn(
-          `Machine with ID '${machine.typeId}' not found in MachineNetwork#returnToGenerators.`,
-        );
-        continue;
-      }
 
       const consumesCategory =
         typeCategory !== undefined &&
@@ -277,10 +269,7 @@ export class MachineNetwork extends DestroyableObject {
       }
 
       if (isConsumer) {
-        const actualBudgetAllocation = Math.min(
-          sendData.amount,
-          leftOverBudget,
-        );
+        const actualBudgetAllocation = Math.min(sendData.amount, budget);
 
         setMachineStorage(
           machine,
@@ -294,13 +283,21 @@ export class MachineNetwork extends DestroyableObject {
         continue;
       }
 
+      const machineDef = InternalRegisteredMachine.getInternal(machine.typeId);
+      if (!machineDef) {
+        logWarn(
+          `Machine with ID '${machine.typeId}' not found in MachineNetwork#returnToGenerators.`,
+        );
+        continue;
+      }
+
       const newAmount = Math.min(
         budget,
         machineDef.maxStorage,
         sendData.amount,
       );
 
-      // Return any left-over budget
+      budget -= newAmount;
       setMachineStorage(machine, type, newAmount);
     }
   }

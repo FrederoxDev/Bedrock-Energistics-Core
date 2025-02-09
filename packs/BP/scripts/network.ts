@@ -221,7 +221,7 @@ export class MachineNetwork extends DestroyableObject {
       const distributionData = distribution[type];
       let budget = distributionData.total;
 
-      const sortedKeys = Array.from(consumers[type].keys()).sort(
+      const machinePriorities = Array.from(consumers[type].keys()).sort(
         (a, b) => b - a,
       );
 
@@ -240,7 +240,7 @@ export class MachineNetwork extends DestroyableObject {
         }
 
         // Distribute to each consumer group in order of priority.
-        for (const key of sortedKeys) {
+        for (const key of machinePriorities) {
           budget = await this.distributeToGroup(
             consumers[type].get(key)!,
             type,

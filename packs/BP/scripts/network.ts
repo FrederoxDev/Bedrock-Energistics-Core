@@ -242,9 +242,11 @@ export class MachineNetwork extends DestroyableObject {
     type: string,
     leftOverBudget: number,
   ): void {
-    let budget = Math.floor(
-      leftOverBudget / distributionData.queueItems.length,
-    );
+    const numGenerators = distributionData.generators.length;
+    if (numGenerators === 0) return; 
+
+    let budget = Math.floor(leftOverBudget / numGenerators);
+    let remainder = leftOverBudget % numGenerators;
 
     const typeCategory =
       InternalRegisteredStorageType.getInternal(type)?.category;
@@ -263,13 +265,21 @@ export class MachineNetwork extends DestroyableObject {
         machine.hasTag("fluffyalien_energisticscore:consumer.any") ||
         machine.hasTag(`fluffyalien_energisticscore:consumer.type.${type}`);
 
-      if (budget <= 0 && !isConsumer) {
+      let actualBudgetAllocation = budget;
+
+      // Divide any remainder between the generators. (E.g. splitting 11 into 3 would output: 4, 4, 3)
+      if (remainder > 0) {
+        actualBudgetAllocation++;
+        remainder--;
+      }
+
+      if (actualBudgetAllocation <= 0 && !isConsumer) {
         setMachineStorage(machine, type, 0);
         continue;
       }
 
       if (isConsumer) {
-        const actualBudgetAllocation = Math.min(sendData.amount, budget);
+        actualBudgetAllocation = Math.min(sendData.amount, budget);
 
         setMachineStorage(
           machine,

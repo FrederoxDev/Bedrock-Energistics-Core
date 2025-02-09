@@ -39,7 +39,7 @@ To make a block that generates energy, it will need to have the `fluffyalien_ene
 
 To make a block that consumes energy, it will need to have both the `fluffyalien_energisticscore:io.type.energy` and `fluffyalien_energisticscore:consumer.type.energy` tags.
 
-See [Machine Block Tags](machine-block-tags.md) for more information on tags.
+See [Machine I/O](machine-io.md) for more information.
 
 In this guide, we will make a machine that simply generates a fixed amount of energy passively.
 

@@ -4,6 +4,7 @@ children:
   - ./conduits.md
   - ./debug-stick.md
   - ./getting-started.md
+  - ./item-machines.md
   - ./machine-io.md
   - ./machine-priority.md
   - ./machine-ui.md
@@ -22,6 +23,7 @@ children:
 - [Conduits](conduits.md)
 - [Debug Stick](debug-stick.md)
 - [Getting Started](getting-started.md)
+- [Item Machines](item-machines.md)
 - [Machine I/O](machine-io.md)
 - [Machine Priority](machine-priority.md)
 - [Machine UI](machine-ui.md)

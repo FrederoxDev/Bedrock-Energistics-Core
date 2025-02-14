@@ -6,6 +6,7 @@ import {
 import { Vector3Utils } from "@minecraft/math";
 import { Block, Dimension, Entity, Vector3 } from "@minecraft/server";
 import { raise } from "../utils/log";
+import { MachineNetwork } from "../network";
 
 /**
  * Internal version of the `NetworkLinkNode` class
@@ -72,6 +73,10 @@ export class InternalNetworkLinkNode {
 
     other.selfAddConnection(this.blockPos);
     this.selfAddConnection(other.blockPos);
+
+    const thisBlock = this.entity.dimension.getBlock(this.blockPos)!;
+    MachineNetwork.updateWithBlock(thisBlock);
+    MachineNetwork.updateWithBlock(otherBlock);
   }
 
   public removeConnection(location: Vector3): void {
@@ -80,6 +85,10 @@ export class InternalNetworkLinkNode {
 
     other.selfRemoveConnection(this.blockPos);
     this.selfRemoveConnection(other.blockPos);
+
+    const thisBlock = this.entity.dimension.getBlock(this.blockPos)!;
+    MachineNetwork.updateWithBlock(thisBlock);
+    MachineNetwork.updateWithBlock(otherBlock);
   }
 
   public destroyNode(): void {

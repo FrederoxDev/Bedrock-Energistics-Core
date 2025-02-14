@@ -86,6 +86,7 @@ export async function getItemMachineIoHandler(
       registeredItemMachineData.defaultIo?.acceptsAny)
   ) {
     return {
+      onlyAllowConduitConnections: false,
       acceptsAny: true,
       categories: [],
       types: [],
@@ -93,6 +94,7 @@ export async function getItemMachineIoHandler(
   }
 
   return {
+    onlyAllowConduitConnections: false,
     acceptsAny: false,
     categories:
       io.categories ?? registeredItemMachineData.defaultIo?.categories ?? [],

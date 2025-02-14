@@ -72,7 +72,7 @@ export class IoCapabilities {
    * @param isFromConduit Is the source a conduit
    * @returns Whether this object accepts the given storage type.
    */
-  acceptsType(storageType: StorageTypeData, isFromConduit: boolean): boolean {
+  acceptsType(storageType: StorageTypeData, isFromConduit = false): boolean {
     if (!isFromConduit && this.onlyAllowsConduitConnections) return false;
 
     return (
@@ -89,10 +89,7 @@ export class IoCapabilities {
    * @param isFromConduit Is the sender a conduit
    * @returns Whether this object accepts the storage type with the given ID.
    */
-  async acceptsTypeWithId(
-    id: string,
-    isFromConduit: boolean,
-  ): Promise<boolean> {
+  async acceptsTypeWithId(id: string, isFromConduit = false): Promise<boolean> {
     if (!isFromConduit && this.onlyAllowsConduitConnections) return false;
     if (this.acceptsAny) return true;
 
@@ -109,7 +106,7 @@ export class IoCapabilities {
    * @param isFromConduit Is the sender a conduit
    * @returns Whether this object accepts the given category.
    */
-  acceptsCategory(category: string, isFromConduit: boolean): boolean {
+  acceptsCategory(category: string, isFromConduit = false): boolean {
     if (!isFromConduit && this.onlyAllowsConduitConnections) return false;
     return this.acceptsAny || this.categories.includes(category);
   }
@@ -122,7 +119,7 @@ export class IoCapabilities {
    */
   async acceptsAnyTypeOfCategory(
     category: string,
-    isFromConduit: boolean,
+    isFromConduit = false,
   ): Promise<boolean> {
     if (!isFromConduit && this.onlyAllowsConduitConnections) return false;
     if (this.acceptsCategory(category, isFromConduit)) return true;
@@ -146,7 +143,7 @@ export class IoCapabilities {
   static accepting(
     types: string[],
     categories: string[],
-    onlyAllowConduitConnections: boolean,
+    onlyAllowConduitConnections = false,
   ): IoCapabilities {
     return new IoCapabilities({
       acceptsAny: false,
@@ -161,7 +158,7 @@ export class IoCapabilities {
    * @beta
    * @returns Returns a new IoCapabilities object.
    */
-  static acceptingAny(onlyAllowConduitConnections: boolean): IoCapabilities {
+  static acceptingAny(onlyAllowConduitConnections = false): IoCapabilities {
     return new IoCapabilities({
       onlyAllowConduitConnections,
       acceptsAny: true,

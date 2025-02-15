@@ -9,7 +9,8 @@ export type StorageTypeColor =
   | "red"
   | "yellow"
   | "blue"
-  | "white";
+  | "white"
+  | "green";
 
 /**
  * @beta

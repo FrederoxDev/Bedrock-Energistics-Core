@@ -16,6 +16,7 @@ const STORAGE_BAR_COLORS: string[] = [
   "yellow",
   "blue",
   "white",
+  "green",
 ];
 
 const itemTexturePath = path.join(TMP_DIR, "RP/textures/item_texture.json");

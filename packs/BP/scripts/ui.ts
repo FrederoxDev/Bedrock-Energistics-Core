@@ -48,6 +48,7 @@ const STORAGE_TYPE_COLOR_TO_FORMATTING_CODE: Record<StorageTypeColor, string> =
     yellow: "e",
     blue: "9",
     white: "f",
+    green: "2",
   };
 
 /**

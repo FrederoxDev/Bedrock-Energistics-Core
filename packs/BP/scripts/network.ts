@@ -21,7 +21,7 @@ import {
 } from "@/public_api/src";
 import { InternalRegisteredMachine } from "./machine_registry";
 import { InternalRegisteredStorageType } from "./storage_type_registry";
-import { asyncAsGenerator } from "./utils/asyncGenerator";
+import { asyncAsGenerator } from "./utils/async_generator";
 
 interface SendQueueItem {
   block: Block;
@@ -243,7 +243,7 @@ export class MachineNetwork extends DestroyableObject {
     leftOverBudget: number,
   ): void {
     const numGenerators = distributionData.generators.length;
-    if (numGenerators === 0) return; 
+    if (numGenerators === 0) return;
 
     let budget = Math.floor(leftOverBudget / numGenerators);
     let remainder = leftOverBudget % numGenerators;

@@ -2,12 +2,13 @@ import * as ipc from "mcbe-addon-ipc";
 import { DimensionLocation } from "@minecraft/server";
 import { logInfo, makeErrorString, raise } from "./utils/log";
 import {
+  MachineUpdateUiHandlerResponse,
   NetworkStorageTypeData,
   RecieveHandlerResponse,
   RegisteredMachine,
-  UpdateUiHandlerResponse,
 } from "@/public_api/src";
 import {
+  IpcMachineUpdateUiHandlerArg,
   IpcNetworkStatsEventArg,
   MangledOnButtonPressedPayload,
   MangledRecieveHandlerPayload,
@@ -32,7 +33,8 @@ export class InternalRegisteredMachine extends RegisteredMachine {
 
   invokeUpdateUiHandler(
     dimensionLocation: DimensionLocation,
-  ): Promise<UpdateUiHandlerResponse> {
+    entityId: string,
+  ): Promise<MachineUpdateUiHandlerResponse> {
     if (!this.data.updateUiEvent) {
       throw new Error(
         makeErrorString(
@@ -41,10 +43,15 @@ export class InternalRegisteredMachine extends RegisteredMachine {
       );
     }
 
+    const payload: IpcMachineUpdateUiHandlerArg = {
+      blockLocation: makeSerializableDimensionLocation(dimensionLocation),
+      entityId,
+    };
+
     return ipcInvoke(
       this.data.updateUiEvent,
-      makeSerializableDimensionLocation(dimensionLocation),
-    ) as Promise<UpdateUiHandlerResponse>;
+      payload,
+    ) as Promise<MachineUpdateUiHandlerResponse>;
   }
 
   invokeRecieveHandler(

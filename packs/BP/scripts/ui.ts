@@ -362,7 +362,7 @@ async function updateEntityUi(
   };
 
   const updateUiResult = definition.getData().updateUiEvent
-    ? await definition.invokeUpdateUiHandler(dimensionLocation)
+    ? await definition.invokeUpdateUiHandler(dimensionLocation, entity.id)
     : null;
 
   // ensure the entity is still valid after invoking updateUi

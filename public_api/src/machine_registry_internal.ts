@@ -18,6 +18,9 @@ export interface RegisteredMachineData {
   networkStatEvent?: string;
 }
 
+/**
+ * @internal
+ */
 export interface MangledRecieveHandlerPayload {
   /**
    * blockLocation
@@ -33,6 +36,9 @@ export interface MangledRecieveHandlerPayload {
   c: number;
 }
 
+/**
+ * @internal
+ */
 export interface MangledOnButtonPressedPayload {
   /**
    * blockLocation
@@ -52,7 +58,18 @@ export interface MangledOnButtonPressedPayload {
   d: string;
 }
 
+/**
+ * @internal
+ */
 export interface IpcNetworkStatsEventArg {
   networkData: Record<string, NetworkStorageTypeData>;
   blockLocation: SerializableDimensionLocation;
+}
+
+/**
+ * @internal
+ */
+export interface IpcMachineUpdateUiHandlerArg {
+  blockLocation: SerializableDimensionLocation;
+  entityId: string;
 }

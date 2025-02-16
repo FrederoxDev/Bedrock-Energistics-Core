@@ -1,14 +1,12 @@
 import { MachineDefinition, UiElement } from "./machine_registry_types.js";
 import {
+  IpcMachineUpdateUiHandlerArg,
   IpcNetworkStatsEventArg,
   MangledOnButtonPressedPayload,
   MangledRecieveHandlerPayload,
   RegisteredMachineData,
 } from "./machine_registry_internal.js";
-import {
-  deserializeDimensionLocation,
-  SerializableDimensionLocation,
-} from "./serialize_utils.js";
+import { deserializeDimensionLocation } from "./serialize_utils.js";
 import { ipcInvoke, ipcSend } from "./ipc_wrapper.js";
 import { isRegistrationAllowed } from "./registration_allowed.js";
 import { raise } from "./log.js";
@@ -126,13 +124,14 @@ export function registerMachine(definition: MachineDefinition): void {
 
     const callback = definition.handlers.updateUi.bind(null);
 
-    ipcRouter.registerListener(updateUiEvent, (payload) =>
-      callback({
-        blockLocation: deserializeDimensionLocation(
-          payload as SerializableDimensionLocation,
-        ),
-      }),
-    );
+    ipcRouter.registerListener(updateUiEvent, (payload) => {
+      const data = payload as IpcMachineUpdateUiHandlerArg;
+
+      return callback({
+        blockLocation: deserializeDimensionLocation(data.blockLocation),
+        entityId: data.entityId,
+      });
+    });
   }
 
   let receiveHandlerEvent: string | undefined;

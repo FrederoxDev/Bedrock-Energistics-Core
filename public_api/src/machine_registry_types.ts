@@ -213,7 +213,14 @@ export interface MachineRecieveHandlerArg extends MachineCallbackArg {
 /**
  * @beta
  */
-export interface UpdateUiHandlerResponse {
+export interface MachineUpdateUiHandlerArg extends MachineCallbackArg {
+  entityId: string;
+}
+
+/**
+ * @beta
+ */
+export interface MachineUpdateUiHandlerResponse {
   storageBars?: Record<string, UiStorageBarElementUpdateOptions>;
   progressIndicators?: Record<string, number>;
   buttons?: Record<string, UiButtonElementUpdateOptions>;
@@ -248,7 +255,10 @@ export interface NetworkStatsEventArg extends MachineCallbackArg {
  * @beta
  */
 export interface MachineDefinitionHandlers {
-  updateUi?: MachineCallback<MachineCallbackArg, UpdateUiHandlerResponse>;
+  updateUi?: MachineCallback<
+    MachineUpdateUiHandlerArg,
+    MachineUpdateUiHandlerResponse
+  >;
   /**
    * Called before a machine recieves a storage type.
    * @returns a number that overrides the amount that was received

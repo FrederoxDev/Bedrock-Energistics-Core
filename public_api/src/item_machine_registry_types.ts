@@ -1,3 +1,4 @@
+import { BaseIpcCallback } from "./common_registry_types.js";
 import { ItemMachine } from "./item_machine.js";
 
 /**
@@ -31,13 +32,13 @@ export interface ItemMachineCallbackArg {
 export type ItemMachineCallback<
   TArg extends ItemMachineCallbackArg,
   TReturn,
-> = (this: null, arg: TArg) => TReturn;
+> = BaseIpcCallback<TArg, TReturn>;
 
 /**
  * @beta
  */
-export type ItemMachineEventCallback<T extends ItemMachineCallbackArg> =
-  ItemMachineCallback<T, void>;
+export type ItemMachineEventCallback<TArg extends ItemMachineCallbackArg> =
+  BaseIpcCallback<TArg, void>;
 
 // handlers
 

@@ -119,7 +119,7 @@ export function registerItemMachine(definition: ItemMachineDefinition): void {
 
       const serializableSlot = SerializableContainerSlot.fromJson(payload.slot);
 
-      callback({
+      void callback({
         itemMachine: new ItemMachine(
           serializableSlot.inventory,
           serializableSlot.slot,

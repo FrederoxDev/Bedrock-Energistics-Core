@@ -162,7 +162,7 @@ export function registerMachine(definition: MachineDefinition): void {
 
     ipcRouter.registerListener(onButtonPressedEvent, (payload) => {
       const data = payload as MangledOnButtonPressedPayload;
-      callback({
+      void callback({
         blockLocation: deserializeDimensionLocation(data.a),
         playerId: data.b,
         entityId: data.c,
@@ -182,7 +182,7 @@ export function registerMachine(definition: MachineDefinition): void {
     ipcRouter.registerListener(networkStatEvent, (payload) => {
       const data = payload as IpcNetworkStatsEventArg;
 
-      callback({
+      void callback({
         blockLocation: deserializeDimensionLocation(data.blockLocation),
         networkData: data.networkData,
       });

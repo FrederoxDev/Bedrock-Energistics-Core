@@ -1,4 +1,5 @@
 import { DimensionLocation } from "@minecraft/server";
+import { BaseIpcCallback } from "./common_registry_types.js";
 
 // ui
 
@@ -148,10 +149,10 @@ export interface MachineCallbackArg {
 /**
  * @beta
  */
-export type MachineCallback<TArg extends MachineCallbackArg, TReturn> = (
-  this: null,
-  arg: TArg,
-) => TReturn;
+export type MachineCallback<
+  TArg extends MachineCallbackArg,
+  TReturn,
+> = BaseIpcCallback<TArg, TReturn>;
 
 // events
 
@@ -159,7 +160,7 @@ export type MachineCallback<TArg extends MachineCallbackArg, TReturn> = (
  * @beta
  */
 export type MachineEventCallback<TArg extends MachineCallbackArg> =
-  MachineCallback<TArg, void>;
+  BaseIpcCallback<TArg, void>;
 
 /**
  * @beta

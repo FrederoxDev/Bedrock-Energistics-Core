@@ -17,6 +17,7 @@ export enum BecIpcListener {
   GetRegisteredMachine = "fluffyalien_energisticscore:ipc.getRegisteredMachine",
   GetRegisteredStorageType = "fluffyalien_energisticscore:ipc.getRegisteredStorageType",
   GetRegisteredItemMachine = "fluffyalien_energisticscore:ipc.getRegisteredItemMachine",
+  GetAllRegisteredStorageTypes = "fluffyalien_energisticscore:ipc.getAllRegisteredStorageTypes",
   GetNetworkLink = "fluffyalien_energisticscore:ipc.getNetworkLink",
   AddNetworkLink = "fluffyalien_energisticscore:ipc.addNetworkLink",
   RemoveNetworkLink = "fluffyalien_energisticscore:ipc.removeNetworkLink",

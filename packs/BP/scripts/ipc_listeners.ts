@@ -89,6 +89,9 @@ registerListener(
       payload as string,
     )?.getDefinition() ?? null,
 );
+registerListener(BecIpcListener.GetAllRegisteredStorageTypes, () => [
+  ...InternalRegisteredStorageType.getAllIdsInternal(),
+]);
 registerListener(BecIpcListener.GetNetworkLink, (payload) => {
   const data = payload as NetworkLinkGetRequest;
   const link = getNetworkLinkNode(data.self);

@@ -24,6 +24,10 @@ export class InternalRegisteredStorageType extends RegisteredStorageType {
     return storageTypeRegistry.get(id);
   }
 
+  static getAllIdsInternal(): MapIterator<string> {
+    return storageTypeRegistry.keys();
+  }
+
   static forceGetInternal(id: string): InternalRegisteredStorageType {
     const registered = InternalRegisteredStorageType.getInternal(id);
     if (!registered) {

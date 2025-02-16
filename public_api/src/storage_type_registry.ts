@@ -89,6 +89,18 @@ export class RegisteredStorageType implements StorageTypeData {
 
     return result;
   }
+
+  /**
+   * Get all registered storage type IDs.
+   * @beta
+   * @returns All registered storage type IDs.
+   */
+  static getAllIds(): Promise<string[]> {
+    return ipcInvoke(
+      BecIpcListener.GetAllRegisteredStorageTypes,
+      null,
+    ) as Promise<string[]>;
+  }
 }
 
 /**

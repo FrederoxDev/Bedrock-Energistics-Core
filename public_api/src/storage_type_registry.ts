@@ -12,6 +12,8 @@ import {
  */
 const storageTypeCache = new Map<string, RegisteredStorageType | undefined>();
 
+let storageTypeIdCache: string[] | undefined;
+
 /**
  * @beta
  */
@@ -95,11 +97,21 @@ export class RegisteredStorageType implements StorageTypeData {
    * @beta
    * @returns All registered storage type IDs.
    */
-  static getAllIds(): Promise<string[]> {
-    return ipcInvoke(
+  static async getAllIds(): Promise<string[]> {
+    if (storageTypeIdCache) {
+      return [...storageTypeIdCache];
+    }
+
+    const ids = (await ipcInvoke(
       BecIpcListener.GetAllRegisteredStorageTypes,
       null,
-    ) as Promise<string[]>;
+    )) as string[];
+
+    if (!isRegistrationAllowed()) {
+      storageTypeIdCache = [...ids];
+    }
+
+    return ids;
   }
 }
 

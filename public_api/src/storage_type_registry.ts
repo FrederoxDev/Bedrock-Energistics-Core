@@ -130,7 +130,13 @@ export function registerStorageType(definition: StorageTypeDefinition): void {
 
   if (definition.id.startsWith("_") || definition.category.startsWith("_")) {
     throw new Error(
-      `can't register storage type '${definition.id}' (category: '${definition.category}'): storage type IDs and categories cannot start with '_'`,
+      `Failed to register storage type '${definition.id}' (category: '${definition.category}'). Storage type IDs and categories cannot start with '_'.`,
+    );
+  }
+
+  if (definition.id.includes(".") || definition.category.includes(".")) {
+    throw new Error(
+      `Failed to register storage type '${definition.id}' (category: '${definition.category}'). Storage type IDs and categories cannot include '.'.`,
     );
   }
 

@@ -186,6 +186,14 @@ export interface MachineOnButtonPressedEventArg extends MachineCallbackArg {
 /**
  * @beta
  */
+export interface MachineOnStorageSetEvent extends MachineCallbackArg {
+  type: string;
+  value: number;
+}
+
+/**
+ * @beta
+ */
 export interface MachineDefinitionEvents {
   /**
    * Called after a UI button has been pressed.
@@ -198,7 +206,17 @@ export interface MachineDefinitionEvents {
    * contains information on each category sent in that pass with the starting and remaining budget.
    */
   onNetworkStatsRecieved?: MachineEventCallback<NetworkStatsEventArg>;
+
+  /**
+   * Called after the machine's storage is set via setMachineStorage.
+   */
+  onStorageSet?: MachineEventCallback<MachineOnStorageSetEvent>;
 }
+
+/**
+ * @beta
+ */
+export type MachineEventName = keyof MachineDefinitionEvents;
 
 // handlers
 
@@ -268,7 +286,17 @@ export interface MachineDefinitionHandlers {
   receive?: MachineCallback<MachineRecieveHandlerArg, RecieveHandlerResponse>;
 }
 
+/**
+ * @beta
+ */
+export type MachineHandlerName = keyof MachineDefinitionHandlers;
+
 // registered machine
+
+/**
+ * @beta
+ */
+export type MachineCallbackName = MachineEventName | MachineHandlerName;
 
 /**
  * @beta

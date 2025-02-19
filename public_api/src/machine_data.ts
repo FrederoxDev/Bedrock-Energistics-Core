@@ -6,10 +6,12 @@ import {
   getScore,
   getStorageScoreboardObjective,
 } from "./machine_data_internal.js";
-import { makeErrorString } from "./log.js";
 import { makeSerializableDimensionLocation } from "./serialize_utils.js";
 import { ipcSend } from "./ipc_wrapper.js";
 import { BecIpcListener } from "./bec_ipc_listener.js";
+import { raise } from "./log.js";
+import { RegisteredMachine } from "./machine_registry.js";
+import { callMachineOnStorageSetEvent } from "./machine_registry_internal.js";
 
 /**
  * Representation of an item stack stored in a machine inventory.
@@ -41,10 +43,8 @@ export function getMachineStorage(
   const objective = getStorageScoreboardObjective(type);
 
   if (!objective) {
-    throw new Error(
-      makeErrorString(
-        `trying to get machine storage of type '${type}' but that storage type does not exist`,
-      ),
+    raise(
+      `Failed to get machine storage. Storage type '${type}' doesn't exist.`,
     );
   }
 
@@ -59,39 +59,46 @@ export function getMachineStorage(
  * @param value The new value. Must be an integer.
  * @throws Throws if the storage type does not exist.
  * @throws Throws if the new value isn't a non-negative integer.
- * @throws Throws if the block is not valid
+ * @throws Throws if the block is not valid.
+ * @throws Throws if the block is not registered as a machine.
  */
-export function setMachineStorage(
+export async function setMachineStorage(
   block: Block,
   type: string,
   value: number,
-): void {
+): Promise<void> {
+  // There is a similar function to this in the add-on.
+  // Make sure changes are reflected in both.
+
+  // To avoid unnecessary IPC calls, this function calls the 'onStorageSet'
+  // event on machines directly, without routing through Bedrock Energistics Core.
+  // This also allows the local machine registry cache to be used, avoiding any
+  // IPC calls for machines that don't have the 'onStorageSet' event.
+
   if (!block.isValid()) {
-    throw new Error(
-      makeErrorString(
-        `trying to set machine storage but the block is not valid`,
-      ),
-    );
+    raise("Failed to set machine storage. The block is invalid.");
   }
 
   if (value < 0) {
-    throw new Error(
-      makeErrorString(
-        `trying to set machine storage of type '${type}' to ${value.toString()} which is less than the minimum value (0)`,
-      ),
+    raise(
+      `Failed to set machine storage of type '${type}' to ${value.toString()}. The minimum value is 0.`,
     );
   }
 
   const objective = getStorageScoreboardObjective(type);
   if (!objective) {
-    throw new Error(
-      makeErrorString(
-        `trying to set machine storage of type '${type}' but that storage type does not exist`,
-      ),
+    raise(
+      `Failed to set machine storage. Storage type '${type}' doesn't exist.`,
     );
   }
 
+  const registered = await RegisteredMachine.forceGet(block.typeId);
+
   objective.setScore(getBlockUniqueId(block), value);
+
+  if (registered.hasCallback("onStorageSet")) {
+    callMachineOnStorageSetEvent(registered, block, type, value);
+  }
 }
 
 /**

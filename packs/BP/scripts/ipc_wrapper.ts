@@ -5,9 +5,9 @@ export const ipcRouter = new ipc.Router("fluffyalien_energisticscore_router");
 
 export function registerListener(
   id: BecIpcListener,
-  listener: (payload: ipc.SerializableValue) => ipc.SerializableValue,
+  listener: ipc.ScriptEventListener,
 ): void {
-  ipcRouter.registerListener(id, listener as ipc.ScriptEventListener);
+  ipcRouter.registerListener(id, listener);
 }
 
 export function ipcSend(event: string, payload: ipc.SerializableValue): void {

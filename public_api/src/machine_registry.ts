@@ -1,5 +1,10 @@
-import { MachineDefinition, UiElement } from "./machine_registry_types.js";
 import {
+  MachineCallbackName,
+  MachineDefinition,
+  UiElement,
+} from "./machine_registry_types.js";
+import {
+  IpcMachineOnStorageSetEventArg,
   IpcMachineUpdateUiHandlerArg,
   IpcNetworkStatsEventArg,
   MangledOnButtonPressedPayload,
@@ -12,10 +17,7 @@ import { isRegistrationAllowed } from "./registration_allowed.js";
 import { raise } from "./log.js";
 import { getIpcRouter } from "./init.js";
 import { BecIpcListener } from "./bec_ipc_listener.js";
-import {
-  CREATED_LISTENER_PREFIX,
-  IpcListenerType,
-} from "./ipc_listener_type.js";
+import { IpcListenerType, makeIpcListenerName } from "./ipc_listener_type.js";
 
 /**
  * value should be `undefined` if the machine does not exist
@@ -76,6 +78,27 @@ export class RegisteredMachine {
   }
 
   /**
+   * Tests if the registered machine has a specific callback (event or handler).
+   * @beta
+   * @param name The name of the callback.
+   * @returns Whether the machine defines the specified callback.
+   */
+  hasCallback(name: MachineCallbackName): boolean {
+    switch (name) {
+      case "onButtonPressed":
+        return !!this.data.onButtonPressedEvent;
+      case "onNetworkStatsRecieved":
+        return !!this.data.networkStatEvent;
+      case "onStorageSet":
+        return !!this.data.onStorageSetEvent;
+      case "receive":
+        return !!this.data.receiveHandlerEvent;
+      case "updateUi":
+        return !!this.data.updateUiEvent;
+    }
+  }
+
+  /**
    * Get a registered machine by its ID.
    * @beta
    * @param id The ID of the machine to get.
@@ -99,6 +122,23 @@ export class RegisteredMachine {
 
     return result;
   }
+
+  /**
+   * Get a registered machine by its ID or throw an error if it doesn't exist.
+   * @beta
+   * @param id The ID of the machine to get.
+   * @returns The registered machine.
+   * @throws Throws if the machine does not exist in the registry.
+   */
+  static async forceGet(id: string): Promise<RegisteredMachine> {
+    const registered = await RegisteredMachine.get(id);
+    if (!registered) {
+      raise(
+        `Expected '${id}' to be registered as a machine, but it could not be found in the machine registry.`,
+      );
+    }
+    return registered;
+  }
 }
 
 /**
@@ -113,14 +153,14 @@ export function registerMachine(definition: MachineDefinition): void {
     );
   }
 
-  const eventIdPrefix = definition.description.id + CREATED_LISTENER_PREFIX;
-
   const ipcRouter = getIpcRouter();
 
   let updateUiEvent: string | undefined;
   if (definition.handlers?.updateUi) {
-    updateUiEvent =
-      eventIdPrefix + IpcListenerType.MachineUpdateUiHandler.toString();
+    updateUiEvent = makeIpcListenerName(
+      definition.description.id,
+      IpcListenerType.MachineUpdateUiHandler,
+    );
 
     const callback = definition.handlers.updateUi.bind(null);
 
@@ -136,8 +176,10 @@ export function registerMachine(definition: MachineDefinition): void {
 
   let receiveHandlerEvent: string | undefined;
   if (definition.handlers?.receive) {
-    receiveHandlerEvent =
-      eventIdPrefix + IpcListenerType.MachineRecieveHandler.toString();
+    receiveHandlerEvent = makeIpcListenerName(
+      definition.description.id,
+      IpcListenerType.MachineRecieveHandler,
+    );
 
     const callback = definition.handlers.receive.bind(null);
 
@@ -154,8 +196,10 @@ export function registerMachine(definition: MachineDefinition): void {
 
   let onButtonPressedEvent: string | undefined;
   if (definition.events?.onButtonPressed) {
-    onButtonPressedEvent =
-      eventIdPrefix + IpcListenerType.MachineOnButtonPressedEvent.toString();
+    onButtonPressedEvent = makeIpcListenerName(
+      definition.description.id,
+      IpcListenerType.MachineOnButtonPressedEvent,
+    );
 
     const callback = definition.events.onButtonPressed.bind(null);
 
@@ -173,8 +217,10 @@ export function registerMachine(definition: MachineDefinition): void {
 
   let networkStatEvent: string | undefined;
   if (definition.events?.onNetworkStatsRecieved) {
-    networkStatEvent =
-      eventIdPrefix + IpcListenerType.MachineNetworkStatEvent.toString();
+    networkStatEvent = makeIpcListenerName(
+      definition.description.id,
+      IpcListenerType.MachineNetworkStatEvent,
+    );
 
     const callback = definition.events.onNetworkStatsRecieved.bind(null);
 
@@ -186,6 +232,26 @@ export function registerMachine(definition: MachineDefinition): void {
         networkData: data.networkData,
       });
 
+      return null;
+    });
+  }
+
+  let onStorageSetEvent: string | undefined;
+  if (definition.events?.onStorageSet) {
+    onStorageSetEvent = makeIpcListenerName(
+      definition.description.id,
+      IpcListenerType.MachineOnStorageSetEvent,
+    );
+
+    const callback = definition.events.onStorageSet.bind(null);
+
+    ipcRouter.registerListener(onStorageSetEvent, (payload) => {
+      const data = payload as IpcMachineOnStorageSetEventArg;
+      void callback({
+        blockLocation: deserializeDimensionLocation(data.blockLocation),
+        type: data.type,
+        value: data.value,
+      });
       return null;
     });
   }
@@ -202,6 +268,7 @@ export function registerMachine(definition: MachineDefinition): void {
     receiveHandlerEvent,
     onButtonPressedEvent,
     networkStatEvent,
+    onStorageSetEvent,
   };
 
   ipcSend(BecIpcListener.RegisterMachine, payload);

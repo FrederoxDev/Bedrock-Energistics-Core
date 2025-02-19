@@ -8,6 +8,7 @@ import {
   RegisteredMachine,
 } from "@/public_api/src";
 import {
+  IpcMachineOnStorageSetEventArg,
   IpcMachineUpdateUiHandlerArg,
   IpcNetworkStatsEventArg,
   MangledOnButtonPressedPayload,
@@ -36,11 +37,7 @@ export class InternalRegisteredMachine extends RegisteredMachine {
     entityId: string,
   ): Promise<MachineUpdateUiHandlerResponse> {
     if (!this.data.updateUiEvent) {
-      throw new Error(
-        makeErrorString(
-          "trying to call the 'updateUi' handler but it is not defined",
-        ),
-      );
+      raise("Trying to call the 'updateUi' handler but it is not defined.");
     }
 
     const payload: IpcMachineUpdateUiHandlerArg = {
@@ -60,11 +57,7 @@ export class InternalRegisteredMachine extends RegisteredMachine {
     recieveAmount: number,
   ): Promise<RecieveHandlerResponse> {
     if (!this.data.receiveHandlerEvent) {
-      throw new Error(
-        makeErrorString(
-          "trying to call the 'recieve' handler but it is not defined",
-        ),
-      );
+      raise("Trying to call the 'recieve' handler but it is not defined.");
     }
 
     const payload: MangledRecieveHandlerPayload = {
@@ -85,7 +78,7 @@ export class InternalRegisteredMachine extends RegisteredMachine {
   ): void {
     if (!this.data.networkStatEvent)
       raise(
-        `trying to call the 'onNetworkStatsRecievedEvent' handler but it is not defined.`,
+        "Trying to call the 'onNetworkStatsRecievedEvent' event but it is not defined.",
       );
 
     const payload: IpcNetworkStatsEventArg = {
@@ -103,10 +96,8 @@ export class InternalRegisteredMachine extends RegisteredMachine {
     buttonElementId: string,
   ): void {
     if (!this.data.onButtonPressedEvent) {
-      throw new Error(
-        makeErrorString(
-          "trying to call the 'onButtonPressed' event but it is not defined",
-        ),
+      raise(
+        "Trying to call the 'onButtonPressed' event but it is not defined.",
       );
     }
 
@@ -118,6 +109,27 @@ export class InternalRegisteredMachine extends RegisteredMachine {
     };
 
     ipcSend(this.data.onButtonPressedEvent, payload);
+  }
+
+  callOnStorageSetEvent(
+    blockLocation: DimensionLocation,
+    type: string,
+    value: number,
+  ): void {
+    // There is a similar function to this in the public API.
+    // Make sure changes are reflected in both.
+
+    if (!this.data.onStorageSetEvent) {
+      raise("Trying to call the 'onStorageSet' event but it is not defined.");
+    }
+
+    const payload: IpcMachineOnStorageSetEventArg = {
+      blockLocation: makeSerializableDimensionLocation(blockLocation),
+      type,
+      value,
+    };
+
+    ipcSend(this.data.onStorageSetEvent, payload);
   }
 
   /**

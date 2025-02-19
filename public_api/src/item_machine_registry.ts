@@ -1,13 +1,13 @@
-import {
-  CREATED_LISTENER_PREFIX,
-  IpcListenerType,
-} from "./ipc_listener_type.js";
+import { IpcListenerType, makeIpcListenerName } from "./ipc_listener_type.js";
 import { ipcInvoke, ipcSend } from "./ipc_wrapper.js";
 import {
   ItemMachineOnStorageSetPayload,
   RegisteredItemMachineData,
 } from "./item_machine_registry_internal.js";
-import { ItemMachineDefinition } from "./item_machine_registry_types.js";
+import {
+  ItemMachineCallbackName,
+  ItemMachineDefinition,
+} from "./item_machine_registry_types.js";
 import { raise } from "./log.js";
 import { isRegistrationAllowed } from "./registration_allowed.js";
 import {
@@ -42,6 +42,21 @@ export class RegisteredItemMachine {
 
   get maxStorage(): number {
     return this.data.maxStorage ?? 6400;
+  }
+
+  /**
+   * Tests if the registered item machine has a specific callback (event or handler).
+   * @beta
+   * @param name The name of the callback.
+   * @returns Whether the item machine defines the specified callback.
+   */
+  hasCallback(name: ItemMachineCallbackName): boolean {
+    switch (name) {
+      case "getIo":
+        return !!this.data.getIoHandler;
+      case "onStorageSet":
+        return !!this.data.onStorageSetEvent;
+    }
   }
 
   /**
@@ -82,14 +97,14 @@ export function registerItemMachine(definition: ItemMachineDefinition): void {
     );
   }
 
-  const eventIdPrefix = definition.description.id + CREATED_LISTENER_PREFIX;
-
   const ipcRouter = getIpcRouter();
 
   let getIoHandler: string | undefined;
   if (definition.handlers?.getIo) {
-    getIoHandler =
-      eventIdPrefix + IpcListenerType.ItemMachineGetIoHandler.toString();
+    getIoHandler = makeIpcListenerName(
+      definition.description.id,
+      IpcListenerType.ItemMachineGetIoHandler,
+    );
 
     const callback = definition.handlers.getIo.bind(null);
 
@@ -109,8 +124,10 @@ export function registerItemMachine(definition: ItemMachineDefinition): void {
 
   let onStorageSetEvent: string | undefined;
   if (definition.events?.onStorageSet) {
-    onStorageSetEvent =
-      eventIdPrefix + IpcListenerType.ItemMachineOnStorageSetEvent.toString();
+    onStorageSetEvent = makeIpcListenerName(
+      definition.description.id,
+      IpcListenerType.ItemMachineOnStorageSetEvent,
+    );
 
     const callback = definition.events.onStorageSet.bind(null);
 

@@ -1,5 +1,12 @@
+import { DimensionLocation } from "@minecraft/server";
 import { NetworkStorageTypeData, UiElement } from "./machine_registry_types.js";
-import { SerializableDimensionLocation } from "./serialize_utils.js";
+import {
+  makeSerializableDimensionLocation,
+  SerializableDimensionLocation,
+} from "./serialize_utils.js";
+import { raise } from "./log.js";
+import { RegisteredMachine } from "./machine_registry.js";
+import { ipcSendAny } from "./ipc_wrapper.js";
 
 /**
  * @internal
@@ -16,6 +23,7 @@ export interface RegisteredMachineData {
   receiveHandlerEvent?: string;
   onButtonPressedEvent?: string;
   networkStatEvent?: string;
+  onStorageSetEvent?: string;
 }
 
 /**
@@ -61,15 +69,56 @@ export interface MangledOnButtonPressedPayload {
 /**
  * @internal
  */
-export interface IpcNetworkStatsEventArg {
-  networkData: Record<string, NetworkStorageTypeData>;
+export interface IpcMachineCallbackArg {
   blockLocation: SerializableDimensionLocation;
 }
 
 /**
  * @internal
  */
-export interface IpcMachineUpdateUiHandlerArg {
-  blockLocation: SerializableDimensionLocation;
+export interface IpcNetworkStatsEventArg extends IpcMachineCallbackArg {
+  networkData: Record<string, NetworkStorageTypeData>;
+}
+
+/**
+ * @internal
+ */
+export interface IpcMachineUpdateUiHandlerArg extends IpcMachineCallbackArg {
   entityId: string;
+}
+
+/**
+ * @internal
+ */
+export interface IpcMachineOnStorageSetEventArg extends IpcMachineCallbackArg {
+  type: string;
+  value: number;
+}
+
+/**
+ * @internal
+ */
+export function callMachineOnStorageSetEvent(
+  registeredMachine: RegisteredMachine,
+  blockLocation: DimensionLocation,
+  type: string,
+  value: number,
+): void {
+  // There is a similar function to this in the add-on.
+  // Make sure changes are reflected in both.
+
+  // @ts-expect-error internal functions are allowed to access internal properties
+  const data = registeredMachine.data;
+
+  if (!data.onStorageSetEvent) {
+    raise("Trying to call the 'onStorageSet' event but it is not defined.");
+  }
+
+  const payload: IpcMachineOnStorageSetEventArg = {
+    blockLocation: makeSerializableDimensionLocation(blockLocation),
+    type,
+    value,
+  };
+
+  ipcSendAny(data.onStorageSetEvent, payload);
 }

@@ -67,6 +67,11 @@ export interface ItemMachineDefinitionHandlers {
   getIo?: ItemMachineCallback<ItemMachineCallbackArg, ItemMachineGetIoResponse>;
 }
 
+/**
+ * @beta
+ */
+export type ItemMachineHandlerName = keyof ItemMachineDefinitionHandlers;
+
 // events
 
 /**
@@ -84,7 +89,19 @@ export interface ItemMachineDefinitionEvents {
   onStorageSet?: ItemMachineEventCallback<ItemMachineOnStorageSetArg>;
 }
 
+/**
+ * @beta
+ */
+export type ItemMachineEventName = keyof ItemMachineDefinitionEvents;
+
 // definition
+
+/**
+ * @beta
+ */
+export type ItemMachineCallbackName =
+  | ItemMachineHandlerName
+  | ItemMachineEventName;
 
 /**
  * @beta

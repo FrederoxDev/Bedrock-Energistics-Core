@@ -48,7 +48,7 @@ export function setItemMachineStorageListener(
     payload.value,
   );
 
-  if (itemMachine.getData().onStorageSetEvent) {
+  if (itemMachine.hasCallback("onStorageSet")) {
     itemMachine.callOnStorageSetEvent(
       serializableSlot,
       payload.type,

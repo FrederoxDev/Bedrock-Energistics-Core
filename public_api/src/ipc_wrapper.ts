@@ -5,11 +5,21 @@ import { BecIpcListener } from "./bec_ipc_listener.js";
 /**
  * @internal
  */
+export function ipcSendAny(
+  event: string,
+  payload: ipc.SerializableValue,
+): void {
+  void getIpcRouter().sendAuto({ event, payload });
+}
+
+/**
+ * @internal
+ */
 export function ipcSend(
   event: BecIpcListener,
   payload: ipc.SerializableValue,
 ): void {
-  void getIpcRouter().sendAuto({ event, payload });
+  ipcSendAny(event, payload);
 }
 
 /**

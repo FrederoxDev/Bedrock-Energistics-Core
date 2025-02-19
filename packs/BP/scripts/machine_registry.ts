@@ -1,6 +1,6 @@
 import * as ipc from "mcbe-addon-ipc";
 import { DimensionLocation } from "@minecraft/server";
-import { logInfo, makeErrorString, raise } from "./utils/log";
+import { logInfo, raise } from "./utils/log";
 import {
   MachineUpdateUiHandlerResponse,
   NetworkStorageTypeData,
@@ -159,10 +159,8 @@ export function registerMachineListener(payload: ipc.SerializableValue): null {
 
   const entityExistingAttachment = machineEntityToBlockIdMap.get(data.entityId);
   if (entityExistingAttachment && entityExistingAttachment !== data.entityId) {
-    throw new Error(
-      makeErrorString(
-        `can't register machine '${data.id}': the machine entity '${data.entityId}' is already attached to the machine '${entityExistingAttachment}'`,
-      ),
+    raise(
+      `Failed to register machine '${data.id}'. The attached machine entity '${data.entityId}' is already attached to the machine '${entityExistingAttachment}'.`,
     );
   }
 

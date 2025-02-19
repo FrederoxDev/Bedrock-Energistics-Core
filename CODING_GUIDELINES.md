@@ -61,6 +61,7 @@ This style guide uses elements from the [Google TypeScript Style Guide](https://
 
 - Use `logInfo`, `logWarn`, and `raise` from `packs/BP/scripts/utils/log.ts` for all logging purposes within the Bedrock Energistics Core add-on (not the public API).
 - Use `logInfo`, `logWarn`, and `raise` from `public_api/src/log.ts` for all logging purposes within the Bedrock Energistics Core public API (not the add-on).
+- Diagnostic messages should be clear and grammatically correct (start with a capital letter, end with period, etc). Definite entities (variable names, IDs, etc) should be surrounded in single quotes (eg. "The entity 'example:entity' ...").
 
 ## Other
 

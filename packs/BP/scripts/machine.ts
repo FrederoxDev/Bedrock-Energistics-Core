@@ -10,7 +10,7 @@ import {
   removeBlockFromScoreboards,
 } from "./data";
 import { MachineNetwork } from "./network";
-import { makeErrorString } from "./utils/log";
+import { raise } from "./utils/log";
 import { Vector3Utils } from "@minecraft/math";
 import { RegisteredMachine } from "@/public_api/src";
 import { getEntityComponent } from "./polyfills/component_type_map";
@@ -26,10 +26,8 @@ export const machineNoInteractComponent: BlockCustomComponent = {
 
     const definition = InternalRegisteredMachine.getInternal(e.block.typeId);
     if (!definition) {
-      throw new Error(
-        makeErrorString(
-          `can't process onPlace event for block '${e.block.typeId}': this block uses the 'fluffyalien_energisticscore:machine' custom component but it could not be found in the machine registry`,
-        ),
+      raise(
+        `The block '${e.block.typeId}' uses the 'fluffyalien_energisticscore:machine' custom component but it could not be found in the machine registry.`,
       );
     }
 
@@ -51,10 +49,8 @@ export const machineComponent: BlockCustomComponent = {
   onPlayerInteract(e) {
     const definition = InternalRegisteredMachine.getInternal(e.block.typeId);
     if (!definition) {
-      throw new Error(
-        makeErrorString(
-          `can't process onPlayerInteract event for block '${e.block.typeId}': this block uses the 'fluffyalien_energisticscore:machine' custom component but it could not be found in the machine registry`,
-        ),
+      raise(
+        `The block '${e.block.typeId}' uses the 'fluffyalien_energisticscore:machine' custom component but it could not be found in the machine registry.`,
       );
     }
     if (!definition.uiElements || definition.persistentEntity) {
@@ -100,10 +96,8 @@ world.beforeEvents.playerBreakBlock.subscribe((e) => {
 
   const definition = InternalRegisteredMachine.getInternal(e.block.typeId);
   if (!definition) {
-    throw new Error(
-      makeErrorString(
-        `can't process playerBreakBlock event for block '${e.block.typeId}': this block uses the 'fluffyalien_energisticscore:machine' custom component but it could not be found in the machine registry`,
-      ),
+    raise(
+      `The block '${e.block.typeId}' has the 'fluffyalien_energisticscore:machine' tag but it could not be found in the machine registry.`,
     );
   }
 
@@ -131,10 +125,8 @@ world.afterEvents.entityHitEntity.subscribe((e) => {
 
   const machineId = getMachineIdFromEntityId(e.hitEntity.typeId);
   if (!machineId) {
-    throw new Error(
-      makeErrorString(
-        `can't process entityHitEntity event for machine entity '${e.hitEntity.typeId}': this entity has the 'fluffyalien_energisticscore:machine_entity' type family but it is not attached to a machine`,
-      ),
+    raise(
+      `The entity '${e.hitEntity.typeId}' has the 'fluffyalien_energisticscore:machine_entity' type family but it is not attached to a machine block.`,
     );
   }
 

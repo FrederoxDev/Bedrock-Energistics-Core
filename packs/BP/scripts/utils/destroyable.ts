@@ -1,4 +1,4 @@
-import { makeErrorString } from "./log";
+import { raise } from "./log";
 
 export interface Destroyable {
   /**
@@ -26,9 +26,7 @@ export abstract class DestroyableObject implements Destroyable {
    */
   protected ensureValidity(): void {
     if (!this.internalIsValid) {
-      throw new Error(
-        makeErrorString("DestroyableObject#ensureValidity: object destroyed"),
-      );
+      raise("DestroyableObject#ensureValidity: The object has been destroyed.");
     }
   }
 

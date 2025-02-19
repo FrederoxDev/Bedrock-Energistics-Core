@@ -22,7 +22,7 @@ import {
   setMachineSlotItem,
 } from "./data";
 import { truncateNumber } from "./utils/string";
-import { logWarn, makeErrorString } from "./utils/log";
+import { logWarn, raise } from "./utils/log";
 import { getEntityComponent } from "./polyfills/component_type_map";
 import {
   getMachineIdFromEntityId,
@@ -259,10 +259,8 @@ function handleProgressIndicator(
 ): void {
   const maxValue = PROGRESS_INDICATOR_MAX_VALUES[indicator];
   if (value < 0 || value > maxValue || !Number.isInteger(value)) {
-    throw new Error(
-      makeErrorString(
-        `can't update UI: can't update progress indicator (indicator: '${indicator}'): expected 'value' to be an integer between 0 and ${maxValue.toString()} (inclusive) but got ${value.toString()}`,
-      ),
+    raise(
+      `Failed to update progress indicator (indicator: '${indicator}') for machine UI. Expected 'value' to be an integer between 0 and ${maxValue.toString()} (inclusive) but got ${value.toString()}.`,
     );
   }
 
@@ -347,10 +345,8 @@ async function updateEntityUi(
   init: boolean,
 ): Promise<void> {
   if (!definition.uiElements) {
-    throw new Error(
-      makeErrorString(
-        `machine '${definition.id}' does not have 'description.ui' defined but has a machine entity`,
-      ),
+    raise(
+      `Trying to update UI for entity '${entity.typeId}' (machine: '${definition.id}') but it does not have 'description.ui' defined.`,
     );
   }
 
@@ -449,10 +445,8 @@ world.afterEvents.playerInteractWithEntity.subscribe((e) => {
 
   const machineId = getMachineIdFromEntityId(e.target.typeId);
   if (!machineId) {
-    throw new Error(
-      makeErrorString(
-        `can't process playerInteractWithEntity event for machine entity '${e.target.typeId}': this entity has the 'fluffyalien_energisticscore:machine_entity' type family but it is not attached to a machine`,
-      ),
+    raise(
+      `The entity '${e.target.typeId}' has the 'fluffyalien_energisticscore:machine_entity' type family but it is not attached to a machine block.`,
     );
   }
 

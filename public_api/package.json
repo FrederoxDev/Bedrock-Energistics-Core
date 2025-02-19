@@ -28,6 +28,7 @@
     "@minecraft/server": "^1.15.0"
   },
   "dependencies": {
+    "@minecraft/math": "^2.1.0",
     "mcbe-addon-ipc": "0.7.1"
   }
 }

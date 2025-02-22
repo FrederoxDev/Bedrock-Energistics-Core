@@ -57,6 +57,7 @@ export function getMachineStorage(
  * @param block The machine block.
  * @param type The type of storage to set.
  * @param value The new value. Must be an integer.
+ * @param callOnStorageSet Whether to call the `onStorageSet` event on the machine, if applicable.
  * @throws Throws if the storage type does not exist.
  * @throws Throws if the new value isn't a non-negative integer.
  * @throws Throws if the block is not valid.
@@ -66,6 +67,7 @@ export async function setMachineStorage(
   block: Block,
   type: string,
   value: number,
+  callOnStorageSet = true,
 ): Promise<void> {
   // There is a similar function to this in the add-on.
   // Make sure changes are reflected in both.
@@ -96,7 +98,7 @@ export async function setMachineStorage(
 
   objective.setScore(getBlockUniqueId(block), value);
 
-  if (registered.hasCallback("onStorageSet")) {
+  if (callOnStorageSet && registered.hasCallback("onStorageSet")) {
     callMachineOnStorageSetEvent(registered, block, type, value);
   }
 }

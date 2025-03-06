@@ -1,7 +1,6 @@
 import {
   MachineCallbackName,
   MachineDefinition,
-  UiElement,
 } from "./machine_registry_types.js";
 import {
   IpcMachineOnStorageSetEventArg,
@@ -18,6 +17,7 @@ import { raise } from "./log.js";
 import { getIpcRouter } from "./init.js";
 import { BecIpcListener } from "./bec_ipc_listener.js";
 import { IpcListenerType, makeIpcListenerName } from "./ipc_listener_type.js";
+import { MachineUiElements } from "./machine_ui_elements.js";
 
 /**
  * value should be `undefined` if the machine does not exist
@@ -30,12 +30,22 @@ const machineCache = new Map<string, RegisteredMachine | undefined>();
  * @see {@link MachineDefinition}, {@link registerMachine}
  */
 export class RegisteredMachine {
+  /**
+   * The UI elements of this machine.
+   * @beta
+   */
+  readonly uiElements: MachineUiElements | undefined;
+
   private constructor(
     /**
      * @internal
      */
     protected readonly data: RegisteredMachineData,
-  ) {}
+  ) {
+    if (data.uiElements) {
+      this.uiElements = new MachineUiElements(data.uiElements);
+    }
+  }
 
   /**
    * @returns The ID of this machine.
@@ -67,14 +77,6 @@ export class RegisteredMachine {
    */
   get maxStorage(): number {
     return this.data.maxStorage ?? 6400;
-  }
-
-  /**
-   * @returns The UI elements defined for this machine, or `undefined` if the machine has no UI.
-   * @beta
-   */
-  get uiElements(): Record<string, UiElement> | undefined {
-    return this.data.uiElements;
   }
 
   /**

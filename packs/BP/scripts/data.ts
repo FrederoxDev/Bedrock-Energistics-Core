@@ -3,7 +3,7 @@ import { machineChangedItemSlots } from "./ui";
 import {
   MachineItemStack,
   getMachineSlotItem,
-  UiItemSlotElement,
+  UiItemSlotElementDefinition,
   getMachineStorage,
 } from "@/public_api/src";
 import {
@@ -99,7 +99,7 @@ export function setMachineSlotItem(
 }
 
 export function machineItemStackToItemStack(
-  element: UiItemSlotElement,
+  element: UiItemSlotElementDefinition,
   machineItem?: MachineItemStack,
 ): ItemStack {
   return machineItem

@@ -35,7 +35,7 @@ export interface UiStorageBarElementUpdateOptions {
  * so ensure that the machine entity's inventory is properly sized.
  * @beta
  */
-export interface UiStorageBarElement {
+export interface UiStorageBarElementDefinition {
   type: "storageBar";
   startIndex: number;
   defaults?: UiStorageBarElementUpdateOptions;
@@ -49,7 +49,7 @@ export interface UiStorageBarElement {
  * accessing the entity's inventory directly rather than using this.
  * @beta
  */
-export interface UiItemSlotElement {
+export interface UiItemSlotElementDefinition {
   type: "itemSlot";
   index: number;
   slotId: number;
@@ -60,7 +60,7 @@ export interface UiItemSlotElement {
  * Options for defining a progress indicator UI element.
  * @beta
  */
-export interface UiProgressIndicatorElement {
+export interface UiProgressIndicatorElementDefinition {
   type: "progressIndicator";
   indicator: UiProgressIndicatorElementType;
   index: number;
@@ -85,7 +85,7 @@ export interface UiButtonElementUpdateOptions {
  * Options for defining a button UI element.
  * @beta
  */
-export interface UiButtonElement {
+export interface UiButtonElementDefinition {
   type: "button";
   index: number;
   /**
@@ -98,17 +98,17 @@ export interface UiButtonElement {
  * See each element type for more information.
  * @beta
  */
-export type UiElement =
-  | UiStorageBarElement
-  | UiItemSlotElement
-  | UiProgressIndicatorElement
-  | UiButtonElement;
+export type UiElementDefinition =
+  | UiStorageBarElementDefinition
+  | UiItemSlotElementDefinition
+  | UiProgressIndicatorElementDefinition
+  | UiButtonElementDefinition;
 
 /**
  * @beta
  */
 export interface UiOptions {
-  elements: Record<string, UiElement>;
+  elements: Record<string, UiElementDefinition>;
 }
 
 /**
@@ -197,7 +197,7 @@ export interface MachineOnStorageSetEvent extends MachineCallbackArg {
 export interface MachineDefinitionEvents {
   /**
    * Called after a UI button has been pressed.
-   * @see {@link UiButtonElement}
+   * @see {@link UiButtonElementDefinition}
    */
   onButtonPressed?: MachineEventCallback<MachineOnButtonPressedEventArg>;
 

@@ -1,7 +1,7 @@
 import {
   StorageTypeColor,
   UiButtonElementUpdateOptions,
-  UiItemSlotElement,
+  UiItemSlotElementDefinition,
   UiProgressIndicatorElementType,
   UiStorageBarElementUpdateOptions,
 } from "@/public_api/src";
@@ -179,7 +179,7 @@ function handleBarItems(
 function handleItemSlot(
   loc: DimensionLocation,
   inventory: Container,
-  element: UiItemSlotElement,
+  element: UiItemSlotElementDefinition,
   player: Player,
   init: boolean,
 ): void {
@@ -372,7 +372,9 @@ async function updateEntityUi(
 
   const inventory = getEntityComponent(entity, "inventory")!.container!;
 
-  for (const [id, options] of Object.entries(definition.uiElements)) {
+  for (const id of definition.uiElements.getIds()) {
+    const options = definition.uiElements.get(id)!;
+
     switch (options.type) {
       case "storageBar": {
         const updateOptions = storageBars[id] as

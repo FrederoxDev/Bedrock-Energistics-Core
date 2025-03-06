@@ -14,6 +14,7 @@ export * from "./item_machine.js";
 export * from "./machine_data.js";
 export * from "./machine_registry_types.js";
 export * from "./machine_registry.js";
+export * from "./machine_ui_elements.js";
 export * from "./machine_utils.js";
 export * from "./misc.js";
 export * from "./network_utils.js";

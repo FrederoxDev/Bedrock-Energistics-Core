@@ -76,7 +76,7 @@ export function dropItemsStoredInMachine(
     return;
   }
 
-  for (const element of Object.values(definition.uiElements)) {
+  for (const element of definition.uiElements.getAll()) {
     if (element.type !== "itemSlot") continue;
 
     const item = getMachineSlotItem(blockLocation, element.slotId);

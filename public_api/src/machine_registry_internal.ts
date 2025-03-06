@@ -1,5 +1,8 @@
 import { DimensionLocation } from "@minecraft/server";
-import { NetworkStorageTypeData, UiElement } from "./machine_registry_types.js";
+import {
+  NetworkStorageTypeData,
+  UiElementDefinition,
+} from "./machine_registry_types.js";
 import {
   makeSerializableDimensionLocation,
   SerializableDimensionLocation,
@@ -17,7 +20,7 @@ export interface RegisteredMachineData {
   entityId?: string;
   persistentEntity?: boolean;
   maxStorage?: number;
-  uiElements?: Record<string, UiElement>;
+  uiElements?: Record<string, UiElementDefinition>;
   // script events
   updateUiEvent?: string;
   receiveHandlerEvent?: string;

@@ -80,6 +80,7 @@ body {
 }
 
 .top-nav-dropdown-content {
+  float: left;
   opacity: 0;
   pointer-events: none;
   position: absolute;
@@ -202,4 +203,10 @@ pre > code {
 
 .featured-addon-author {
   font-size: 0.9em;
+}
+
+@media (min-width: 390px) {
+  .links-dropdown {
+    right: 10px;
+  }
 }

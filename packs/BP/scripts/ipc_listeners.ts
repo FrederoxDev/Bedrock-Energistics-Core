@@ -35,8 +35,11 @@ import {
   getItemMachineStorageHandler,
   setItemMachineStorageListener,
 } from "./item_machine_ipc";
-import { getMachineSlotListener, setMachineSlotListener } from "./data_ipc";
-import { removeMachineListener } from "./machine_ipc";
+import {
+  getMachineSlotListener,
+  removeMachineListener,
+  setMachineSlotListener,
+} from "./data_ipc";
 
 registerListener(BecIpcListener.RegisterMachine, registerMachineListener);
 registerListener(

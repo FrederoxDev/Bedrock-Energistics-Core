@@ -1,5 +1,5 @@
 import { DimensionLocation } from "@minecraft/server";
-import { ipcSend } from "./ipc_wrapper.js";
+import { ipcInvoke } from "./ipc_wrapper.js";
 import { BecIpcListener } from "./bec_ipc_listener.js";
 import { makeSerializableDimensionLocation } from "./serialize_utils.js";
 
@@ -11,6 +11,9 @@ import { makeSerializableDimensionLocation } from "./serialize_utils.js";
  * If you destroy a machine from script, call this function before the block is removed.
  * @param loc The machine block location.
  */
-export function removeMachine(loc: DimensionLocation): void {
-  ipcSend(BecIpcListener.RemoveMachine, makeSerializableDimensionLocation(loc));
+export async function removeMachine(loc: DimensionLocation): Promise<void> {
+  await ipcInvoke(
+    BecIpcListener.RemoveMachine,
+    makeSerializableDimensionLocation(loc),
+  );
 }

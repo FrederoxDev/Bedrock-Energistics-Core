@@ -1,5 +1,6 @@
 import * as ipc from "mcbe-addon-ipc";
 import { raise } from "./log.js";
+import { isBedrockEnergisticsCoreInWorld } from "./misc.js";
 
 let ipcRouter: ipc.Router | undefined;
 
@@ -10,6 +11,12 @@ let ipcRouter: ipc.Router | undefined;
 export function init(namespace: string): void {
   if (ipcRouter) {
     raise("Library already initialized.");
+  }
+
+  if (!isBedrockEnergisticsCoreInWorld()) {
+    raise(
+      `Cannot initialize library (namespace: '${namespace}'). Bedrock Energistics Core is not in the world.`,
+    );
   }
 
   ipcRouter = new ipc.Router(namespace);

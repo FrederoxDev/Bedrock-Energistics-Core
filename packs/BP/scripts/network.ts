@@ -31,8 +31,11 @@ interface SendQueueItem {
 
 interface NetworkConnections {
   conduits: Block[];
+  conduitsSet: Set<string>;
   machines: Block[];
+  machinesSet: Set<string>;
   networkLinks: Block[];
+  networkLinksSet: Set<string>;
 }
 
 interface DistributionData {
@@ -411,18 +414,17 @@ export class MachineNetwork extends DestroyableObject {
 
     if (location.dimension.id !== this.dimension.id) return false;
 
-    const condition = (other: Block): boolean =>
-      Vector3Utils.equals(location, other.location);
-
     if (connectionType === NetworkConnectionType.Conduit) {
-      return this.connections.conduits.some(condition);
+      return this.connections.conduitsSet.has(Vector3Utils.toString(location));
     }
 
     if (connectionType === NetworkConnectionType.NetworkLink) {
-      return this.connections.networkLinks.some(condition);
+      return this.connections.networkLinksSet.has(
+        Vector3Utils.toString(location),
+      );
     }
 
-    return this.connections.machines.some(condition);
+    return this.connections.machinesSet.has(Vector3Utils.toString(location));
   }
 
   /**
@@ -448,6 +450,9 @@ export class MachineNetwork extends DestroyableObject {
       conduits: [],
       machines: [],
       networkLinks: [],
+      conduitsSet: new Set(),
+      machinesSet: new Set(),
+      networkLinksSet: new Set(),
     };
 
     const stack: Block[] = [];
@@ -455,6 +460,7 @@ export class MachineNetwork extends DestroyableObject {
 
     function handleNetworkLink(block: Block): void {
       connections.networkLinks.push(block);
+      connections.networkLinksSet.add(Vector3Utils.toString(block.location));
 
       const netLink = InternalNetworkLinkNode.tryGetAt(
         block.dimension,
@@ -501,6 +507,7 @@ export class MachineNetwork extends DestroyableObject {
 
       if (block.hasTag("fluffyalien_energisticscore:conduit")) {
         connections.conduits.push(block);
+        connections.conduitsSet.add(Vector3Utils.toString(block.location));
         return;
       }
 
@@ -510,6 +517,7 @@ export class MachineNetwork extends DestroyableObject {
 
       if (block.hasTag("fluffyalien_energisticscore:machine")) {
         connections.machines.push(block);
+        connections.machinesSet.add(Vector3Utils.toString(block.location));
       }
     }
 

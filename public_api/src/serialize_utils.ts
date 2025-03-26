@@ -122,9 +122,7 @@ export class SerializableContainerSlot {
         );
       }
 
-      const inv = block.getComponent(
-        BlockComponentTypes.Inventory,
-      )!;
+      const inv = block.getComponent(BlockComponentTypes.Inventory)!;
 
       return new SerializableContainerSlot(inv, obj.slot);
     }
@@ -134,9 +132,7 @@ export class SerializableContainerSlot {
       raise(`Could not get entity with ID '${obj.actor.id}'.`);
     }
 
-    const inv = entity.getComponent(
-      EntityComponentTypes.Inventory,
-    )!;
+    const inv = entity.getComponent(EntityComponentTypes.Inventory)!;
 
     return new SerializableContainerSlot(inv, obj.slot);
   }

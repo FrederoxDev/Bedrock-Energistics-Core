@@ -36,7 +36,7 @@ export default tseslint.config(
       "@typescript-eslint/switch-exhaustiveness-check": "error",
 
       // @minecraft@1.18.0 deprecates things without giving alternatives, ignore
-      "@typescript-eslint/no-deprecated": "off"
+      "@typescript-eslint/no-deprecated": "off",
     },
   },
 );

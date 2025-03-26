@@ -34,6 +34,9 @@ export default tseslint.config(
       "@typescript-eslint/explicit-function-return-type": "error",
       "@typescript-eslint/prefer-readonly": "error",
       "@typescript-eslint/switch-exhaustiveness-check": "error",
+
+      // @minecraft@1.18.0 deprecates things without giving alternatives, ignore
+      "@typescript-eslint/no-deprecated": "off"
     },
   },
 );

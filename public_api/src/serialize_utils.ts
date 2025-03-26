@@ -124,7 +124,7 @@ export class SerializableContainerSlot {
 
       const inv = block.getComponent(
         BlockComponentTypes.Inventory,
-      ) as BlockInventoryComponent;
+      )!;
 
       return new SerializableContainerSlot(inv, obj.slot);
     }
@@ -136,7 +136,7 @@ export class SerializableContainerSlot {
 
     const inv = entity.getComponent(
       EntityComponentTypes.Inventory,
-    ) as EntityInventoryComponent;
+    )!;
 
     return new SerializableContainerSlot(inv, obj.slot);
   }

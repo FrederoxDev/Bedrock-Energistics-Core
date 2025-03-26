@@ -463,14 +463,9 @@ export class MachineNetwork extends DestroyableObject {
 
       if (!netLink) return;
 
-      const selfIo = IoCapabilities.fromMachine(
-        block,
-        "network_link",
-      );
+      const selfIo = IoCapabilities.fromMachine(block, "network_link");
 
-      const selfIsConduit = block.hasTag(
-        "fluffyalien_energisticscore:conduit",
-      );
+      const selfIsConduit = block.hasTag("fluffyalien_energisticscore:conduit");
 
       const linkedPositions = netLink.getConnections();
 
@@ -480,14 +475,15 @@ export class MachineNetwork extends DestroyableObject {
         if (
           linkedBlock === undefined ||
           visitedLocations.has(Vector3Utils.toString(linkedBlock.location))
-        ) continue;
-        
+        )
+          continue;
+
         const linkedIsConduit = linkedBlock.hasTag(
           "fluffyalien_energisticscore:conduit",
         );
-        
+
         if (!selfIo.acceptsType(ioType, linkedIsConduit)) continue;
-        
+
         const linkedIO = IoCapabilities.fromMachine(
           linkedBlock,
           "network_link",

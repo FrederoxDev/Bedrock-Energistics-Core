@@ -171,10 +171,13 @@ export class IoCapabilities {
    * Get the input/output capabilities of a machine.
    * @beta
    * @param machine The machine.
-   * @param side The side of the machine to check.
+   * @param side The side of the machine to check or "network_link" for linked connections
    * @returns A IoCapabilities object.
    */
-  static fromMachine(machine: Block, side: Direction): IoCapabilities {
+  static fromMachine(
+    machine: Block,
+    side: Direction | "network_link",
+  ): IoCapabilities {
     const tags = machine.getTags();
     const onlyAllowsConduitConnections = tags.includes(
       IO_REQUIRE_CONDUIT_CONNECTIONS_TAG,
@@ -210,14 +213,17 @@ export class IoCapabilities {
 
   private static fromMachineWithExplicitSides(
     tags: string[],
-    side: Direction,
+    side: Direction | "network_link",
     onlyAllowsConduitConnections: boolean,
   ): IoCapabilities {
     const strDirection = side.toLowerCase();
-    const isSideDirection = side !== Direction.Up && side !== Direction.Down;
+    const isSideDirection =
+      side !== Direction.Up &&
+      side !== Direction.Down &&
+      side !== "network_link";
 
-    // "fluffyalien_energisticscore:io.{type|category}.<StorageTypeId>.{north|east|south|west|up|down|side}"
-    // "fluffyalien_energisticscore:io.any.{north|east|south|west|up|down|side}"
+    // "fluffyalien_energisticscore:io.{type|category}.<StorageTypeId>.{north|east|south|west|up|down|side|network_link}"
+    // "fluffyalien_energisticscore:io.any.{north|east|south|west|up|down|side|network_link}"
 
     const tagMatchesSide = (tag: string): boolean =>
       (isSideDirection && tag.endsWith(".side")) ||

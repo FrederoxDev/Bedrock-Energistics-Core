@@ -53,4 +53,3 @@ export class MachineUiElements {
     return result;
   }
 }
-

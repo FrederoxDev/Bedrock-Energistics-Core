@@ -5,7 +5,11 @@ import { makeErrorString } from "./utils/log";
 system.afterEvents.scriptEventReceive.subscribe(
   (e) => {
     // e.sourceEntity is a really expensive api call, only do if necessary
-    if (e.id !== "fluffyalien_energisticscore:debug.enable_debug_mode" || !(e.sourceEntity instanceof Player)) return;
+    if (
+      e.id !== "fluffyalien_energisticscore:debug.enable_debug_mode" ||
+      !(e.sourceEntity instanceof Player)
+    )
+      return;
 
     if (isDebugModeEnabled()) {
       e.sourceEntity.sendMessage(

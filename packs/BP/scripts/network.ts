@@ -565,7 +565,6 @@ export class MachineNetwork extends DestroyableObject {
       next(block, "down");
     }
 
-    console.log(ioType.id, ioType.category, JSON.stringify(connections));
     return connections;
   }
 

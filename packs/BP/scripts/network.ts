@@ -460,17 +460,41 @@ export class MachineNetwork extends DestroyableObject {
         block.dimension,
         block.location,
       );
+
       if (!netLink) return;
+
+      const selfIo = IoCapabilities.fromMachine(
+        block,
+        "network_link",
+      );
+
+      const selfIsConduit = block.hasTag(
+        "fluffyalien_energisticscore:conduit",
+      );
 
       const linkedPositions = netLink.getConnections();
 
       for (const pos of linkedPositions) {
         const linkedBlock = block.dimension.getBlock(pos);
+
         if (
           linkedBlock === undefined ||
           visitedLocations.has(Vector3Utils.toString(linkedBlock.location))
-        )
-          continue;
+        ) continue;
+        
+        const linkedIsConduit = linkedBlock.hasTag(
+          "fluffyalien_energisticscore:conduit",
+        );
+        
+        if (!selfIo.acceptsType(ioType, linkedIsConduit)) continue;
+        
+        const linkedIO = IoCapabilities.fromMachine(
+          linkedBlock,
+          "network_link",
+        );
+
+        if (!linkedIO.acceptsType(ioType, selfIsConduit)) continue;
+
         handleBlock(linkedBlock);
       }
     }
@@ -541,6 +565,7 @@ export class MachineNetwork extends DestroyableObject {
       next(block, "down");
     }
 
+    console.log(ioType.id, ioType.category, JSON.stringify(connections));
     return connections;
   }
 

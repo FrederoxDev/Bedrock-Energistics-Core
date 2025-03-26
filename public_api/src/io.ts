@@ -216,8 +216,8 @@ export class IoCapabilities {
     const strDirection = side.toLowerCase();
     const isSideDirection = side !== Direction.Up && side !== Direction.Down && side !== "network_link";
 
-    // "fluffyalien_energisticscore:io.{type|category}.<StorageTypeId>.{north|east|south|west|up|down|side}"
-    // "fluffyalien_energisticscore:io.any.{north|east|south|west|up|down|side}"
+    // "fluffyalien_energisticscore:io.{type|category}.<StorageTypeId>.{north|east|south|west|up|down|side|network_link}"
+    // "fluffyalien_energisticscore:io.any.{north|east|south|west|up|down|side|network_link}"
 
     const tagMatchesSide = (tag: string): boolean =>
       (isSideDirection && tag.endsWith(".side")) ||

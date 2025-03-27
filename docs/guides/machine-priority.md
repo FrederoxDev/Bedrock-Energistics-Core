@@ -14,4 +14,3 @@ The `fluffyalien_energisticscore:low_priority_consumer` block tag tells Bedrock 
 The machine will be given a split of the remaining budget (if applicable) after the machines in the normal priority have recieved their share.
 
 This is intended to be used for containers like batteries or tanks. See [Storage Type Containers](storage-type-containers.md).
-

@@ -30,6 +30,8 @@ export default tseslint.config(
       "@typescript-eslint/no-non-null-assertion": "off",
       // this rule conflicts with prettier
       "@typescript-eslint/no-confusing-non-null-assertion": "off",
+      // @minecraft/server@1.18.0 deprecates things without giving alternatives, ignore
+      "@typescript-eslint/no-deprecated": "off",
 
       "@typescript-eslint/explicit-function-return-type": "error",
       "@typescript-eslint/prefer-readonly": "error",

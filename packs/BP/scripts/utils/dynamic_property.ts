@@ -44,4 +44,3 @@ export function removeAllDynamicPropertiesForBlock(
     world.setDynamicProperty(property);
   }
 }
-

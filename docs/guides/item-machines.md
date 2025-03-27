@@ -30,4 +30,3 @@ const itemMachine = new ItemMachine(inventory, player.selectedSlotIndex);
 const storedEnergy = await itemMachine.getStorage("energy");
 itemMachine.setStorage("energy", storedEnergy + 1);
 ```
-

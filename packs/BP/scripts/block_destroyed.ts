@@ -106,9 +106,7 @@ world.afterEvents.pistonActivate.subscribe((e) => {
   ];
 
   const facingDirection =
-    pistonDirections[
-      e.block.permutation.getState("facing_direction") as number
-    ];
+    pistonDirections[e.block.permutation.getState("facing_direction")!];
 
   const blockMovementDirection = e.isExpanding
     ? facingDirection

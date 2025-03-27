@@ -106,11 +106,7 @@ world.afterEvents.pistonActivate.subscribe((e) => {
   ];
 
   const facingDirection =
-  pistonDirections[
-      // eslint hates this line for some reason, unsure why its flagging in this PR. ignore err, cus this is always a valid index
-      // eslint-disable-next-line @typescript-eslint/non-nullable-type-assertion-style
-      e.block.permutation.getState("facing_direction") as number
-    ];
+    pistonDirections[e.block.permutation.getState("facing_direction")!];
 
   const blockMovementDirection = e.isExpanding
     ? facingDirection

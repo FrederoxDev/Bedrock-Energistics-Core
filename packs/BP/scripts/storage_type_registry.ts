@@ -1,6 +1,6 @@
 import * as ipc from "mcbe-addon-ipc";
 import { world } from "@minecraft/server";
-import { logInfo, raise } from "./utils/log";
+import { logInfo, logWarn, raise } from "./utils/log";
 import {
   RegisteredStorageType,
   STANDARD_STORAGE_TYPE_DEFINITIONS,
@@ -43,8 +43,13 @@ export class InternalRegisteredStorageType extends RegisteredStorageType {
 registerStorageType(STANDARD_STORAGE_TYPE_DEFINITIONS.energy);
 
 function registerStorageType(data: StorageTypeDefinition): void {
-  if (storageTypeRegistry.has(data.id)) {
-    logInfo(`overrode storage type '${data.id}'`);
+  // Don't send override logs when the two types are identical
+  const existing = storageTypeRegistry.get(data.id);
+  if (existing !== undefined && existing.category === data.category) return;
+
+  // The category changed
+  if (existing !== undefined) {
+    logWarn(`overrode category of storage type '${data.id}', originally was '${existing.category}', now is '${data.category}'`);
   }
 
   const registered = new InternalRegisteredStorageType(data);

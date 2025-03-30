@@ -1,6 +1,6 @@
 import * as ipc from "mcbe-addon-ipc";
 import { world } from "@minecraft/server";
-import { logInfo, logWarn, raise } from "./utils/log";
+import { logWarn, raise } from "./utils/log";
 import {
   RegisteredStorageType,
   STANDARD_STORAGE_TYPE_DEFINITIONS,

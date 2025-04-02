@@ -14,7 +14,6 @@ import { MachineNetwork } from "./network";
 import { raise } from "./utils/log";
 import { Vector3Utils } from "@minecraft/math";
 import { RegisteredMachine } from "@/public_api/src";
-import { getEntityComponent } from "./polyfills/component_type_map";
 import {
   getMachineIdFromEntityId,
   InternalRegisteredMachine,
@@ -126,9 +125,9 @@ world.beforeEvents.playerBreakBlock.subscribe((e) => {
 world.afterEvents.entityHitEntity.subscribe((e) => {
   if (
     e.damagingEntity.typeId !== "minecraft:player" ||
-    !getEntityComponent(e.hitEntity, "type_family")?.hasTypeFamily(
-      "fluffyalien_energisticscore:machine_entity",
-    )
+    !e.hitEntity
+      .getComponent("type_family")
+      ?.hasTypeFamily("fluffyalien_energisticscore:machine_entity")
   ) {
     return;
   }

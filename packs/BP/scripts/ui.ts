@@ -22,7 +22,6 @@ import {
   setMachineSlotItem,
 } from "./data";
 import { logWarn, raise } from "./utils/log";
-import { getEntityComponent } from "./polyfills/component_type_map";
 import {
   getMachineIdFromEntityId,
   InternalRegisteredMachine,
@@ -72,13 +71,13 @@ function isUiItem(item: ItemStack): boolean {
 function clearUiItemsFromPlayer(player: Player): boolean {
   let anythingCleared = false;
 
-  const playerCursorInventory = getEntityComponent(player, "cursor_inventory")!;
+  const playerCursorInventory = player.getComponent("cursor_inventory")!;
   if (playerCursorInventory.item && isUiItem(playerCursorInventory.item)) {
     playerCursorInventory.clear();
     anythingCleared = true;
   }
 
-  const playerInventory = getEntityComponent(player, "inventory")!.container!;
+  const playerInventory = player.getComponent("inventory")!.container!;
   for (let i = 0; i < playerInventory.size; i++) {
     const item = playerInventory.getItem(i);
 
@@ -366,7 +365,7 @@ async function updateEntityUi(
   const buttons = updateUiResult?.buttons ?? {};
   const storageBars = updateUiResult?.storageBars ?? {};
 
-  const inventory = getEntityComponent(entity, "inventory")!.container!;
+  const inventory = entity.getComponent("inventory")!.container!;
 
   for (const id of definition.uiElements.getIds()) {
     const options = definition.uiElements.get(id)!;
@@ -456,7 +455,7 @@ world.afterEvents.playerInteractWithEntity.subscribe((e) => {
 world.afterEvents.entitySpawn.subscribe((e) => {
   if (e.entity.typeId !== "minecraft:item") return;
 
-  const itemStack = getEntityComponent(e.entity, "item")!.itemStack;
+  const itemStack = e.entity.getComponent("item")!.itemStack;
 
   if (isUiItem(itemStack)) {
     e.entity.remove();

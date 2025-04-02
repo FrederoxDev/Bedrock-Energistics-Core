@@ -2,7 +2,6 @@ import { Block, EquipmentSlot, Player, system, world } from "@minecraft/server";
 import { ModalFormData } from "@minecraft/server-ui";
 import { getMachineStorage, setMachineStorage } from "./data";
 import { logInfo, makeLogString, raise } from "./utils/log";
-import { getEntityComponent } from "./polyfills/component_type_map";
 import { InternalRegisteredStorageType } from "./storage_type_registry";
 import {
   getBlockDynamicProperties,
@@ -35,7 +34,7 @@ export function enableDebugMode(): void {
     for (const player of world.getAllPlayers()) {
       if (playersInSetStorageForm.has(player.id)) continue;
 
-      const equippable = getEntityComponent(player, "equippable")!;
+      const equippable = player.getComponent("equippable")!;
       if (
         equippable.getEquipment(EquipmentSlot.Mainhand)?.typeId !==
         "minecraft:stick"

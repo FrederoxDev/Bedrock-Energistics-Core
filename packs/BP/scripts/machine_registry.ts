@@ -1,6 +1,6 @@
 import * as ipc from "mcbe-addon-ipc";
 import { DimensionLocation } from "@minecraft/server";
-import { logInfo, raise } from "./utils/log";
+import { logWarn, raise } from "./utils/log";
 import {
   MachineUpdateUiHandlerResponse,
   NetworkStorageTypeData,
@@ -165,7 +165,7 @@ export function registerMachineListener(payload: ipc.SerializableValue): null {
   }
 
   if (machineRegistry.has(data.id)) {
-    logInfo(`overrode machine '${data.id}'`);
+    logWarn(`Overrode machine '${data.id}'.`);
   }
 
   machineRegistry.set(data.id, data);

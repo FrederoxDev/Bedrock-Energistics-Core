@@ -4,7 +4,7 @@ import {
   RegisteredItemMachine,
 } from "@/public_api/src";
 import { SerializableContainerSlot } from "@/public_api/src/serialize_utils";
-import { logInfo, raise } from "./utils/log";
+import { logWarn, raise } from "./utils/log";
 import { ipcInvoke, ipcSend } from "./ipc_wrapper";
 import {
   ItemMachineOnStorageSetPayload,
@@ -72,7 +72,7 @@ export class InternalRegisteredItemMachine extends RegisteredItemMachine {
 
 function registerItemMachine(data: RegisteredItemMachineData): void {
   if (itemMachineRegistry.has(data.id)) {
-    logInfo(`Overrode item machine '${data.id}'.`);
+    logWarn(`Overrode item machine '${data.id}'.`);
   }
 
   const registered = new InternalRegisteredItemMachine(data);

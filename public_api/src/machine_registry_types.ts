@@ -18,10 +18,9 @@ export interface UiStorageBarElementUpdateOptions {
    */
   type?: string;
   /**
-   * The amount that this storage type is changing per tick. This can be any integer.
-   * @default 0
+   * Use this property to override the label of the storage bar.
    */
-  change?: number;
+  label?: string;
   /**
    * The max amount to display on this on storage bar. Defaults to {@link MachineDefinitionDescription.maxStorage}
    */

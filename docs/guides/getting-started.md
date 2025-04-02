@@ -338,8 +338,6 @@ world.afterEvents.worldInitialize.subscribe(() => {
             energyBar: {
               // Setting it's storage type to `energy`.
               type: "energy",
-              // This is how much it is changing per tick, this value can be negative or zero.
-              change: ENERGY_GENERATION_PER_TICK,
             },
           },
         };

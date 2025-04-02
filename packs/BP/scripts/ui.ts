@@ -21,7 +21,6 @@ import {
   machineItemStackToItemStack,
   setMachineSlotItem,
 } from "./data";
-import { truncateNumber } from "./utils/string";
 import { logWarn, raise } from "./utils/log";
 import { getEntityComponent } from "./polyfills/component_type_map";
 import {
@@ -112,7 +111,7 @@ function fillUiBar(
   amount: number,
   startIndex: number,
   maxStorage: number,
-  change = 0,
+  label?: string,
 ): void {
   // there are 4 items, each item has 16 segments, so divide by 64
   let remainingSegments = Math.floor(amount / (maxStorage / 64));
@@ -123,10 +122,9 @@ function fillUiBar(
 
     const itemStack = new ItemStack(segmentItemBaseId + segments.toString());
 
-    itemStack.nameTag = `§r§${labelColorCode}${amount.toString()}/${maxStorage.toString()} ${name}`;
-    if (change) {
-      itemStack.nameTag += ` (${change < 0 ? "" : "+"}${truncateNumber(change, 2)}/t)`;
-    }
+    itemStack.nameTag =
+      label ??
+      `§r§${labelColorCode}${amount.toString()}/${maxStorage.toString()} ${name}`;
 
     inventory.setItem(i, itemStack);
   }
@@ -139,7 +137,7 @@ function handleBarItems(
   player: Player,
   maxStorage: number,
   type = "_disabled",
-  change = 0,
+  label?: string,
 ): void {
   for (let i = startIndex; i < startIndex + 4; i++) {
     const inventoryItem = inventory.getItem(i);
@@ -172,7 +170,7 @@ function handleBarItems(
     getMachineStorage(location, type),
     startIndex,
     maxStorage,
-    change,
+    label,
   );
 }
 
@@ -386,7 +384,7 @@ async function updateEntityUi(
           player,
           updateOptions?.max ?? options.defaults?.max ?? definition.maxStorage,
           updateOptions?.type ?? options.defaults?.type,
-          updateOptions?.change ?? options.defaults?.change,
+          updateOptions?.label ?? options.defaults?.label,
         );
         break;
       }

@@ -45,11 +45,23 @@ registerStorageType(STANDARD_STORAGE_TYPE_DEFINITIONS.energy);
 function registerStorageType(data: StorageTypeDefinition): void {
   // Don't send override logs when the two types are identical
   const existing = storageTypeRegistry.get(data.id);
-  if (existing !== undefined && existing.category === data.category) return;
 
-  // The category changed
-  if (existing !== undefined) {
-    logWarn(`overrode category of storage type '${data.id}', originally was '${existing.category}', now is '${data.category}'`);
+  if (existing !== undefined && existing.category !== data.category) {
+    logWarn(
+      `overrode category of storage type '${data.id}', originally was '${existing.category}', now is '${data.category}'`,
+    );
+  }
+
+  if (existing !== undefined && existing.color !== data.color) {
+    logWarn(
+      `overrode color of storage type '${data.id}', originally was '${existing.color}', now is '${data.color}'`,
+    );
+  }
+
+  if (existing !== undefined && existing.name !== data.name) {
+    logWarn(
+      `overrode name of storage type '${data.id}', originally was '${existing.name}', now is '${data.name}'`,
+    );
   }
 
   const registered = new InternalRegisteredStorageType(data);

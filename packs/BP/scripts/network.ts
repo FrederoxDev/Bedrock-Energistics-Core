@@ -241,7 +241,7 @@ export class MachineNetwork extends DestroyableObject {
     }
 
     for (const [block, machineDef] of networkStatListeners) {
-      machineDef.callOnNetworkAllocationCompleted(block, networkStats);
+      machineDef.callOnNetworkAllocationCompletedEvent(block, networkStats);
     }
 
     this.sendJobRunning = false;

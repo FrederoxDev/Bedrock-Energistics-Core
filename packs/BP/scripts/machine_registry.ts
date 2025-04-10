@@ -72,7 +72,7 @@ export class InternalRegisteredMachine extends RegisteredMachine {
     ) as Promise<RecieveHandlerResponse>;
   }
 
-  callOnNetworkAllocationCompleted(
+  callOnNetworkAllocationCompletedEvent(
     dimensionLocation: DimensionLocation,
     data: Record<string, NetworkStorageTypeData>,
   ): void {

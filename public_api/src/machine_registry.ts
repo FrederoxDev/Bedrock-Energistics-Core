@@ -89,7 +89,7 @@ export class RegisteredMachine {
     switch (name) {
       case "onButtonPressed":
         return !!this.data.onButtonPressedEvent;
-      case "onNetworkStatsRecieved":
+      case "onNetworkAllocationCompleted":
         return !!this.data.networkStatEvent;
       case "onStorageSet":
         return !!this.data.onStorageSetEvent;
@@ -218,13 +218,13 @@ export function registerMachine(definition: MachineDefinition): void {
   }
 
   let networkStatEvent: string | undefined;
-  if (definition.events?.onNetworkStatsRecieved) {
+  if (definition.events?.onNetworkAllocationCompleted) {
     networkStatEvent = makeIpcListenerName(
       definition.description.id,
       IpcListenerType.MachineNetworkStatEvent,
     );
 
-    const callback = definition.events.onNetworkStatsRecieved.bind(null);
+    const callback = definition.events.onNetworkAllocationCompleted.bind(null);
 
     ipcRouter.registerListener(networkStatEvent, (payload) => {
       const data = payload as IpcNetworkStatsEventArg;

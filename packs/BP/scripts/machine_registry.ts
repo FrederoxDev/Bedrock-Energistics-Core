@@ -72,13 +72,13 @@ export class InternalRegisteredMachine extends RegisteredMachine {
     ) as Promise<RecieveHandlerResponse>;
   }
 
-  callOnNetworkStatsRecievedEvent(
+  callOnNetworkAllocationCompleted(
     dimensionLocation: DimensionLocation,
     data: Record<string, NetworkStorageTypeData>,
   ): void {
     if (!this.data.networkStatEvent)
       raise(
-        "Trying to call the 'onNetworkStatsRecievedEvent' event but it is not defined.",
+        "Trying to call the 'onNetworkAllocationCompleted' event but it is not defined.",
       );
 
     const payload: IpcNetworkStatsEventArg = {

@@ -202,7 +202,7 @@ export class MachineNetwork extends DestroyableObject {
         continue;
       }
 
-      if (machineDef.hasCallback("onNetworkStatsRecieved")) {
+      if (machineDef.hasCallback("onNetworkAllocationCompleted")) {
         networkStatListeners.push([machine, machineDef]);
       }
 
@@ -231,12 +231,17 @@ export class MachineNetwork extends DestroyableObject {
         }
       });
 
+      networkStats[type] = {
+        before: distributionData.total,
+        after: budget,
+      };
+
       // Then return any left-over budget to the generators.
       yield* this.returnToGenerators(distributionData, type, budget);
     }
 
     for (const [block, machineDef] of networkStatListeners) {
-      machineDef.callOnNetworkStatsRecievedEvent(block, networkStats);
+      machineDef.callOnNetworkAllocationCompleted(block, networkStats);
     }
 
     this.sendJobRunning = false;

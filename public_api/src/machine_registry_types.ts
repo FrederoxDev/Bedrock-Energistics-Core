@@ -208,7 +208,7 @@ export interface MachineDefinitionEvents {
    * Called after a network has completed sending machine storage allocations
    * contains information on each category sent in that pass with the starting and remaining budget.
    */
-  onNetworkStatsRecieved?: MachineEventCallback<NetworkStatsEventArg>;
+  onNetworkAllocationCompleted?: MachineEventCallback<NetworkStatsEventArg>;
 
   /**
    * Called after the machine's storage is set via setMachineStorage.

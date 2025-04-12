@@ -18,11 +18,13 @@ For example, use the `fluffyalien_energisticscore:io.type.energy` tag to make yo
 
 ### Explicit Sides
 
-**Syntax (Explicit Sides):** `fluffyalien_energisticscore:io.any.{north|east|south|west|up|down|side} | fluffyalien_energisticscore:io.{type|category}.XYZ.{north|east|south|west|up|down|side}`
+**Syntax (Explicit Sides):** `fluffyalien_energisticscore:io.any.{north|east|south|west|up|down|side|network_link} | fluffyalien_energisticscore:io.{type|category}.XYZ.{north|east|south|west|up|down|side|network_link}`
 
-`.{north|east|south|west|up|down|side}` can be appended at the end of the tag to only connect to networks that from specific directions. This will only be parsed if the `fluffyalien_energisticscore:explicit_sides` tag is added as well.
+`.{north|east|south|west|up|down|side|network_link}` can be appended at the end of the tag to only connect to networks that from specific directions. This will only be parsed if the `fluffyalien_energisticscore:explicit_sides` tag is added as well.
 
 For example, use the `fluffyalien_energisticscore:io.type.energy.north` to only connect to adjacent `energy` networks if they connect to the north face of this block.
+
+The `network_link` value is used when the block is connected wirelessly via a [network link](./network-links.md).
 
 ## Consumer
 

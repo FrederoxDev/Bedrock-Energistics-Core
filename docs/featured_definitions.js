@@ -1,7 +1,7 @@
 const FEATURED_CREATORS = [
   {
     name: "Vatonage",
-    img: "/assets/vatonage.png",
+    img: "./assets/vatonage.png",
     url: "https://vatonage.com/",
   },
 ];

@@ -25,7 +25,7 @@ children:
 - [Getting Started](getting-started.md)
 - [Item Machines](item-machines.md)
 - [Machine I/O](machine-io.md)
-- [Machine Priority](machine-priority.md)
+- [Machine Allocation Priority](machine-priority.md)
 - [Machine UI](machine-ui.md)
 - [Network Links](network-links.md)
 - [Persistent Entities](persistent-entities.md)

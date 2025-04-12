@@ -2,7 +2,7 @@
 title: Guides
 children:
   - ./conduits.md
-  - ./debug-stick.md
+  - ./debug.md
   - ./getting-started.md
   - ./item-machines.md
   - ./machine-io.md
@@ -21,7 +21,7 @@ children:
 ## Index
 
 - [Conduits](conduits.md)
-- [Debug Stick](debug-stick.md)
+- [Debug Mode](debug.md)
 - [Getting Started](getting-started.md)
 - [Item Machines](item-machines.md)
 - [Machine I/O](machine-io.md)

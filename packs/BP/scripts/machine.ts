@@ -7,7 +7,7 @@ import {
 } from "@minecraft/server";
 import {
   getMachineSlotItem,
-  machineItemStackToItemStack,
+  optionalMachineItemStackToItemStack,
   removeBlockFromScoreboards,
 } from "./data";
 import { MachineNetwork } from "./network";
@@ -96,7 +96,7 @@ export function dropItemsStoredInMachine(
     const item = getMachineSlotItem(blockLocation, element.slotId);
     if (item) {
       blockLocation.dimension.spawnItem(
-        machineItemStackToItemStack(item),
+        optionalMachineItemStackToItemStack(item),
         Vector3Utils.add(blockLocation, { x: 0.5, y: 0.5, z: 0.5 }),
       );
     }

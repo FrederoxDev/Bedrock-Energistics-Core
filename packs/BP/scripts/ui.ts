@@ -1,4 +1,5 @@
 import {
+  MachineItemStack,
   StorageTypeColor,
   UiButtonElementUpdateOptions,
   UiItemSlotElementDefinition,
@@ -18,7 +19,7 @@ import {
   getBlockUniqueId,
   getMachineSlotItem,
   getMachineStorage,
-  machineItemStackToItemStack,
+  optionalMachineItemStackToItemStack,
   setMachineSlotItem,
 } from "./data";
 import { logWarn, raise } from "./utils/log";
@@ -181,7 +182,6 @@ function handleItemSlot(
   init: boolean,
 ): void {
   const expectedMachineItem = getMachineSlotItem(loc, element.slotId);
-  const expectedItemStack = machineItemStackToItemStack(expectedMachineItem);
 
   const changedSlots = machineChangedItemSlots.get(getBlockUniqueId(loc));
   const slotChanged = changedSlots?.includes(element.slotId);
@@ -189,29 +189,33 @@ function handleItemSlot(
   const containerSlot = inventory.getSlot(element.index);
 
   if (slotChanged || init) {
-    containerSlot.setItem(expectedItemStack);
+    containerSlot.setItem(
+      optionalMachineItemStackToItemStack(expectedMachineItem),
+    );
     return;
   }
 
   if (!containerSlot.hasItem()) {
     clearUiItemsFromPlayer(player);
     setMachineSlotItem(loc, element.slotId, undefined, false);
-    containerSlot.setItem(machineItemStackToItemStack());
+    containerSlot.setItem(optionalMachineItemStackToItemStack());
     return;
   }
 
-  if (containerSlot.isStackableWith(expectedItemStack)) {
-    if (
-      expectedMachineItem &&
-      containerSlot.amount !== expectedItemStack.amount
-    ) {
+  const containerSlotItemStack = containerSlot.getItem()!;
+  const containerSlotMachineItemStack = MachineItemStack.fromItemStack(
+    containerSlotItemStack,
+  );
+
+  if (
+    expectedMachineItem &&
+    containerSlotMachineItemStack.isSimilarTo(expectedMachineItem)
+  ) {
+    if (containerSlot.amount !== expectedMachineItem.amount) {
       setMachineSlotItem(
         loc,
         element.slotId,
-        {
-          typeId: expectedMachineItem.typeId,
-          count: containerSlot.amount,
-        },
+        expectedMachineItem.withAmount(containerSlot.amount),
         false,
       );
     }
@@ -223,26 +227,17 @@ function handleItemSlot(
 
   const isAllowed =
     element.allowedItems?.includes(containerSlot.typeId) ?? true;
-  if (
-    !isAllowed ||
-    // ensure the item has no special properties
-    !containerSlot.isStackableWith(new ItemStack(containerSlot.typeId))
-  ) {
+  if (!isAllowed) {
     setMachineSlotItem(loc, element.slotId, undefined, false);
     player.dimension.spawnItem(containerSlot.getItem()!, player.location);
-    containerSlot.setItem(machineItemStackToItemStack());
+    containerSlot.setItem(optionalMachineItemStackToItemStack());
     return;
   }
 
-  setMachineSlotItem(
-    loc,
-    element.slotId,
-    {
-      typeId: containerSlot.typeId,
-      count: containerSlot.amount,
-    },
-    false,
-  );
+  if (isUiItem(containerSlotItemStack)) {
+    return;
+  }
+  setMachineSlotItem(loc, element.slotId, containerSlotMachineItemStack, false);
 }
 
 function handleProgressIndicator(

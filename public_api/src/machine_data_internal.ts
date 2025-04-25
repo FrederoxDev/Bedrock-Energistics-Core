@@ -4,7 +4,6 @@ import {
   world,
 } from "@minecraft/server";
 import { SerializableDimensionLocation } from "./serialize_utils.js";
-import { MachineItemStack } from "./machine_data.js";
 
 /**
  * @internal
@@ -18,7 +17,7 @@ export interface GetMachineSlotPayload {
  * @internal
  */
 export interface SetMachineSlotPayload extends GetMachineSlotPayload {
-  item?: MachineItemStack;
+  item?: string;
 }
 
 /**

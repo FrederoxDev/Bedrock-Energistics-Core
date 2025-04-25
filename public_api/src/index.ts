@@ -12,6 +12,7 @@ export * from "./item_machine_registry_types.js";
 export * from "./item_machine_registry.js";
 export * from "./item_machine.js";
 export * from "./machine_data.js";
+export * from "./machine_item_stack.js";
 export * from "./machine_registry_types.js";
 export * from "./machine_registry.js";
 export * from "./machine_ui_elements.js";

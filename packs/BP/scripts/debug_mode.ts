@@ -75,7 +75,7 @@ function showDebugUi(player: Player): void {
   }
   for (const dynamicProp of getBlockDynamicProperties(block)) {
     const value = getBlockDynamicProperty(block, dynamicProp);
-    line += `§s${dynamicProp}§r=§p${value ? JSON.stringify(value) : "undefined"} `;
+    line += `§uproperty§r.§s${dynamicProp}§r=§p${value ? JSON.stringify(value) : "undefined"} `;
     if (line.length > DEBUG_ACTIONBAR_MAX_WIDTH_CHARS) {
       info += `\n${line}`;
       line = "";
@@ -128,6 +128,14 @@ function showSetStorageForm(block: Block, player: Player): void {
       return;
     }
 
-    setBlockDynamicProperty(block, varName, value);
+    if (varName.startsWith("property.")) {
+      const property = varName.slice("property.".length);
+      setBlockDynamicProperty(block, property, value);
+      return;
+    }
+
+    raise(
+      `Debug menu: Invalid variable domain. Expected 'storage.' or 'property.' but got '${varName.split(".")[0]}'.`,
+    );
   });
 }

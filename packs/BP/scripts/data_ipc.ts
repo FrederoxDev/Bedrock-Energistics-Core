@@ -3,21 +3,21 @@ import {
   SetMachineSlotPayload,
 } from "@/public_api/src/machine_data_internal";
 import * as ipc from "mcbe-addon-ipc";
-import { getMachineSlotItem, setMachineSlotItem } from "./data";
+import { getMachineSlotItemRaw, setMachineSlotItem } from "./data";
 import {
   deserializeDimensionLocation,
   SerializableDimensionLocation,
 } from "@/public_api/src/serialize_utils";
-import { MachineItemStack } from "@/public_api/src";
 import { InternalRegisteredMachine } from "./machine_registry";
 import { removeMachine } from "./machine";
+import { deserializeMachineItemStack } from "@/public_api/src/serialize_machine_item_stack";
 
 export function getMachineSlotListener(
   payload: ipc.SerializableValue,
-): MachineItemStack | null {
+): string | null {
   const data = payload as GetMachineSlotPayload;
   return (
-    getMachineSlotItem(deserializeDimensionLocation(data.loc), data.slot) ??
+    getMachineSlotItemRaw(deserializeDimensionLocation(data.loc), data.slot) ??
     null
   );
 }
@@ -27,7 +27,7 @@ export function setMachineSlotListener(payload: ipc.SerializableValue): null {
   setMachineSlotItem(
     deserializeDimensionLocation(data.loc),
     data.slot,
-    data.item,
+    data.item ? deserializeMachineItemStack(data.item) : undefined,
   );
   return null;
 }

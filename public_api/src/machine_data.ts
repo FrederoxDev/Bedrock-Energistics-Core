@@ -12,21 +12,11 @@ import { BecIpcListener } from "./bec_ipc_listener.js";
 import { raise } from "./log.js";
 import { RegisteredMachine } from "./machine_registry.js";
 import { callMachineOnStorageSetEvent } from "./machine_registry_internal.js";
-
-/**
- * Representation of an item stack stored in a machine inventory.
- * @beta
- */
-export interface MachineItemStack {
-  /**
-   * The type ID of the item.
-   */
-  typeId: string;
-  /**
-   * The amount of this item.
-   */
-  count: number;
-}
+import { MachineItemStack } from "./machine_item_stack.js";
+import {
+  deserializeMachineItemStack,
+  serializeMachineItemStack,
+} from "./serialize_machine_item_stack.js";
 
 /**
  * Gets the storage of a specific type in a machine.
@@ -107,21 +97,22 @@ export async function setMachineStorage(
  * @beta
  * @param loc The location of the machine.
  * @param slotId The number ID of the slot as defined when the machine was registered (see {@link UiItemSlotElementDefinition}).
- * @returns The {@link MachineItemStack} or `null` if there is no item in the specified slot.
+ * @returns The {@link MachineItemStack} or `undefined` if there is no item in the specified slot.
  */
-export function getMachineSlotItem(
+export async function getMachineSlotItem(
   loc: DimensionLocation,
   slotId: number,
-): Promise<MachineItemStack | null> {
+): Promise<MachineItemStack | undefined> {
   const payload: GetMachineSlotPayload = {
     loc: makeSerializableDimensionLocation(loc),
     slot: slotId,
   };
 
-  return ipcInvoke(
-    BecIpcListener.GetMachineSlot,
-    payload,
-  ) as Promise<MachineItemStack | null>;
+  const data = (await ipcInvoke(BecIpcListener.GetMachineSlot, payload)) as
+    | string
+    | null;
+
+  return data ? deserializeMachineItemStack(data) : undefined;
 }
 
 /**
@@ -139,7 +130,7 @@ export function setMachineSlotItem(
   const payload: SetMachineSlotPayload = {
     loc: makeSerializableDimensionLocation(loc),
     slot: slotId,
-    item: newItemStack,
+    item: newItemStack ? serializeMachineItemStack(newItemStack) : undefined,
   };
 
   ipcSend(BecIpcListener.SetMachineSlot, payload);

@@ -11,6 +11,10 @@ import {
   getBlockDynamicProperty,
   setBlockDynamicProperty,
 } from "./utils/dynamic_property";
+import {
+  deserializeMachineItemStack,
+  serializeMachineItemStack,
+} from "@/public_api/src/serialize_machine_item_stack";
 
 export { getBlockUniqueId, getMachineStorage };
 
@@ -68,31 +72,25 @@ export function setMachineStorage(
   }
 }
 
+export function getMachineSlotItemRaw(
+  loc: DimensionLocation,
+  slot: number,
+): string | undefined {
+  return getBlockDynamicProperty(loc, `item${slot.toString()}`) as
+    | string
+    | undefined;
+}
+
 export function getMachineSlotItem(
   loc: DimensionLocation,
   slot: number,
 ): MachineItemStack | undefined {
-  const itemTypePropertyId = `itemType${slot.toString()}`;
-  const itemCountPropertyId = `itemCount${slot.toString()}`;
-
-  const itemType = getBlockDynamicProperty(loc, itemTypePropertyId) as
-    | string
-    | undefined;
-  if (itemType === undefined) {
+  const data = getMachineSlotItemRaw(loc, slot);
+  if (data === undefined) {
     return;
   }
 
-  const itemCount = getBlockDynamicProperty(loc, itemCountPropertyId) as
-    | number
-    | undefined;
-  if (!itemCount) {
-    return;
-  }
-
-  return {
-    typeId: itemType,
-    count: itemCount,
-  };
+  return deserializeMachineItemStack(data);
 }
 
 export function setMachineSlotItem(
@@ -102,8 +100,7 @@ export function setMachineSlotItem(
   setChanged = true,
 ): void {
   const uid = getBlockUniqueId(loc);
-  const itemTypePropertyId = `itemType${slot.toString()}`;
-  const itemCountPropertyId = `itemCount${slot.toString()}`;
+  const propertyId = `item${slot.toString()}`;
 
   if (setChanged) {
     const existingChangedItemSlotsArr = machineChangedItemSlots.get(uid);
@@ -114,20 +111,22 @@ export function setMachineSlotItem(
     }
   }
 
-  if (!newItemStack || newItemStack.count <= 0) {
-    setBlockDynamicProperty(loc, itemTypePropertyId);
-    setBlockDynamicProperty(loc, itemCountPropertyId);
+  if (!newItemStack || newItemStack.amount <= 0) {
+    setBlockDynamicProperty(loc, propertyId);
     return;
   }
 
-  setBlockDynamicProperty(loc, itemTypePropertyId, newItemStack.typeId);
-  setBlockDynamicProperty(loc, itemCountPropertyId, newItemStack.count);
+  setBlockDynamicProperty(
+    loc,
+    propertyId,
+    serializeMachineItemStack(newItemStack),
+  );
 }
 
-export function machineItemStackToItemStack(
+export function optionalMachineItemStackToItemStack(
   machineItem?: MachineItemStack,
 ): ItemStack {
   return machineItem
-    ? new ItemStack(machineItem.typeId, machineItem.count)
+    ? machineItem.toItemStack()
     : new ItemStack("fluffyalien_energisticscore:ui_empty_slot");
 }

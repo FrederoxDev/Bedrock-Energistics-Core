@@ -6,11 +6,6 @@ import { BaseIpcCallback } from "./common_registry_types.js";
 /**
  * @beta
  */
-export type UiProgressIndicatorElementType = "arrow" | "flame";
-
-/**
- * @beta
- */
 export interface UiStorageBarElementUpdateOptions {
   /**
    * The type of this storage bar. Set to "_disabled" to disable the storage bar.
@@ -60,12 +55,32 @@ export interface UiItemSlotElementDefinition {
 }
 
 /**
+ * @beta
+ * A progress indicator preset for the {@link UiProgressIndicatorElementDefinition} element definition.
+ */
+export type UiProgressIndicatorPreset = "arrow" | "flame";
+
+/**
+ * @beta
+ * A progress indicator description for the {@link UiProgressIndicatorElementDefinition} element definition.
+ */
+export interface UiProgressIndicator {
+  /**
+   * An array of item IDs to use as frames for the progress indicator.
+   * @beta
+   * @remarks
+   * All items must have the `fluffyalien_energisticscore:ui_item` tag.
+   */
+  frames: string[];
+}
+
+/**
  * Options for defining a progress indicator UI element.
  * @beta
  */
 export interface UiProgressIndicatorElementDefinition {
   type: "progressIndicator";
-  indicator: UiProgressIndicatorElementType;
+  indicator: UiProgressIndicator | UiProgressIndicatorPreset;
   index: number;
 }
 

@@ -3,7 +3,8 @@ import {
   StorageTypeColor,
   UiButtonElementUpdateOptions,
   UiItemSlotElementDefinition,
-  UiProgressIndicatorElementType,
+  UiProgressIndicatorElementDefinition,
+  UiProgressIndicatorPreset,
   UiStorageBarElementUpdateOptions,
 } from "@/public_api/src";
 import {
@@ -28,9 +29,10 @@ import {
   InternalRegisteredMachine,
 } from "./machine_registry";
 import { InternalRegisteredStorageType } from "./storage_type_registry";
+import { tryCreateItemStack } from "./utils/item";
 
-export const PROGRESS_INDICATOR_MAX_VALUES: Record<
-  UiProgressIndicatorElementType,
+export const PROGRESS_INDICATOR_PRESET_MAX_VALUES: Record<
+  UiProgressIndicatorPreset,
   number
 > = {
   arrow: 16,
@@ -242,19 +244,19 @@ function handleItemSlot(
 
 function handleProgressIndicator(
   inventory: Container,
-  index: number,
-  indicator: UiProgressIndicatorElementType,
+  element: UiProgressIndicatorElementDefinition,
   player: Player,
   value = 0,
 ): void {
-  const maxValue = PROGRESS_INDICATOR_MAX_VALUES[indicator];
-  if (value < 0 || value > maxValue || !Number.isInteger(value)) {
-    raise(
-      `Failed to update progress indicator (indicator: '${indicator}') for machine UI. Expected 'value' to be an integer between 0 and ${maxValue.toString()} (inclusive) but got ${value.toString()}.`,
-    );
-  }
+  const indicator = element.indicator;
+  const indicatorIsPreset = typeof indicator === "string";
+  const maxValue = indicatorIsPreset
+    ? PROGRESS_INDICATOR_PRESET_MAX_VALUES[indicator]
+    : indicator.frames.length;
+  const invalidValue =
+    value < 0 || value > maxValue || !Number.isInteger(value);
 
-  const inventoryItem = inventory.getItem(index);
+  const inventoryItem = inventory.getItem(element.index);
   if (!inventoryItem?.hasTag("fluffyalien_energisticscore:ui_item")) {
     clearUiItemsFromPlayer(player);
 
@@ -263,12 +265,40 @@ function handleProgressIndicator(
     }
   }
 
-  inventory.setItem(
-    index,
-    new ItemStack(
-      `fluffyalien_energisticscore:ui_progress_${indicator}${value.toString()}`,
-    ),
-  );
+  if (invalidValue) {
+    logWarn(
+      `Failed to update progress indicator for machine UI. Expected 'value' to be an integer between 0 and ${maxValue.toString()} (inclusive) but got ${value.toString()}.`,
+    );
+    inventory.setItem(
+      element.index,
+      new ItemStack("fluffyalien_energisticscore:ui_error"),
+    );
+    return;
+  }
+
+  if (indicatorIsPreset) {
+    inventory.setItem(
+      element.index,
+      new ItemStack(
+        `fluffyalien_energisticscore:ui_progress_${indicator}${value.toString()}`,
+      ),
+    );
+    return;
+  }
+
+  const item = tryCreateItemStack(indicator.frames[value]);
+  if (!item?.hasTag("fluffyalien_energisticscore:ui_item")) {
+    logWarn(
+      `Failed to create progress indicator element. The item '${indicator.frames[value]}' does not have the 'fluffyalien_energisticscore:ui_item' tag or does not exist.`,
+    );
+    inventory.setItem(
+      element.index,
+      new ItemStack("fluffyalien_energisticscore:ui_error"),
+    );
+    return;
+  }
+
+  inventory.setItem(element.index, item);
 }
 
 function handleButton(
@@ -284,10 +314,10 @@ function handleButton(
   buttonItemName?: string,
 ): void {
   if (init) {
-    const item = new ItemStack(buttonItemId);
-    if (!item.hasTag("fluffyalien_energisticscore:ui_item")) {
+    const item = tryCreateItemStack(buttonItemId);
+    if (!item?.hasTag("fluffyalien_energisticscore:ui_item")) {
       logWarn(
-        `error when creating button element: the button item '${buttonItemId}' does not have the 'fluffyalien_energisticscore:ui_item' tag`,
+        `Failed to create button element. The button item '${buttonItemId}' does not have the 'fluffyalien_energisticscore:ui_item' tag or does not exist.`,
       );
       inventory.setItem(
         index,
@@ -318,8 +348,8 @@ function handleButton(
       );
     }
 
-    let btnItem = new ItemStack(buttonItemId);
-    if (!btnItem.hasTag("fluffyalien_energisticscore:ui_item")) {
+    let btnItem = tryCreateItemStack(buttonItemId);
+    if (!btnItem?.hasTag("fluffyalien_energisticscore:ui_item")) {
       btnItem = new ItemStack("fluffyalien_energisticscore:ui_error");
     }
 
@@ -388,8 +418,7 @@ async function updateEntityUi(
       case "progressIndicator":
         handleProgressIndicator(
           inventory,
-          options.index,
-          options.indicator,
+          options,
           player,
           progressIndicators[id],
         );

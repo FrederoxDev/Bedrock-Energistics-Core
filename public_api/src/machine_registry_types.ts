@@ -55,14 +55,14 @@ export interface UiItemSlotElementDefinition {
 }
 
 /**
- * @beta
  * A progress indicator preset for the {@link UiProgressIndicatorElementDefinition} element definition.
+ * @beta
  */
 export type UiProgressIndicatorPreset = "arrow" | "flame";
 
 /**
- * @beta
  * A progress indicator description for the {@link UiProgressIndicatorElementDefinition} element definition.
+ * @beta
  */
 export interface UiProgressIndicator {
   /**

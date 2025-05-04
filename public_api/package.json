@@ -31,6 +31,6 @@
   },
   "dependencies": {
     "@minecraft/math": "^1.5.2",
-    "mcbe-addon-ipc": "^0.7.1"
+    "mcbe-addon-ipc": "^0.8.1"
   }
 }

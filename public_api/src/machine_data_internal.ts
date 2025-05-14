@@ -25,10 +25,13 @@ export interface SetMachineSlotPayload extends GetMachineSlotPayload {
  */
 export function getBlockUniqueId(loc: DimensionLocation): string {
   return (
-    loc.dimension.id +
     Math.floor(loc.x).toString() +
+    "," +
     Math.floor(loc.y).toString() +
-    Math.floor(loc.z).toString()
+    "," +
+    Math.floor(loc.z).toString() +
+    "," +
+    loc.dimension.id
   );
 }
 

@@ -4,7 +4,7 @@ import { UiElementDefinition } from "./machine_registry_types.js";
  * Represents the UI elements of a machine.
  * @beta
  */
-export class MachineUiElements {
+export class MachineUiElements implements Iterable<UiElementDefinition> {
   constructor(private readonly elements: Record<string, UiElementDefinition>) {}
 
   /**
@@ -14,7 +14,11 @@ export class MachineUiElements {
    * @returns The UI element with the specified ID, or `undefined` if it doesn't exist.
    */
   get(id: string): UiElementDefinition | undefined {
-    return this.elements[id];
+    const element = this.elements[id] as UiElementDefinition | undefined;
+    if (!element) return;
+
+    // deep copy the object to prevent mutation of the local cache
+    return JSON.parse(JSON.stringify(element)) as UiElementDefinition;
   }
 
   /**
@@ -27,29 +31,20 @@ export class MachineUiElements {
   }
 
   /**
-   * Gets all the UI elements.
+   * Enables iteration over the UI elements.
    * @beta
-   * @returns An array containing all the UI elements.
    */
-  getAll(): UiElementDefinition[] {
-    return Object.values(this.elements);
-  }
-
-  /**
-   * Get all UI elements with any of the specified types.
-   * @beta
-   * @param types The types to filter by.
-   * @returns A record containing the UI elements with any of the specified types.
-   */
-  getWithTypes(...types: string[]): Record<string, UiElementDefinition> {
-    const result: Record<string, UiElementDefinition> = {};
-
-    for (const [id, element] of Object.entries(this.elements)) {
-      if (types.includes(element.type)) {
-        result[id] = element;
-      }
-    }
-
-    return result;
+  [Symbol.iterator](): Iterator<UiElementDefinition> {
+    const ids = this.getIds();
+    let index = 0;
+    return {
+      next: (): IteratorResult<UiElementDefinition> => {
+        if (index < ids.length) {
+          const value = this.get(ids[index++])!;
+          return { value, done: false };
+        }
+        return { value: undefined, done: true };
+      },
+    };
   }
 }

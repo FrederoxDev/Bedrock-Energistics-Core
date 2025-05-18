@@ -22,6 +22,7 @@ import {
 import { InternalRegisteredMachine } from "./machine_registry";
 import { InternalRegisteredStorageType } from "./storage_type_registry";
 import { asyncAsGenerator } from "./utils/async_generator";
+import { isDebugModeEnabled } from "./debug_mode";
 
 interface SendQueueItem {
   block: Block;
@@ -50,9 +51,12 @@ const networks = new Map<number, MachineNetwork>();
  * A network of machines with a certain I/O type.
  */
 export class MachineNetwork extends DestroyableObject {
-  private sendJobRunning = false;
+  private allocateJobRunning = false;
   private sendQueue: SendQueueItem[] = [];
   private readonly intervalId: number;
+
+  // diagnostic data
+  readonly diagnosticAllocTicks: number[] = [];
 
   /**
    * Unique ID for this network.
@@ -77,10 +81,18 @@ export class MachineNetwork extends DestroyableObject {
     totalNetworkCount++;
 
     this.intervalId = system.runInterval(() => {
-      if (this.sendJobRunning || !this.sendQueue.length) return;
-      this.sendJobRunning = true;
-      system.runJob(this.send());
-    }, 2);
+      if (this.allocateJobRunning || !this.sendQueue.length) return;
+
+      this.allocateJobRunning = true;
+      if (isDebugModeEnabled()) {
+        this.diagnosticAllocTicks.push(system.currentTick);
+        if (this.diagnosticAllocTicks.length > 21) {
+          this.diagnosticAllocTicks.shift();
+        }
+      }
+
+      system.runJob(this.allocate());
+    }, 5);
   }
 
   /**
@@ -101,7 +113,7 @@ export class MachineNetwork extends DestroyableObject {
    * automatically sets each generator's storage to the amount it sent that was not received.
    * returns automatically if the object is not valid.
    */
-  private *send(): Generator<void, void, void> {
+  private *allocate(): Generator<void, void, void> {
     if (!this.isValid) return;
 
     // Calculate the amount of each type that is available to send around.
@@ -167,6 +179,8 @@ export class MachineNetwork extends DestroyableObject {
         "fluffyalien_energisticscore:consumer.any",
       );
 
+      yield;
+
       // Check machine tags and sort into appropriate groups.
       for (const consumerType of typesToDistribute) {
         const consumerCategory =
@@ -189,6 +203,8 @@ export class MachineNetwork extends DestroyableObject {
         }
 
         consumers[consumerType].get(priority)!.push(machine);
+
+        yield;
       }
 
       // Check if the machine is listening for network stat events.
@@ -244,7 +260,7 @@ export class MachineNetwork extends DestroyableObject {
       machineDef.callOnNetworkAllocationCompletedEvent(block, networkStats);
     }
 
-    this.sendJobRunning = false;
+    this.allocateJobRunning = false;
   }
 
   private *returnToGenerators(
@@ -594,6 +610,10 @@ export class MachineNetwork extends DestroyableObject {
 
   static getFromId(id: number): MachineNetwork | undefined {
     return networks.get(id);
+  }
+
+  static getAll(): MapIterator<[number, MachineNetwork]> {
+    return networks.entries();
   }
 
   /**

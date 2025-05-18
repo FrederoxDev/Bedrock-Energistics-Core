@@ -2,6 +2,7 @@ import {
   Block,
   BlockCustomComponent,
   DimensionLocation,
+  Entity,
   system,
   world,
 } from "@minecraft/server";
@@ -33,6 +34,15 @@ export function removeMachine(
   });
 }
 
+export function spawnMachineEntity(block: Block, entityId: string): Entity {
+  // there is a similar function to this one in the public api.
+  // if this is changed, then ensure the public api function is
+  // changed as well.
+  const entity = block.dimension.spawnEntity(entityId, block.bottomCenter());
+  entity.nameTag = block.typeId;
+  return entity;
+}
+
 export const machineNoInteractComponent: BlockCustomComponent = {
   onPlace(e) {
     if (e.block.typeId === e.previousBlock.type.id) return;
@@ -46,14 +56,7 @@ export const machineNoInteractComponent: BlockCustomComponent = {
     }
 
     if (definition.persistentEntity) {
-      const entity = e.block.dimension.spawnEntity(
-        definition.entityId,
-        e.block.bottomCenter(),
-      );
-
-      entity.nameTag = e.block.typeId;
-
-      entity.setDynamicProperty("block_location", e.block.location);
+      spawnMachineEntity(e.block, definition.entityId);
     }
   },
 };
@@ -71,14 +74,7 @@ export const machineComponent: BlockCustomComponent = {
       return;
     }
 
-    const entity = e.block.dimension.spawnEntity(
-      definition.entityId,
-      e.block.bottomCenter(),
-    );
-
-    entity.nameTag = e.block.typeId;
-
-    entity.setDynamicProperty("block_location", e.block.location);
+    spawnMachineEntity(e.block, definition.entityId);
   },
 };
 
@@ -145,4 +141,22 @@ world.afterEvents.entityHitEntity.subscribe((e) => {
   }
 
   e.hitEntity.remove();
+});
+
+world.afterEvents.entitySpawn.subscribe((e) => {
+  if (
+    !e.entity
+      .getComponent("type_family")
+      ?.hasTypeFamily("fluffyalien_energisticscore:machine_entity")
+  ) {
+    return;
+  }
+
+  // machine entities can be spawned via the public api
+  // but dynamic properties are sandboxed,
+  // so set the dynamic property in this event
+  e.entity.setDynamicProperty(
+    "block_location",
+    Vector3Utils.floor(e.entity.location),
+  );
 });

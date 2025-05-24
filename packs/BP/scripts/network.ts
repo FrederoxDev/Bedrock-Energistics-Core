@@ -2,7 +2,7 @@ import { Block, Dimension, DimensionLocation, system } from "@minecraft/server";
 import { Vector3Utils } from "@minecraft/math";
 import { DestroyableObject } from "./utils/destroyable";
 import { logWarn } from "./utils/log";
-import { getMachineStorage, setMachineStorage } from "./data";
+import { getBlockUniqueId, getMachineStorage, setMachineStorage } from "./data";
 import {
   DIRECTION_VECTORS,
   getBlockInDirection,
@@ -30,12 +30,9 @@ interface SendQueueItem {
 }
 
 interface NetworkConnections {
-  conduits: Block[];
-  conduitsSet: Set<string>;
-  machines: Block[];
-  machinesSet: Set<string>;
-  networkLinks: Block[];
-  networkLinksSet: Set<string>;
+  conduits: Map<string, Block>;
+  machines: Map<string, Block>;
+  networkLinks: Map<string, Block>;
 }
 
 interface DistributionData {
@@ -136,7 +133,7 @@ export class MachineNetwork extends DestroyableObject {
     yield;
 
     // find and filter connections into their consumer groups.
-    for (const machine of this.connections.machines) {
+    for (const machine of this.connections.machines.values()) {
       const tags = machine.getTags();
 
       const priorityTags = tags
@@ -423,17 +420,15 @@ export class MachineNetwork extends DestroyableObject {
 
     if (location.dimension.id !== this.dimension.id) return false;
 
+    const locationUid = getBlockUniqueId(location);
+
     if (connectionType === NetworkConnectionType.Conduit) {
-      return this.connections.conduitsSet.has(Vector3Utils.toString(location));
+      return this.connections.conduits.has(locationUid);
     }
-
     if (connectionType === NetworkConnectionType.NetworkLink) {
-      return this.connections.networkLinksSet.has(
-        Vector3Utils.toString(location),
-      );
+      return this.connections.networkLinks.has(locationUid);
     }
-
-    return this.connections.machinesSet.has(Vector3Utils.toString(location));
+    return this.connections.machines.has(locationUid);
   }
 
   /**
@@ -456,20 +451,16 @@ export class MachineNetwork extends DestroyableObject {
     ioType: StorageTypeData,
   ): NetworkConnections {
     const connections: NetworkConnections = {
-      conduits: [],
-      machines: [],
-      networkLinks: [],
-      conduitsSet: new Set(),
-      machinesSet: new Set(),
-      networkLinksSet: new Set(),
+      conduits: new Map(),
+      machines: new Map(),
+      networkLinks: new Map(),
     };
 
     const stack: Block[] = [];
     const visitedLocations = new Set<string>();
 
     function handleNetworkLink(block: Block): void {
-      connections.networkLinks.push(block);
-      connections.networkLinksSet.add(Vector3Utils.toString(block.location));
+      connections.networkLinks.set(getBlockUniqueId(block), block);
 
       const netLink = InternalNetworkLinkNode.tryGetAt(
         block.dimension,
@@ -515,8 +506,7 @@ export class MachineNetwork extends DestroyableObject {
       visitedLocations.add(Vector3Utils.toString(block.location));
 
       if (block.hasTag("fluffyalien_energisticscore:conduit")) {
-        connections.conduits.push(block);
-        connections.conduitsSet.add(Vector3Utils.toString(block.location));
+        connections.conduits.set(getBlockUniqueId(block), block);
         return;
       }
 
@@ -525,8 +515,7 @@ export class MachineNetwork extends DestroyableObject {
       }
 
       if (block.hasTag("fluffyalien_energisticscore:machine")) {
-        connections.machines.push(block);
-        connections.machinesSet.add(Vector3Utils.toString(block.location));
+        connections.machines.set(getBlockUniqueId(block), block);
       }
     }
 
@@ -589,7 +578,7 @@ export class MachineNetwork extends DestroyableObject {
     block: Block,
   ): MachineNetwork | undefined {
     const connections = MachineNetwork.discoverConnections(block, ioType);
-    if (!connections.machines.length) {
+    if (!connections.machines.size) {
       return;
     }
 

@@ -32,30 +32,6 @@ export function enableDebugMode(): void {
   logInfo("Debug mode enabled. Reload the world to disable debug mode.");
 
   system.runInterval(() => {
-    const networkDiagnosticInfo: string[] = [];
-    for (const [netId, net] of MachineNetwork.getAll()) {
-      if (net.diagnosticAllocTicks.length < 2) continue;
-
-      const lastAllocInterval =
-        net.diagnosticAllocTicks.at(-1)! - net.diagnosticAllocTicks.at(-2)!;
-
-      let allocIntervalSum = 0;
-      for (let i = 1; i < net.diagnosticAllocTicks.length; i++) {
-        const last = net.diagnosticAllocTicks[i - 1];
-        const current = net.diagnosticAllocTicks[i];
-        const interval = current - last;
-        allocIntervalSum += interval;
-      }
-      const avgAllocInterval = Math.round(
-        allocIntervalSum / (net.diagnosticAllocTicks.length - 1),
-      );
-
-      networkDiagnosticInfo.push(
-        `§sNetwork§r: §p${netId.toString()} §r|§s Last Alloc Interval§r: §p${lastAllocInterval.toString()} §r|§s Avg Alloc Interval §r(${(net.diagnosticAllocTicks.length - 1).toString()}): §p${avgAllocInterval.toString()}`,
-      );
-    }
-    const networkDiagnosticInfoMsg = networkDiagnosticInfo.join("\n");
-
     for (const player of world.getAllPlayers()) {
       if (playersInSetStorageForm.has(player.id)) continue;
 
@@ -64,7 +40,6 @@ export function enableDebugMode(): void {
         equippable.getEquipment(EquipmentSlot.Mainhand)?.typeId !==
         "minecraft:stick"
       ) {
-        player.onScreenDisplay.setActionBar(networkDiagnosticInfoMsg);
         continue;
       }
 
@@ -87,7 +62,12 @@ function showDebugUi(player: Player): void {
     return;
   }
 
-  let info = `§sBlock§r: §p${block.typeId}`;
+  let info = `§sBlock§r: §p${block.typeId}\n§sNetworks§r: ${MachineNetwork.getAllWithBlock(
+    block,
+  )
+    .map((network) => `§p${network.id.toString()} §r(§p${network.ioType.id}§r)`)
+    .join(", ")}`;
+
   let line = "";
 
   for (const storageType of InternalRegisteredStorageType.getAllIdsInternal()) {

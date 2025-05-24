@@ -22,7 +22,6 @@ import {
 import { InternalRegisteredMachine } from "./machine_registry";
 import { InternalRegisteredStorageType } from "./storage_type_registry";
 import { asyncAsGenerator } from "./utils/async_generator";
-import { isDebugModeEnabled } from "./debug_mode";
 
 interface SendQueueItem {
   block: Block;
@@ -55,9 +54,6 @@ export class MachineNetwork extends DestroyableObject {
   private sendQueue: SendQueueItem[] = [];
   private readonly intervalId: number;
 
-  // diagnostic data
-  readonly diagnosticAllocTicks: number[] = [];
-
   /**
    * Unique ID for this network.
    */
@@ -82,15 +78,7 @@ export class MachineNetwork extends DestroyableObject {
 
     this.intervalId = system.runInterval(() => {
       if (this.allocateJobRunning || !this.sendQueue.length) return;
-
       this.allocateJobRunning = true;
-      if (isDebugModeEnabled()) {
-        this.diagnosticAllocTicks.push(system.currentTick);
-        if (this.diagnosticAllocTicks.length > 21) {
-          this.diagnosticAllocTicks.shift();
-        }
-      }
-
       system.runJob(this.allocate());
     }, 5);
   }

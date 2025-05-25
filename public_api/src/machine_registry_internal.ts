@@ -32,48 +32,25 @@ export interface RegisteredMachineData {
 /**
  * @internal
  */
-export interface MangledRecieveHandlerPayload {
-  /**
-   * blockLocation
-   */
-  a: SerializableDimensionLocation;
-  /**
-   * recieveType
-   */
-  b: string;
-  /**
-   * recieveAmount
-   */
-  c: number;
-}
-
-/**
- * @internal
- */
-export interface MangledOnButtonPressedPayload {
-  /**
-   * blockLocation
-   */
-  a: SerializableDimensionLocation;
-  /**
-   * playerId
-   */
-  b: string;
-  /**
-   * entityId
-   */
-  c: string;
-  /**
-   * elementId
-   */
-  d: string;
-}
-
-/**
- * @internal
- */
 export interface IpcMachineCallbackArg {
   blockLocation: SerializableDimensionLocation;
+}
+
+/**
+ * @internal
+ */
+export interface IpcRecieveHandlerPayload extends IpcMachineCallbackArg {
+  recieveType: string;
+  recieveAmount: number;
+}
+
+/**
+ * @internal
+ */
+export interface IpcOnButtonPressedPayload extends IpcMachineCallbackArg {
+  playerId: string;
+  entityId: string;
+  elementId: string;
 }
 
 /**

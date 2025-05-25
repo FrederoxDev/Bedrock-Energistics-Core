@@ -4,30 +4,17 @@ import { SerializableDimensionLocation } from "./serialize_utils.js";
 /**
  * @internal
  */
-export interface MangledNetworkInstanceMethodPayload {
-  /**
-   * networkId
-   */
-  a: number;
+export interface NetworkInstanceMethodPayload {
+  networkId: number;
 }
 
 /**
  * @internal
  */
-export interface MangledNetworkQueueSendPayload
-  extends MangledNetworkInstanceMethodPayload {
-  /**
-   * location
-   */
-  b: SerializableDimensionLocation;
-  /**
-   * type
-   */
-  c: string;
-  /**
-   * amount
-   */
-  d: number;
+export interface NetworkQueueSendPayload extends NetworkInstanceMethodPayload {
+  loc: SerializableDimensionLocation;
+  type: string;
+  amount: number;
 }
 
 /**
@@ -48,46 +35,25 @@ export interface NetworkGetWithPayload extends NetworkEstablishPayload {
 /**
  * @internal
  */
-export interface MangledNetworkGetAllWithPayload {
-  /**
-   * location
-   */
-  a: SerializableDimensionLocation;
-  /**
-   * type
-   */
-  b: NetworkConnectionType;
+export interface NetworkGetAllWithPayload {
+  loc: SerializableDimensionLocation;
+  type: NetworkConnectionType;
 }
 
 /**
  * @internal
  */
-export interface MangledNetworkIsPartOfNetworkPayload
-  extends MangledNetworkInstanceMethodPayload {
-  /**
-   * location
-   */
-  b: SerializableDimensionLocation;
-  /**
-   * type
-   */
-  c: NetworkConnectionType;
+export interface NetworkIsPartOfNetworkPayload
+  extends NetworkInstanceMethodPayload {
+  loc: SerializableDimensionLocation;
+  type: NetworkConnectionType;
 }
 
 /**
  * @internal
  */
-export interface MangledGeneratePayload {
-  /**
-   * location
-   */
-  a: SerializableDimensionLocation;
-  /**
-   * type
-   */
-  b: string;
-  /**
-   * amount
-   */
-  c: number;
+export interface GeneratePayload {
+  loc: SerializableDimensionLocation;
+  type: string;
+  amount: number;
 }

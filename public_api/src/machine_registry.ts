@@ -6,8 +6,8 @@ import {
   IpcMachineOnStorageSetEventArg,
   IpcMachineUpdateUiHandlerArg,
   IpcNetworkStatsEventArg,
-  MangledOnButtonPressedPayload,
-  MangledRecieveHandlerPayload,
+  IpcOnButtonPressedPayload,
+  IpcRecieveHandlerPayload,
   RegisteredMachineData,
 } from "./machine_registry_internal.js";
 import { deserializeDimensionLocation } from "./serialize_utils.js";
@@ -186,12 +186,12 @@ export function registerMachine(definition: MachineDefinition): void {
     const callback = definition.handlers.receive.bind(null);
 
     ipcRouter.registerListener(receiveHandlerEvent, (payload) => {
-      const data = payload as MangledRecieveHandlerPayload;
+      const data = payload as IpcRecieveHandlerPayload;
 
       return callback({
-        blockLocation: deserializeDimensionLocation(data.a),
-        receiveType: data.b,
-        receiveAmount: data.c,
+        blockLocation: deserializeDimensionLocation(data.blockLocation),
+        receiveType: data.recieveType,
+        receiveAmount: data.recieveAmount,
       });
     });
   }
@@ -206,12 +206,12 @@ export function registerMachine(definition: MachineDefinition): void {
     const callback = definition.events.onButtonPressed.bind(null);
 
     ipcRouter.registerListener(onButtonPressedEvent, (payload) => {
-      const data = payload as MangledOnButtonPressedPayload;
+      const data = payload as IpcOnButtonPressedPayload;
       void callback({
-        blockLocation: deserializeDimensionLocation(data.a),
-        playerId: data.b,
-        entityId: data.c,
-        elementId: data.d,
+        blockLocation: deserializeDimensionLocation(data.blockLocation),
+        playerId: data.playerId,
+        entityId: data.entityId,
+        elementId: data.elementId,
       });
       return null;
     });

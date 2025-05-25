@@ -1,5 +1,5 @@
 import { Block, BlockPermutation, DimensionLocation } from "@minecraft/server";
-import { MangledGeneratePayload } from "./network_internal.js";
+import { GeneratePayload } from "./network_internal.js";
 import { makeSerializableDimensionLocation } from "./serialize_utils.js";
 import { ipcSend } from "./ipc_wrapper.js";
 import { BecIpcListener } from "./bec_ipc_listener.js";
@@ -45,10 +45,10 @@ export function generate(
   type: string,
   amount: number,
 ): void {
-  const payload: MangledGeneratePayload = {
-    a: makeSerializableDimensionLocation(blockLocation),
-    b: type,
-    c: amount,
+  const payload: GeneratePayload = {
+    loc: makeSerializableDimensionLocation(blockLocation),
+    type,
+    amount,
   };
 
   ipcSend(BecIpcListener.Generate, payload);

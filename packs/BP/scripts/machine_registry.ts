@@ -11,8 +11,8 @@ import {
   IpcMachineOnStorageSetEventArg,
   IpcMachineUpdateUiHandlerArg,
   IpcNetworkStatsEventArg,
-  MangledOnButtonPressedPayload,
-  MangledRecieveHandlerPayload,
+  IpcOnButtonPressedPayload,
+  IpcRecieveHandlerPayload,
   RegisteredMachineData,
 } from "@/public_api/src/machine_registry_internal";
 import { makeSerializableDimensionLocation } from "@/public_api/src/serialize_utils";
@@ -60,10 +60,10 @@ export class InternalRegisteredMachine extends RegisteredMachine {
       raise("Trying to call the 'recieve' handler but it is not defined.");
     }
 
-    const payload: MangledRecieveHandlerPayload = {
-      a: makeSerializableDimensionLocation(blockLocation),
-      b: recieveType,
-      c: recieveAmount,
+    const payload: IpcRecieveHandlerPayload = {
+      blockLocation: makeSerializableDimensionLocation(blockLocation),
+      recieveType,
+      recieveAmount,
     };
 
     return ipcInvoke(
@@ -101,11 +101,11 @@ export class InternalRegisteredMachine extends RegisteredMachine {
       );
     }
 
-    const payload: MangledOnButtonPressedPayload = {
-      a: makeSerializableDimensionLocation(blockLocation),
-      b: playerId,
-      c: entityId,
-      d: buttonElementId,
+    const payload: IpcOnButtonPressedPayload = {
+      blockLocation: makeSerializableDimensionLocation(blockLocation),
+      playerId,
+      entityId,
+      elementId: buttonElementId,
     };
 
     ipcSend(this.data.onButtonPressedEvent, payload);

@@ -1,9 +1,9 @@
 import { Block, DimensionLocation } from "@minecraft/server";
 import {
-  MangledNetworkGetAllWithPayload,
-  MangledNetworkInstanceMethodPayload,
-  MangledNetworkIsPartOfNetworkPayload,
-  MangledNetworkQueueSendPayload,
+  NetworkGetAllWithPayload,
+  NetworkInstanceMethodPayload,
+  NetworkIsPartOfNetworkPayload,
+  NetworkQueueSendPayload,
   NetworkEstablishPayload,
   NetworkGetWithPayload,
 } from "./network_internal.js";
@@ -38,8 +38,8 @@ export class MachineNetwork {
    * @beta
    */
   destroy(): void {
-    const payload: MangledNetworkInstanceMethodPayload = {
-      a: this.id,
+    const payload: NetworkInstanceMethodPayload = {
+      networkId: this.id,
     };
 
     ipcSend(BecIpcListener.DestroyNetwork, payload);
@@ -53,10 +53,10 @@ export class MachineNetwork {
     location: DimensionLocation,
     type: NetworkConnectionType,
   ): Promise<boolean> {
-    const payload: MangledNetworkIsPartOfNetworkPayload = {
-      a: this.id,
-      b: makeSerializableDimensionLocation(location),
-      c: type,
+    const payload: NetworkIsPartOfNetworkPayload = {
+      networkId: this.id,
+      loc: makeSerializableDimensionLocation(location),
+      type,
     };
 
     return ipcInvoke(
@@ -91,11 +91,11 @@ export class MachineNetwork {
     type: string,
     amount: number,
   ): void {
-    const payload: MangledNetworkQueueSendPayload = {
-      a: this.id,
-      b: makeSerializableDimensionLocation(blockLocation),
-      c: type,
-      d: amount,
+    const payload: NetworkQueueSendPayload = {
+      networkId: this.id,
+      loc: makeSerializableDimensionLocation(blockLocation),
+      type,
+      amount,
     };
 
     ipcSend(BecIpcListener.NetworkQueueSend, payload);
@@ -171,9 +171,9 @@ export class MachineNetwork {
     location: DimensionLocation,
     type: NetworkConnectionType,
   ): Promise<MachineNetwork[]> {
-    const payload: MangledNetworkGetAllWithPayload = {
-      a: makeSerializableDimensionLocation(location),
-      b: type,
+    const payload: NetworkGetAllWithPayload = {
+      loc: makeSerializableDimensionLocation(location),
+      type,
     };
 
     const ids = (await ipcInvoke(

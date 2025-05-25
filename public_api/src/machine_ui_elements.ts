@@ -10,14 +10,23 @@ export class MachineUiElements
   constructor(private readonly elements: Record<string, UiElementDefinition>) {}
 
   /**
+   * Test if a UI element with the given ID exists.
+   * @beta
+   * @returns A boolean indicating whether the UI element with the specified ID exists.
+   */
+  has(id: string): boolean {
+    return Object.hasOwn(this.elements, id);
+  }
+
+  /**
    * Gets a UI element by its ID.
    * @beta
    * @param id The ID of the UI element to get.
    * @returns A deep copy of the UI element with the specified ID, or `undefined` if it doesn't exist.
    */
   get(id: string): UiElementDefinition | undefined {
-    const element = this.elements[id] as UiElementDefinition | undefined;
-    if (!element) return;
+    if (!this.has(id)) return;
+    const element = this.elements[id];
 
     // deep copy the object to prevent mutation of the local cache
     return JSON.parse(JSON.stringify(element)) as UiElementDefinition;

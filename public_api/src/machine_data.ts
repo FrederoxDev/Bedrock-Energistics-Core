@@ -96,16 +96,16 @@ export async function setMachineStorage(
  * Gets an item from a machine inventory.
  * @beta
  * @param loc The location of the machine.
- * @param slotId The number ID of the slot as defined when the machine was registered (see {@link UiItemSlotElementDefinition}).
+ * @param elementId The ID of the item slot element.
  * @returns The {@link MachineItemStack} or `undefined` if there is no item in the specified slot.
  */
 export async function getMachineSlotItem(
   loc: DimensionLocation,
-  slotId: number,
+  elementId: string,
 ): Promise<MachineItemStack | undefined> {
   const payload: GetMachineSlotPayload = {
     loc: makeSerializableDimensionLocation(loc),
-    slot: slotId,
+    slot: elementId,
   };
 
   const data = (await ipcInvoke(BecIpcListener.GetMachineSlot, payload)) as
@@ -119,17 +119,17 @@ export async function getMachineSlotItem(
  * Sets an item in a machine inventory.
  * @beta
  * @param loc The location of the machine.
- * @param slotId The number ID of the slot as defined when the machine was registered (see {@link UiItemSlotElementDefinition}).
+ * @param elementId The ID of the item slot element.
  * @param newItemStack The {@link MachineItemStack} to put in the slot. Pass `undefined` to remove the item in the slot.
  */
 export function setMachineSlotItem(
   loc: DimensionLocation,
-  slotId: number,
+  elementId: string,
   newItemStack?: MachineItemStack,
 ): void {
   const payload: SetMachineSlotPayload = {
     loc: makeSerializableDimensionLocation(loc),
-    slot: slotId,
+    slot: elementId,
     item: newItemStack ? serializeMachineItemStack(newItemStack) : undefined,
   };
 

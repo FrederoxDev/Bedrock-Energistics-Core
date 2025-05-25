@@ -10,7 +10,7 @@ import { SerializableDimensionLocation } from "./serialize_utils.js";
  */
 export interface GetMachineSlotPayload {
   loc: SerializableDimensionLocation;
-  slot: number;
+  slot: string;
 }
 
 /**

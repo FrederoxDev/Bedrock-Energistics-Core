@@ -74,18 +74,24 @@ export function setMachineStorage(
 
 export function getMachineSlotItemRaw(
   loc: DimensionLocation,
-  slot: number,
+  slotId: string,
 ): string | undefined {
-  return getBlockDynamicProperty(loc, `item${slot.toString()}`) as
-    | string
-    | undefined;
+  return getBlockDynamicProperty(loc, `item${slotId}`) as string | undefined;
 }
 
 export function getMachineSlotItem(
-  loc: DimensionLocation,
-  slot: number,
+  block: Block,
+  slotId: string,
 ): MachineItemStack | undefined {
-  const data = getMachineSlotItemRaw(loc, slot);
+  const registered = InternalRegisteredMachine.forceGetInternal(block.typeId);
+  const element = registered.uiElements?.get(slotId);
+  if (element?.type !== "itemSlot") {
+    raise(
+      `Failed to get machine slot item. The element '${slotId}' for machine '${block.typeId}' is of type '${element?.type ?? "undefined"}', expected 'itemSlot'.`,
+    );
+  }
+
+  const data = getMachineSlotItemRaw(block, slotId);
   if (data === undefined) {
     return;
   }
@@ -94,30 +100,49 @@ export function getMachineSlotItem(
 }
 
 export function setMachineSlotItem(
-  loc: DimensionLocation,
-  slot: number,
+  block: Block,
+  slotId: string,
   newItemStack?: MachineItemStack,
   setChanged = true,
 ): void {
-  const uid = getBlockUniqueId(loc);
-  const propertyId = `item${slot.toString()}`;
+  const registered = InternalRegisteredMachine.forceGetInternal(block.typeId);
+
+  const element = registered.uiElements?.get(slotId);
+  if (element?.type !== "itemSlot") {
+    raise(
+      `Failed to set machine slot item. The element '${slotId}' for machine '${block.typeId}' is of type '${element?.type ?? "undefined"}', expected 'itemSlot'.`,
+    );
+  }
+
+  if (
+    newItemStack &&
+    element.allowedItems &&
+    !element.allowedItems.includes(newItemStack.typeId)
+  ) {
+    raise(
+      `Failed to set machine slot item. The item '${newItemStack.typeId}' is not allowed in slot '${slotId}' of machine '${block.typeId}'.`,
+    );
+  }
+
+  const uid = getBlockUniqueId(block);
+  const propertyId = `item${slotId}`;
 
   if (setChanged) {
     const existingChangedItemSlotsArr = machineChangedItemSlots.get(uid);
     if (existingChangedItemSlotsArr) {
-      existingChangedItemSlotsArr.push(slot);
+      existingChangedItemSlotsArr.push(slotId);
     } else {
-      machineChangedItemSlots.set(uid, [slot]);
+      machineChangedItemSlots.set(uid, [slotId]);
     }
   }
 
   if (!newItemStack || newItemStack.amount <= 0) {
-    setBlockDynamicProperty(loc, propertyId);
+    setBlockDynamicProperty(block, propertyId);
     return;
   }
 
   setBlockDynamicProperty(
-    loc,
+    block,
     propertyId,
     serializeMachineItemStack(newItemStack),
   );

@@ -11,6 +11,8 @@ import {
 import { InternalRegisteredMachine } from "./machine_registry";
 import { removeMachine } from "./machine";
 import { deserializeMachineItemStack } from "@/public_api/src/serialize_machine_item_stack";
+import { raise } from "./utils/log";
+import { Vector3Utils } from "@minecraft/math";
 
 export function getMachineSlotListener(
   payload: ipc.SerializableValue,
@@ -24,11 +26,20 @@ export function getMachineSlotListener(
 
 export function setMachineSlotListener(payload: ipc.SerializableValue): null {
   const data = payload as SetMachineSlotPayload;
+  const loc = deserializeDimensionLocation(data.loc);
+  const block = loc.dimension.getBlock(loc);
+  if (!block) {
+    raise(
+      `Failed to set machine slot item. Block not found at ${Vector3Utils.toString(loc)} in '${loc.dimension.id}'.`,
+    );
+  }
+
   setMachineSlotItem(
-    deserializeDimensionLocation(data.loc),
+    block,
     data.slot,
     data.item ? deserializeMachineItemStack(data.item) : undefined,
   );
+
   return null;
 }
 
@@ -38,7 +49,9 @@ export function removeMachineListener(payload: ipc.SerializableValue): null {
   const loc = deserializeDimensionLocation(data);
   const block = loc.dimension.getBlock(loc);
   if (!block) {
-    throw new Error(`Expected a block at '${JSON.stringify(data)}'.`);
+    raise(
+      `Expected a block at ${Vector3Utils.toString(loc)} in '${loc.dimension.id}'.`,
+    );
   }
 
   const def = InternalRegisteredMachine.forceGetInternal(block.typeId);

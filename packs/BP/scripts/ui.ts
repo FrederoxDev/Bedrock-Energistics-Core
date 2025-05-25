@@ -8,6 +8,7 @@ import {
   UiStorageBarElementUpdateOptions,
 } from "@/public_api/src";
 import {
+  Block,
   Container,
   DimensionLocation,
   Entity,
@@ -62,7 +63,7 @@ const playersInUi = new Map<Entity, Player>();
  * key = block uid (see getBlockUniqueId)
  * value = array of slot IDs that have changed
  */
-export const machineChangedItemSlots = new Map<string, number[]>();
+export const machineChangedItemSlots = new Map<string, string[]>();
 
 function isUiItem(item: ItemStack): boolean {
   return item.hasTag("fluffyalien_energisticscore:ui_item");
@@ -177,16 +178,17 @@ function handleBarItems(
 }
 
 function handleItemSlot(
-  loc: DimensionLocation,
+  block: Block,
   inventory: Container,
+  elementId: string,
   element: UiItemSlotElementDefinition,
   player: Player,
   init: boolean,
 ): void {
-  const expectedMachineItem = getMachineSlotItem(loc, element.slotId);
+  const expectedMachineItem = getMachineSlotItem(block, elementId);
 
-  const changedSlots = machineChangedItemSlots.get(getBlockUniqueId(loc));
-  const slotChanged = changedSlots?.includes(element.slotId);
+  const changedSlots = machineChangedItemSlots.get(getBlockUniqueId(block));
+  const slotChanged = changedSlots?.includes(elementId);
 
   const containerSlot = inventory.getSlot(element.index);
 
@@ -199,7 +201,7 @@ function handleItemSlot(
 
   if (!containerSlot.hasItem()) {
     clearUiItemsFromPlayer(player);
-    setMachineSlotItem(loc, element.slotId, undefined, false);
+    setMachineSlotItem(block, elementId, undefined, false);
     containerSlot.setItem(optionalMachineItemStackToItemStack());
     return;
   }
@@ -215,8 +217,8 @@ function handleItemSlot(
   ) {
     if (containerSlot.amount !== expectedMachineItem.amount) {
       setMachineSlotItem(
-        loc,
-        element.slotId,
+        block,
+        elementId,
         expectedMachineItem.withAmount(containerSlot.amount),
         false,
       );
@@ -230,7 +232,7 @@ function handleItemSlot(
   const isAllowed =
     element.allowedItems?.includes(containerSlot.typeId) ?? true;
   if (!isAllowed) {
-    setMachineSlotItem(loc, element.slotId, undefined, false);
+    setMachineSlotItem(block, elementId, undefined, false);
     player.dimension.spawnItem(containerSlot.getItem()!, player.location);
     containerSlot.setItem(optionalMachineItemStackToItemStack());
     return;
@@ -239,7 +241,7 @@ function handleItemSlot(
   if (isUiItem(containerSlotItemStack)) {
     return;
   }
-  setMachineSlotItem(loc, element.slotId, containerSlotMachineItemStack, false);
+  setMachineSlotItem(block, elementId, containerSlotMachineItemStack, false);
 }
 
 function handleProgressIndicator(
@@ -366,19 +368,19 @@ async function updateEntityUi(
 ): Promise<void> {
   if (!definition.uiElements) {
     raise(
-      `Trying to update UI for entity '${entity.typeId}' (machine: '${definition.id}') but it does not have 'description.ui' defined.`,
+      `Failed to update UI for entity '${entity.typeId}' (machine: '${definition.id}'). It does not have 'description.ui' defined.`,
     );
   }
 
-  const dimensionLocation = {
-    x: Math.floor(entity.location.x),
-    y: Math.floor(entity.location.y),
-    z: Math.floor(entity.location.z),
-    dimension: entity.dimension,
-  };
+  const block = entity.dimension.getBlock(entity.location);
+  if (block?.typeId !== definition.id) {
+    raise(
+      `Failed to update UI for entity '${entity.typeId}' (machine: '${definition.id}'). The machine block does not exist or is not the expected block type.`,
+    );
+  }
 
   const updateUiResult = definition.hasCallback("updateUi")
-    ? await definition.invokeUpdateUiHandler(dimensionLocation, entity.id)
+    ? await definition.invokeUpdateUiHandler(block, entity.id)
     : null;
 
   // ensure the entity is still valid after invoking updateUi
@@ -392,9 +394,7 @@ async function updateEntityUi(
 
   const inventory = entity.getComponent("inventory")!.container!;
 
-  for (const id of definition.uiElements.getIds()) {
-    const options = definition.uiElements.get(id)!;
-
+  for (const [id, options] of definition.uiElements) {
     switch (options.type) {
       case "storageBar": {
         const updateOptions = storageBars[id] as
@@ -402,7 +402,7 @@ async function updateEntityUi(
           | undefined;
 
         handleBarItems(
-          dimensionLocation,
+          block,
           inventory,
           options.startIndex,
           player,
@@ -413,7 +413,7 @@ async function updateEntityUi(
         break;
       }
       case "itemSlot":
-        handleItemSlot(dimensionLocation, inventory, options, player, init);
+        handleItemSlot(block, inventory, id, options, player, init);
         break;
       case "progressIndicator":
         handleProgressIndicator(
@@ -437,7 +437,7 @@ async function updateEntityUi(
         handleButton(
           inventory,
           definition,
-          dimensionLocation,
+          block,
           id,
           options.index,
           entity,

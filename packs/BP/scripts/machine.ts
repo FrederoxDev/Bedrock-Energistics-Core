@@ -86,10 +86,10 @@ export function dropItemsStoredInMachine(
     return;
   }
 
-  for (const element of definition.uiElements) {
+  for (const [elementId, element] of definition.uiElements) {
     if (element.type !== "itemSlot") continue;
 
-    const item = getMachineSlotItem(blockLocation, element.slotId);
+    const item = getMachineSlotItem(blockLocation, elementId);
     if (item) {
       blockLocation.dimension.spawnItem(
         optionalMachineItemStackToItemStack(item),

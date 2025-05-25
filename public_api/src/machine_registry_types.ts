@@ -46,7 +46,6 @@ export interface UiStorageBarElementDefinition {
 export interface UiItemSlotElementDefinition {
   type: "itemSlot";
   index: number;
-  slotId: number;
   /**
    * Only allow specific items in this slot.
    * @beta

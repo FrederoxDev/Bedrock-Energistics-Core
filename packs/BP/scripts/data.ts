@@ -79,6 +79,18 @@ export function getMachineSlotItemRaw(
   return getBlockDynamicProperty(loc, `item${slotId}`) as string | undefined;
 }
 
+export function getMachineSlotItemUnsafe(
+  loc: DimensionLocation,
+  slotId: string,
+): MachineItemStack | undefined {
+  const data = getMachineSlotItemRaw(loc, slotId);
+  if (data === undefined) {
+    return;
+  }
+
+  return deserializeMachineItemStack(data);
+}
+
 export function getMachineSlotItem(
   block: Block,
   slotId: string,
@@ -91,12 +103,7 @@ export function getMachineSlotItem(
     );
   }
 
-  const data = getMachineSlotItemRaw(block, slotId);
-  if (data === undefined) {
-    return;
-  }
-
-  return deserializeMachineItemStack(data);
+  return getMachineSlotItemUnsafe(block, slotId);
 }
 
 export function setMachineSlotItem(

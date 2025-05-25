@@ -7,7 +7,7 @@ import {
   world,
 } from "@minecraft/server";
 import {
-  getMachineSlotItem,
+  getMachineSlotItemUnsafe,
   optionalMachineItemStackToItemStack,
   removeBlockFromScoreboards,
 } from "./data";
@@ -89,7 +89,7 @@ export function dropItemsStoredInMachine(
   for (const [elementId, element] of definition.uiElements) {
     if (element.type !== "itemSlot") continue;
 
-    const item = getMachineSlotItem(blockLocation, elementId);
+    const item = getMachineSlotItemUnsafe(blockLocation, elementId);
     if (item) {
       blockLocation.dimension.spawnItem(
         optionalMachineItemStackToItemStack(item),

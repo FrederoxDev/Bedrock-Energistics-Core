@@ -21,7 +21,7 @@ children:
 ## Index
 
 - [Conduits](conduits.md)
-- [Debug Mode](debug.md)
+- [Debugging](debug.md)
 - [Getting Started](getting-started.md)
 - [Item Machines](item-machines.md)
 - [Machine I/O](machine-io.md)

@@ -24,7 +24,7 @@ system.afterEvents.scriptEventReceive.subscribe(
 
         enableDebugMode();
         break;
-      case "fluffyalien_energisticscore:debug.get_networks": {
+      case "fluffyalien_energisticscore:debug.print_networks": {
         const networks = MachineNetwork.getAll();
         const lines = [];
         for (const [networkId, network] of networks) {

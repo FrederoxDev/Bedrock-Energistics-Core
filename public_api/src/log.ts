@@ -1,8 +1,18 @@
 import { VERSION } from "./constants.js";
-import { tryGetIpcRouter } from "./init.js";
+import { __GET_INIT_BEC_VER__, tryGetIpcRouter } from "./init.js";
 
 function makeLogString(logLevel: string, message: string): string {
-  return `[Bedrock Energistics Core API v${VERSION}] (${tryGetIpcRouter()?.uid ?? "uninitialized"}) ${logLevel} ${message}`;
+  let namespace: string;
+
+  const ipcRouter = tryGetIpcRouter();
+  if (ipcRouter) {
+    namespace = ipcRouter.uid;
+  } else {
+    const initBecVer = __GET_INIT_BEC_VER__();
+    namespace = initBecVer ? `<internal v${initBecVer}>` : "<uninitialized>";
+  }
+
+  return `[Bedrock Energistics Core API v${VERSION}] (${namespace}) ${logLevel} ${message}`;
 }
 
 /**

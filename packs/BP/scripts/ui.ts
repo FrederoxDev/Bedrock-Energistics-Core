@@ -117,12 +117,12 @@ function fillUiBar(
   amount: number,
   startIndex: number,
   maxStorage: number,
+  size: number,
   label?: string,
 ): void {
-  // there are 4 items, each item has 16 segments, so divide by 64
-  let remainingSegments = Math.floor(amount / (maxStorage / 64));
+  let remainingSegments = Math.floor(amount / (maxStorage / (size * 16)));
 
-  for (let i = startIndex + 3; i >= startIndex; i--) {
+  for (let i = startIndex + (size - 1); i >= startIndex; i--) {
     const segments = Math.min(16, remainingSegments);
     remainingSegments -= segments;
 
@@ -161,12 +161,13 @@ function handleBarItems(
   inventory: Container,
   startIndex: number,
   player: Player,
+  size = 4,
   maxStorage: number,
   type = "_disabled",
   label?: string,
   textureOverride?: StorageTypeTextureDescription | StorageTypeTexturePreset,
 ): void {
-  for (let i = startIndex; i < startIndex + 4; i++) {
+  for (let i = startIndex; i < startIndex + size; i++) {
     const inventoryItem = inventory.getItem(i);
     if (inventoryItem?.hasTag("fluffyalien_energisticscore:ui_item")) {
       continue;
@@ -204,6 +205,7 @@ function handleBarItems(
     getMachineStorage(location, type),
     startIndex,
     maxStorage,
+    size,
     label,
   );
 }
@@ -437,6 +439,7 @@ async function updateEntityUi(
           inventory,
           options.startIndex,
           player,
+          options.size,
           updateOptions?.max ?? options.defaults?.max ?? definition.maxStorage,
           updateOptions?.type ?? options.defaults?.type,
           updateOptions?.label ?? options.defaults?.label,

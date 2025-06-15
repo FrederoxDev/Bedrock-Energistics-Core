@@ -40,6 +40,11 @@ export interface UiStorageBarElementUpdateOptions {
 export interface UiStorageBarElementDefinition {
   type: "storageBar";
   startIndex: number;
+  /**
+   * The amount of item slots to use.
+   * @default 4
+   */
+  size?: number;
   defaults?: UiStorageBarElementUpdateOptions;
 }
 

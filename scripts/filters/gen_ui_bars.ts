@@ -70,10 +70,13 @@ async function makeStorageBar(
     const texturePath = `textures/fluffyalien/energisticscore/${shortId}`;
     itemTexture.texture_data[itemId] = { textures: texturePath };
 
-    const img = new imgManip.Image(16, 16);
+    const img = offImg.clone();
 
-    for (let i = 0; i < 16; i++) {
-      img.composite(i < poweredCount ? onImg : offImg, 0, 15 - i);
+    if (poweredCount > 0) {
+      const compositeImg = onImg.clone();
+      compositeImg.crop(0, 16 - poweredCount, 16, poweredCount);
+
+      img.composite(compositeImg, 0, 16 - poweredCount);
     }
 
     fs.writeFileSync(

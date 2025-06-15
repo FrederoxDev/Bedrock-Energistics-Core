@@ -1,5 +1,9 @@
 import { DimensionLocation } from "@minecraft/server";
 import { BaseIpcCallback } from "./common_registry_types.js";
+import {
+  StorageTypeTextureDescription,
+  StorageTypeTexturePreset,
+} from "./storage_type_registry_types.js";
 
 // ui
 
@@ -20,6 +24,10 @@ export interface UiStorageBarElementUpdateOptions {
    * The max amount to display on this on storage bar. Defaults to {@link MachineDefinitionDescription.maxStorage}
    */
   max?: number;
+  /**
+   * Use this property to override the {@link StorageTypeDefinition.texture} for this machine.
+   */
+  textureOverride?: StorageTypeTextureDescription | StorageTypeTexturePreset;
 }
 
 /**

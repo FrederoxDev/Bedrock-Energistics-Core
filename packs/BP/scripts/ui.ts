@@ -1,5 +1,6 @@
 import {
   MachineItemStack,
+  StorageTypeTextureDescription,
   StorageTypeTexturePreset,
   UiButtonElementUpdateOptions,
   UiItemSlotElementDefinition,
@@ -146,9 +147,10 @@ function fillUiBar(
       );
     }
 
+    const formattingCodes = "§r§" + labelColorCode.split("").join("§");
     itemStack.nameTag =
-      label ??
-      `§r§${labelColorCode.replaceAll(" ", "§")}${amount.toString()}/${maxStorage.toString()} ${name}`;
+      formattingCodes +
+      (label ?? `${amount.toString()}/${maxStorage.toString()} ${name}`);
 
     inventory.setItem(i, itemStack);
   }
@@ -162,6 +164,7 @@ function handleBarItems(
   maxStorage: number,
   type = "_disabled",
   label?: string,
+  textureOverride?: StorageTypeTextureDescription | StorageTypeTexturePreset,
 ): void {
   for (let i = startIndex; i < startIndex + 4; i++) {
     const inventoryItem = inventory.getItem(i);
@@ -186,15 +189,16 @@ function handleBarItems(
   const storageTypeOptions =
     InternalRegisteredStorageType.forceGetInternal(type);
 
-  const usesCustomTexture = typeof storageTypeOptions.texture === "object";
+  const texture = textureOverride ?? storageTypeOptions.texture;
+  const usesCustomTexture = typeof texture === "object";
 
   fillUiBar(
     usesCustomTexture
-      ? storageTypeOptions.texture.baseId
-      : `fluffyalien_energisticscore:ui_storage_bar_segment_${storageTypeOptions.texture}`,
+      ? texture.baseId
+      : `fluffyalien_energisticscore:ui_storage_bar_segment_${texture}`,
     usesCustomTexture
-      ? (storageTypeOptions.texture.formattingCode ?? "f")
-      : STORAGE_TYPE_COLOR_TO_FORMATTING_CODE[storageTypeOptions.texture],
+      ? (texture.formattingCode ?? "f")
+      : STORAGE_TYPE_COLOR_TO_FORMATTING_CODE[texture],
     storageTypeOptions.name,
     inventory,
     getMachineStorage(location, type),
@@ -436,6 +440,7 @@ async function updateEntityUi(
           updateOptions?.max ?? options.defaults?.max ?? definition.maxStorage,
           updateOptions?.type ?? options.defaults?.type,
           updateOptions?.label ?? options.defaults?.label,
+          updateOptions?.textureOverride ?? options.defaults?.textureOverride,
         );
         break;
       }

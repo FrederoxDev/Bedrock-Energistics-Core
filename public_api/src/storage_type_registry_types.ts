@@ -11,7 +11,9 @@ export interface StorageTypeTextureDescription {
    */
   baseId: string;
   /**
-   * Formatting code to prefix the label. ONLY include the formatting code, not the '§'. To use multiple formatting codes, separate with spaces.
+   * Formatting code to prefix the label. ONLY include the formatting code, NOT the '§'. Multiple formatting codes can be used.
+   * @remarks
+   * To use multiple formatting codes, string them together with no separator. For example, "lc" will make the label bold (l) and red (c).
    * @beta
    */
   formattingCode?: string;

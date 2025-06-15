@@ -23,7 +23,7 @@
   },
   "devDependencies": {
     "@minecraft/server": "1.18.0",
-    "@minecraft/vanilla-data": "1.21.70"
+    "@minecraft/vanilla-data": ">=1.21.70"
   },
   "peerDependencies": {
     "@minecraft/server": "^1.18.0",

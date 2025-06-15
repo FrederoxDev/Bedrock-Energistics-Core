@@ -1,6 +1,6 @@
 import {
   MachineItemStack,
-  StorageTypeColor,
+  StorageTypeTexturePreset,
   UiButtonElementUpdateOptions,
   UiItemSlotElementDefinition,
   UiProgressIndicatorElementDefinition,
@@ -40,18 +40,20 @@ export const PROGRESS_INDICATOR_PRESET_MAX_VALUES: Record<
   flame: 13,
 };
 
-const STORAGE_TYPE_COLOR_TO_FORMATTING_CODE: Record<StorageTypeColor, string> =
-  {
-    black: "8",
-    orange: "6",
-    pink: "d",
-    purple: "u",
-    red: "4",
-    yellow: "e",
-    blue: "9",
-    white: "f",
-    green: "2",
-  };
+const STORAGE_TYPE_COLOR_TO_FORMATTING_CODE: Record<
+  StorageTypeTexturePreset,
+  string
+> = {
+  black: "8",
+  orange: "6",
+  pink: "d",
+  purple: "u",
+  red: "4",
+  yellow: "e",
+  blue: "9",
+  white: "f",
+  green: "2",
+};
 
 /**
  * key = machine entity
@@ -123,11 +125,30 @@ function fillUiBar(
     const segments = Math.min(16, remainingSegments);
     remainingSegments -= segments;
 
-    const itemStack = new ItemStack(segmentItemBaseId + segments.toString());
+    const segmentId = segmentItemBaseId + segments.toString();
+
+    let itemStack =
+      tryCreateItemStack(
+        segmentId,
+        undefined,
+        `Failed to create storage bar segment element (Item ID: '${segmentId}')`,
+      ) ??
+      new ItemStack(
+        "fluffyalien_energisticscore:ui_disabled_storage_bar_segment",
+      );
+
+    if (!itemStack.hasTag("fluffyalien_energisticscore:ui_item")) {
+      logWarn(
+        `Failed to create storage bar segment element. The item '${segmentId}' does not have the 'fluffyalien_energisticscore:ui_item' tag.`,
+      );
+      itemStack = new ItemStack(
+        "fluffyalien_energisticscore:ui_disabled_storage_bar_segment",
+      );
+    }
 
     itemStack.nameTag =
       label ??
-      `§r§${labelColorCode}${amount.toString()}/${maxStorage.toString()} ${name}`;
+      `§r§${labelColorCode.replaceAll(" ", "§")}${amount.toString()}/${maxStorage.toString()} ${name}`;
 
     inventory.setItem(i, itemStack);
   }
@@ -165,9 +186,15 @@ function handleBarItems(
   const storageTypeOptions =
     InternalRegisteredStorageType.forceGetInternal(type);
 
+  const usesCustomTexture = typeof storageTypeOptions.texture === "object";
+
   fillUiBar(
-    `fluffyalien_energisticscore:ui_storage_bar_segment_${storageTypeOptions.color}`,
-    STORAGE_TYPE_COLOR_TO_FORMATTING_CODE[storageTypeOptions.color],
+    usesCustomTexture
+      ? storageTypeOptions.texture.baseId
+      : `fluffyalien_energisticscore:ui_storage_bar_segment_${storageTypeOptions.texture}`,
+    usesCustomTexture
+      ? (storageTypeOptions.texture.formattingCode ?? "f")
+      : STORAGE_TYPE_COLOR_TO_FORMATTING_CODE[storageTypeOptions.texture],
     storageTypeOptions.name,
     inventory,
     getMachineStorage(location, type),

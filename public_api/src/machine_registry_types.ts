@@ -63,7 +63,7 @@ export type UiProgressIndicatorPreset = "arrow" | "flame";
  * A progress indicator description for the {@link UiProgressIndicatorElementDefinition} element definition.
  * @beta
  */
-export interface UiProgressIndicator {
+export interface UiProgressIndicatorDescription {
   /**
    * An array of item IDs to use as frames for the progress indicator.
    * @beta
@@ -79,7 +79,7 @@ export interface UiProgressIndicator {
  */
 export interface UiProgressIndicatorElementDefinition {
   type: "progressIndicator";
-  indicator: UiProgressIndicator | UiProgressIndicatorPreset;
+  indicator: UiProgressIndicatorDescription | UiProgressIndicatorPreset;
   index: number;
 }
 

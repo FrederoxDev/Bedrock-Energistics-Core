@@ -3,7 +3,8 @@ import { ipcInvoke, ipcSend } from "./ipc_wrapper.js";
 import { raise } from "./log.js";
 import { isRegistrationAllowed } from "./registration_allowed.js";
 import {
-  StorageTypeColor,
+  StorageTypeTextureDescription,
+  StorageTypeTexturePreset,
   StorageTypeDefinition,
 } from "./storage_type_registry_types.js";
 
@@ -52,11 +53,11 @@ export class RegisteredStorageType implements StorageTypeData {
   }
 
   /**
-   * @returns The {@link StorageTypeColor} of this storage type.
+   * @returns The texture preset or description of this storage type.
    * @beta
    */
-  get color(): StorageTypeColor {
-    return this.definition.color;
+  get texture(): StorageTypeTextureDescription | StorageTypeTexturePreset {
+    return this.definition.texture;
   }
 
   /**
@@ -144,7 +145,7 @@ export function registerStorageType(definition: StorageTypeDefinition): void {
   const payload: StorageTypeDefinition = {
     id: definition.id,
     category: definition.category,
-    color: definition.color,
+    texture: definition.texture,
     name: definition.name,
   };
 

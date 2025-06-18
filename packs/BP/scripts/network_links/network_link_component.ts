@@ -12,7 +12,7 @@ export const networkLinkComponent: BlockCustomComponent = {
     MachineNetwork.updateAdjacent(ev.block);
   },
 
-  onPlayerDestroy(ev) {
+  onPlayerBreak(ev) {
     const linkNode = InternalNetworkLinkNode.tryGetAt(
       ev.dimension,
       ev.block.location,

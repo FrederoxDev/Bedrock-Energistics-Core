@@ -46,7 +46,7 @@ export function setMachineStorage(
   // There is a similar function to this in the public API.
   // Make sure changes are reflected in both.
 
-  if (!block.isValid()) {
+  if (!block.isValid) {
     raise("Failed to set machine storage. The block is invalid.");
   }
 

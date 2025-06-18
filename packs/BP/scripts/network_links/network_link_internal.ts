@@ -105,7 +105,7 @@ export class InternalNetworkLinkNode {
   }
 
   public isValid(): boolean {
-    return this.entity.isValid();
+    return this.entity.isValid;
   }
 
   private selfRemoveConnection(location: Vector3): void {
@@ -128,6 +128,6 @@ export class InternalNetworkLinkNode {
   }
 
   private ensureValid(): void {
-    if (!this.entity.isValid()) raise(`NetworkLinkNode instance is not valid.`);
+    if (!this.entity.isValid) raise(`NetworkLinkNode instance is not valid.`);
   }
 }

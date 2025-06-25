@@ -512,7 +512,7 @@ world.afterEvents.playerInteractWithEntity.subscribe((e) => {
 });
 
 world.afterEvents.entitySpawn.subscribe((e) => {
-  if (e.entity.typeId !== "minecraft:item") return;
+  if (e.entity.typeId !== "minecraft:item" || !e.entity.isValid()) return;
 
   const itemStack = e.entity.getComponent("item")!.itemStack;
 

@@ -1,5 +1,5 @@
 import { Block, Dimension, DimensionLocation, system } from "@minecraft/server";
-import { Vector3Utils } from "@minecraft/math";
+import { Vector3Utils } from "scripting-2.0.0-math";
 import { DestroyableObject } from "./utils/destroyable";
 import { logWarn } from "./utils/log";
 import { getBlockUniqueId, getMachineStorage, setMachineStorage } from "./data";

@@ -22,15 +22,11 @@
     "build": "tsc"
   },
   "devDependencies": {
-    "@minecraft/server": "1.18.0",
-    "@minecraft/vanilla-data": ">=1.21.70"
+    "@minecraft/server": "^2.0.0",
+    "@minecraft/vanilla-data": "^1.21.90"
   },
   "peerDependencies": {
-    "@minecraft/server": "^1.18.0",
-    "@minecraft/vanilla-data": ">=1.21.70"
-  },
-  "dependencies": {
-    "@minecraft/math": "^1.5.2",
-    "mcbe-addon-ipc": "^0.8.1"
+    "@minecraft/server": "^2.0.0",
+    "@minecraft/vanilla-data": ">=1.21.90"
   }
 }

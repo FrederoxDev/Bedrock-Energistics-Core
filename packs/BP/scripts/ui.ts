@@ -84,7 +84,7 @@ function clearUiItemsFromPlayer(player: Player): boolean {
     anythingCleared = true;
   }
 
-  const playerInventory = player.getComponent("inventory")!.container!;
+  const playerInventory = player.getComponent("inventory")!.container;
   for (let i = 0; i < playerInventory.size; i++) {
     const item = playerInventory.getItem(i);
 
@@ -417,7 +417,7 @@ async function updateEntityUi(
     : null;
 
   // ensure the entity is still valid after invoking updateUi
-  if (!entity.isValid()) {
+  if (!entity.isValid) {
     return;
   }
 
@@ -425,7 +425,7 @@ async function updateEntityUi(
   const buttons = updateUiResult?.buttons ?? {};
   const storageBars = updateUiResult?.storageBars ?? {};
 
-  const inventory = entity.getComponent("inventory")!.container!;
+  const inventory = entity.getComponent("inventory")!.container;
 
   for (const [id, options] of definition.uiElements) {
     switch (options.type) {
@@ -512,7 +512,7 @@ world.afterEvents.playerInteractWithEntity.subscribe((e) => {
 });
 
 world.afterEvents.entitySpawn.subscribe((e) => {
-  if (e.entity.typeId !== "minecraft:item" || !e.entity.isValid()) return;
+  if (e.entity.typeId !== "minecraft:item" || !e.entity.isValid) return;
 
   const itemStack = e.entity.getComponent("item")!.itemStack;
 
@@ -523,7 +523,7 @@ world.afterEvents.entitySpawn.subscribe((e) => {
 
 system.runInterval(() => {
   for (const [entity, player] of playersInUi) {
-    if (!entity.isValid()) {
+    if (!entity.isValid) {
       playersInUi.delete(entity);
       continue;
     }

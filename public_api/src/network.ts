@@ -8,7 +8,7 @@ import {
   NetworkGetWithPayload,
 } from "./network_internal.js";
 import { DIRECTION_VECTORS } from "./misc_internal.js";
-import { Vector3Utils } from "@minecraft/math";
+import { Vector3Utils } from "scripting-2.0.0-math";
 import {
   getBlockNetworkConnectionType,
   NetworkConnectionType,

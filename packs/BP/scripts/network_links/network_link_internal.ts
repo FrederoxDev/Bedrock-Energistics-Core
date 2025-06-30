@@ -3,7 +3,7 @@ import {
   NETWORK_LINK_ENTITY_ID,
   NETWORK_LINK_POSITIONS_KEY,
 } from "@/public_api/src/network_links/ipc_events";
-import { Vector3Utils } from "@minecraft/math";
+import { Vector3Utils } from "scripting-2.0.0-math";
 import { Block, Dimension, Entity, Vector3 } from "@minecraft/server";
 import { raise } from "../utils/log";
 import { MachineNetwork } from "../network";
@@ -105,7 +105,7 @@ export class InternalNetworkLinkNode {
   }
 
   public isValid(): boolean {
-    return this.entity.isValid();
+    return this.entity.isValid;
   }
 
   private selfRemoveConnection(location: Vector3): void {
@@ -128,6 +128,6 @@ export class InternalNetworkLinkNode {
   }
 
   private ensureValid(): void {
-    if (!this.entity.isValid()) raise(`NetworkLinkNode instance is not valid.`);
+    if (!this.entity.isValid) raise(`NetworkLinkNode instance is not valid.`);
   }
 }

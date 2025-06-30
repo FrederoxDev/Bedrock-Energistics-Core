@@ -12,7 +12,7 @@ import { InternalRegisteredMachine } from "./machine_registry";
 import { removeMachine } from "./machine";
 import { deserializeMachineItemStack } from "@/public_api/src/serialize_machine_item_stack";
 import { raise } from "./utils/log";
-import { Vector3Utils } from "@minecraft/math";
+import { Vector3Utils } from "scripting-2.0.0-math";
 
 export function getMachineSlotListener(
   payload: ipc.SerializableValue,

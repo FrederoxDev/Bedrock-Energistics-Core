@@ -4,7 +4,7 @@ const REGISTRATION_MAX_TICK = 20;
 
 let worldInitializedTick: number | undefined;
 
-world.afterEvents.worldInitialize.subscribe(() => {
+world.afterEvents.worldLoad.subscribe(() => {
   worldInitializedTick = system.currentTick;
 });
 

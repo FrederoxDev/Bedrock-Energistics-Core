@@ -4,7 +4,7 @@ import {
   VECTOR3_WEST,
   VECTOR3_UP,
   VECTOR3_DOWN,
-} from "@minecraft/math";
+} from "scripting-2.0.0-math";
 
 /**
  * @internal

@@ -15,7 +15,7 @@ import { removeBlockFromScoreboards } from "./data";
 import { MachineNetwork } from "./network";
 import { logWarn } from "./utils/log";
 import { getDirectionVector, reverseDirection } from "./utils/direction";
-import { Vector3Utils } from "@minecraft/math";
+import { Vector3Utils } from "scripting-2.0.0-math";
 import { dropItemsStoredInMachine } from "./machine";
 import { InternalNetworkLinkNode } from "./network_links/network_link_internal";
 import { NETWORK_LINK_ENTITY_ID } from "@/public_api/src/network_links/ipc_events";

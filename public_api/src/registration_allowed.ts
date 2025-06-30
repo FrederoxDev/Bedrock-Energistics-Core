@@ -1,10 +1,10 @@
-import { system, world } from "@minecraft/server";
+import { system } from "@minecraft/server";
 
 const REGISTRATION_MAX_TICK = 20;
 
 let worldInitializedTick: number | undefined;
 
-world.afterEvents.worldLoad.subscribe(() => {
+system.beforeEvents.startup.subscribe(() => {
   worldInitializedTick = system.currentTick;
 });
 

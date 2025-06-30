@@ -13,7 +13,7 @@ import {
 } from "./data";
 import { MachineNetwork } from "./network";
 import { raise } from "./utils/log";
-import { Vector3Utils } from "scripting-2.0.0-math";
+import { Vector3Utils } from "@minecraft/math";
 import { RegisteredMachine } from "@/public_api/src";
 import {
   getMachineIdFromEntityId,

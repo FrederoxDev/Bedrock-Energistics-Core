@@ -3,7 +3,7 @@ import {
   VECTOR3_EAST,
   VECTOR3_UP,
   VECTOR3_WEST,
-} from "scripting-2.0.0-math";
+} from "@minecraft/math";
 import { Block, Direction, Vector3 } from "@minecraft/server";
 
 export { DIRECTION_VECTORS } from "@/public_api/src/misc_internal";

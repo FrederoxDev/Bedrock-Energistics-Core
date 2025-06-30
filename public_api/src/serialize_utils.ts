@@ -9,7 +9,7 @@ import {
   world,
 } from "@minecraft/server";
 import { raise } from "./log.js";
-import { Vector3Utils } from "scripting-2.0.0-math";
+import { Vector3Utils } from "@minecraft/math";
 
 /**
  * @internal

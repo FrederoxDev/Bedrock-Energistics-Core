@@ -3,7 +3,7 @@ import {
   NETWORK_LINK_ENTITY_ID,
   NETWORK_LINK_POSITIONS_KEY,
 } from "@/public_api/src/network_links/ipc_events";
-import { Vector3Utils } from "scripting-2.0.0-math";
+import { Vector3Utils } from "@minecraft/math";
 import { Block, Dimension, Entity, Vector3 } from "@minecraft/server";
 import { raise } from "../utils/log";
 import { MachineNetwork } from "../network";

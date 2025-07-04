@@ -29,4 +29,3 @@ const FEATURED_CONTENT = [
     url: "https://www.curseforge.com/minecraft-bedrock/addons/not-enough-teleporters",
   },
 ];
-

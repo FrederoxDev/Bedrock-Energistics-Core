@@ -66,7 +66,7 @@ export async function setMachineStorage(
   // This also allows the local machine registry cache to be used, avoiding any
   // IPC calls for machines that don't have the 'onStorageSet' event.
 
-  if (!block.isValid()) {
+  if (!block.isValid) {
     raise("Failed to set machine storage. The block is invalid.");
   }
 

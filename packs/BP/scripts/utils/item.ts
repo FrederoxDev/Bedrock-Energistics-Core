@@ -14,4 +14,3 @@ export function tryCreateItemStack(
   }
   return itemStack;
 }
-

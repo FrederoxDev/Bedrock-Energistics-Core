@@ -23,7 +23,7 @@ export const networkLinkComponent: BlockCustomComponent = {
 
     // update the rest of the blocks in the network.
     MachineNetwork.updateWithBlock(ev.block);
-  }
+  },
 };
 
 export function getNetworkLinkNode(

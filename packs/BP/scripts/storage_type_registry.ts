@@ -42,7 +42,7 @@ export class InternalRegisteredStorageType extends RegisteredStorageType {
 // register energy by default
 world.afterEvents.worldLoad.subscribe(() => {
   registerStorageType(STANDARD_STORAGE_TYPE_DEFINITIONS.energy);
-})
+});
 
 function registerStorageType(data: StorageTypeDefinition): void {
   const existing = storageTypeRegistry.get(data.id);

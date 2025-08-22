@@ -121,6 +121,7 @@ world.beforeEvents.playerBreakBlock.subscribe((e) => {
 world.afterEvents.entityHitEntity.subscribe((e) => {
   if (
     e.damagingEntity.typeId !== "minecraft:player" ||
+    !e.hitEntity.isValid ||
     !e.hitEntity
       .getComponent("type_family")
       ?.hasTypeFamily("fluffyalien_energisticscore:machine_entity")

@@ -145,9 +145,11 @@ world.afterEvents.entityHitEntity.subscribe((e) => {
 });
 
 world.afterEvents.entitySpawn.subscribe((e) => {
+  const entity = e.entity;
+  if (!entity.isValid) return; // Entities can become invalid if they're spawned and removed in the same tick.
+
   if (
-    !e.entity.isValid ||
-    !e.entity
+    !entity
       .getComponent("type_family")
       ?.hasTypeFamily("fluffyalien_energisticscore:machine_entity")
   ) {

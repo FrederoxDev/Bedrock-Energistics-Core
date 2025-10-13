@@ -22,11 +22,11 @@
     "build": "tsc"
   },
   "devDependencies": {
-    "@minecraft/server": "2.0.0",
+    "@minecraft/server": "^2.2.0",
     "@minecraft/vanilla-data": ">=1.21.90"
   },
   "peerDependencies": {
-    "@minecraft/server": "2.0.0",
+    "@minecraft/server": "^2.2.0",
     "@minecraft/vanilla-data": ">=1.21.90"
   },
   "dependencies": {

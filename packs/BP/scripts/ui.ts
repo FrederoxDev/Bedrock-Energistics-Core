@@ -367,6 +367,10 @@ function handleButton(
   }
 
   const inventoryItem = inventory.getItem(index);
+  if (inventoryItem?.typeId === buttonItemId) {
+    return;
+  }
+
   if (!inventoryItem?.hasTag("fluffyalien_energisticscore:ui_item")) {
     clearUiItemsFromPlayer(player);
 
@@ -382,15 +386,15 @@ function handleButton(
         elementId,
       );
     }
-
-    let btnItem = tryCreateItemStack(buttonItemId);
-    if (!btnItem?.hasTag("fluffyalien_energisticscore:ui_item")) {
-      btnItem = new ItemStack("fluffyalien_energisticscore:ui_error");
-    }
-
-    btnItem.nameTag = buttonItemName;
-    inventory.setItem(index, btnItem);
   }
+
+  let btnItem = tryCreateItemStack(buttonItemId);
+  if (btnItem?.hasTag("fluffyalien_energisticscore:ui_item")) {
+    btnItem.nameTag = buttonItemName;
+  } else {
+    btnItem = new ItemStack("fluffyalien_energisticscore:ui_error");
+  }
+  inventory.setItem(index, btnItem);
 }
 
 async function updateEntityUi(

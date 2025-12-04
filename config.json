@@ -48,7 +48,7 @@
       "preview": {
         "export": {
           "target": "development",
-          "build": "preview_gdk"
+          "build": "preview"
         },
         "filters": [
           {

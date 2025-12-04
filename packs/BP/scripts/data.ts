@@ -157,8 +157,9 @@ export function setMachineSlotItem(
 
 export function optionalMachineItemStackToItemStack(
   machineItem?: MachineItemStack,
+  emptyItemId = "fluffyalien_energisticscore:ui_empty_slot",
 ): ItemStack {
   return machineItem
     ? machineItem.toItemStack()
-    : new ItemStack("fluffyalien_energisticscore:ui_empty_slot");
+    : new ItemStack(emptyItemId);
 }

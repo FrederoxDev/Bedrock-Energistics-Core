@@ -1,8 +1,8 @@
 @echo off
 cd %~dp0
-npm i
+call npm i
 cd scripts
-npm i
+call npm i
 cd ../public_api
-npm i
-npm run build
+call npm i
+call npm run build
